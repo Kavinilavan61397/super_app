@@ -1,37 +1,81 @@
-import React from 'react';
+import React, { useState } from 'react';
 import logo from "../Images/Logo/E-STORE.svg";
 import { useNavigate } from 'react-router-dom';
-// import frame from "../Images/Auth/Frame.svg"
 
 function Register() {
     const navigate = useNavigate();
 
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
+    const [password, setPassword] = useState('');
+
+    const handleRegister = async () => {
+        try {
+            const response = await fetch('http://localhost:5000/api/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name,
+                    email,
+                    phone,
+                    password,
+                    role: 'user',
+                }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert('Registration successful!');
+                navigate('/login'); // going to login as now 
+            } else {
+                alert(data.message || 'Registration failed');
+            }
+        } catch (error) {
+            console.error('Registration error:', error);
+            alert('Something went wrong!');
+        }
+    };
+
     return (
         <div className="w-full h-screen flex flex-col items-center justify-start">
-            {/* Gradient Background */}
             <div className="w-full h-40 bg-gradient-to-b from-[#d6a1ef] to-white "></div>
-            {/* <img src={frame} alt="frame" className="w-full h-32 rounded-b-3xl" /> */}
-            {/* Logo */}
 
-
-            {/* Form Fields */}
             <div className="w-full max-w-sm px-4 py-8 bg-white flex flex-col items-center">
                 <img src={logo} alt='E-STORE' className="w-32 mt-4" />
+
                 <label className="mt-4 block text-sm text-gray-600 w-full">Enter your name</label>
                 <input
                     type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
                     className="w-full p-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#5C3FFF] mt-1"
                 />
 
                 <label className="mt-4 block text-sm text-gray-600 w-full">Enter your email ID</label>
                 <input
                     type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="w-full p-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#5C3FFF] mt-1"
                 />
 
                 <label className="mt-4 block text-sm text-gray-600 w-full">Enter your mobile number</label>
                 <input
                     type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="w-full p-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#5C3FFF] mt-1"
+                />
+
+                <label className="mt-4 block text-sm text-gray-600 w-full">Create a password</label>
+                <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     className="w-full p-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#5C3FFF] mt-1"
                 />
 
@@ -48,11 +92,11 @@ function Register() {
                 </div>
             </div>
 
-
-            <div className='fixed left-0 right-0 bottom-16 px-4'>
+            <div className="fixed left-0 right-0 bottom-16 px-4 flex justify-center">
                 <button
-                    onClick={() => navigate('/otp')}
-                    className="w-full max-w-sm mt-6 h-12 bg-[#5C3FFF] text-white text-lg font-semibold rounded-full flex items-center justify-center transition duration-300 hover:bg-[#4A2FCC] hover:scale-105 active:scale-95">
+                    onClick={handleRegister}
+                    className="w-full max-w-sm mt-6 h-12 bg-[#5C3FFF] text-white text-lg font-semibold rounded-full flex items-center justify-center transition duration-300 hover:bg-[#4A2FCC] hover:scale-105 active:scale-95"
+                >
                     Continue
                 </button>
             </div>

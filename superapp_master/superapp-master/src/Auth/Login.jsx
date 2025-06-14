@@ -6,6 +6,33 @@ import logo from "../Images/Logo/E-STORE.svg";
 function Login() {
     const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+
+    const handleLogin = async () => {
+        try {
+            const response = await fetch('http://localhost:5000/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, password }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert('Login successful!');
+               
+                navigate('/home-clothes/profile'); 
+            } else {
+                alert(data.message || 'Invalid email or password');
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            alert('Something went wrong during login.');
+        }
+    };
 
     return (
         <div className="w-full h-screen flex flex-col items-center justify-center">
@@ -21,6 +48,8 @@ function Login() {
                 <label className="block text-sm text-gray-600 w-full">Enter your email ID</label>
                 <input
                     type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="w-full p-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#5C3FFF] mt-1"
                 />
 
@@ -29,6 +58,8 @@ function Login() {
                 <div className="relative w-full">
                     <input
                         type={showPassword ? "text" : "password"}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
                         className="w-full p-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#5C3FFF] mt-1"
                     />
                     <span
@@ -51,12 +82,12 @@ function Login() {
                         </span>
                     </p>
                 </div>
-
             </div>
 
             {/* Continue Button */}
             <div className="fixed left-0 right-0 bottom-16 px-4 flex justify-center">
                 <button
+                    onClick={handleLogin}
                     className="w-full max-w-sm h-12 bg-[#5C3FFF] text-white text-lg font-semibold rounded-full flex items-center justify-center transition duration-300 hover:bg-[#4A2FCC] hover:scale-105 active:scale-95"
                 >
                     Continue

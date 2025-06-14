@@ -1,0 +1,71 @@
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
+
+const Product = sequelize.define('Product', {
+  id: {
+    type: DataTypes.BIGINT.UNSIGNED,
+    primaryKey: true,
+    autoIncrement: true
+  },
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  description: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
+  slug: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: true
+  },
+  sku: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: true
+  },
+  price: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: false
+  },
+  sale_price: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: true
+  },
+  stock: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 0
+  },
+  category_id: {
+    type: DataTypes.BIGINT.UNSIGNED,
+    allowNull: false
+  },
+  featured_image: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  status: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true
+  },
+  meta_title: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  meta_description: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  }
+}, {
+  tableName: 'products',
+  timestamps: true,
+  indexes: [
+    {
+      fields: ['category_id']
+    }
+  ]
+});
+
+module.exports = Product; 

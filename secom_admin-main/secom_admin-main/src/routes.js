@@ -1,5 +1,6 @@
 import React from "react";
 import MainDashboard from "views/admin/default";
+import authRoutes from "./routes/auth.routes";
 import {
   MdSupervisorAccount,
   MdLock,
@@ -89,6 +90,7 @@ import ManageRooms from "views/admin/Sidenav_pages/ManageRooms";
 import AvailableRooms from "views/admin/Sidenav_pages/AvailableRooms";
 
 const routes = [
+  ...authRoutes,
   {
     name: "Main Dashboard",
     layout: "/admin",

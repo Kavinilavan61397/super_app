@@ -9,8 +9,10 @@ function Register() {
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleRegister = async () => {
+        setIsLoading(true);
         try {
             const response = await fetch('http://localhost:5000/api/auth/register', {
                 method: 'POST',
@@ -36,7 +38,9 @@ function Register() {
             }
         } catch (error) {
             console.error('Registration error:', error);
-            alert('Something went wrong!');
+            alert('Something went wrong during registration. Please try again later.');
+        } finally {
+            setIsLoading(false);
         }
     };
 

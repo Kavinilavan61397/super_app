@@ -51,7 +51,11 @@ function Settings() {
                             alt="Toggle view"
                         />
                     </div>
-                    <div className="flex justify-between items-center px-4 py-3">
+                    <div className="flex justify-between items-center px-4 py-3"
+                        onClick={() => {
+                            localStorage.removeItem('token');
+                            navigate('/login');
+                        }}>
                         <h2 className="text-sm font-medium">Sign Out</h2>
                         <img
                             src={arrow}

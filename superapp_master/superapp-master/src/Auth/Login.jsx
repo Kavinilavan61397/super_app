@@ -23,14 +23,14 @@ function Login() {
 
             if (response.ok) {
                 alert('Login successful!');
-               
+                localStorage.setItem('token', data.data.token);
                 navigate('/home-clothes/profile'); 
             } else {
                 alert(data.message || 'Invalid email or password');
             }
         } catch (error) {
             console.error('Login error:', error);
-            alert('Something went wrong during login.');
+            alert('Something went wrong during login. Please try again later.');
         }
     };
 

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import Footer from '../../Utility/Footer';
 import EcommerceGroceryHeader from '../../Components/EcommerceGroceryHeader';
-import godrejmicroovenImage from '../Images/godrejmicrooven.png';
-import acImage from '../Images/ac.png';
-import godrejrefImage from '../Images/godrejref.jpg';
-import godrejwashingImage from '../Images/godrejwashing.jpg';
+// import godrejmicroovenImage from '../Images/godrejmicrooven.png';
+// import acImage from '../Images/ac.png';
+// import godrejrefImage from '../Images/godrejref.jpg';
+// import godrejwashingImage from '../Images/godrejwashing.jpg';
 
 const homeAppliances = [
   {
@@ -18,7 +18,7 @@ const homeAppliances = [
     brand: 'Godrej',
     category: 'Microwave',
     inStock: true,
-    image: godrejmicroovenImage, 
+    // image: godrejmicroovenImage, 
   },
  {
   id: 2,
@@ -31,7 +31,7 @@ const homeAppliances = [
   brand: "Godrej",
   category: "AC",
   inStock: true,
-  image: acImage ,
+  // image: acImage ,
 },
   {
     id: 4,
@@ -44,7 +44,7 @@ const homeAppliances = [
     brand: 'Godrej',
     category: 'Refrigerator',
     inStock: false,
-    image: godrejrefImage,
+    // image: godrejrefImage,
   },
  {
   id: 5,

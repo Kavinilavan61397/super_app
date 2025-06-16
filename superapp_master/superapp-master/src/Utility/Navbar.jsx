@@ -77,6 +77,23 @@ import Favourites from '../HotelModule/PagesHotel/Favoutires';
 import RestaurentPageCategory from '../FoodDilvery/PagesF/RestaurentPageCategory';
 import DishesListBasedOnCategory from '../FoodDilvery/PagesF/DishesListBasedOnCategory';
 
+import HomeG from '../Grocery/Pages/HomeG.jsx';
+import AddressG from '../Grocery/Pages/Address';
+import PaymentG from '../Grocery/Pages/Payment';
+import OrderPlacedG from '../Grocery/Pages/OrderPlaced';
+import MyordersG from '../Grocery/Pages/Myorders';
+import MyordersFilterG from '../Grocery/Pages/MyOrdersFilter';
+import CartG from '../Grocery/Pages/Cart';
+import AccountG from '../Grocery/Pages/Account';
+import ProfileG from '../Grocery/Pages/Profile';
+import WishlistG from '../Grocery/Pages/Wishlist';
+import SettingsG from '../Grocery/Pages/Settings';
+import NotificationG from '../Grocery/Pages/Notification';
+import TermsConditionsG from '../Grocery/Pages/TermsConditions';
+import PrivacyPolicyG from '../Grocery/Pages/PrivacyPolicy';
+import AboutG from '../Grocery/Pages/About';
+import EditAllAddressG from '../Grocery/Pages/EditAllAddress';
+import EditAddressValuesG from '../Grocery/Pages/EditAddressValues';
 function Navbar() {
     return (
         <BrowserRouter>
@@ -120,6 +137,25 @@ function Navbar() {
                 <Route path='/categories/fruitdetail' element={<Fruitdetail/>}/>
                 <Route path='/cosmetics/nykaa ' element={<Nykaa/>}/>
                 <Route path='categories/homeappliances' element={<Homeappliances/>}/>
+
+                 {/* Groceries */}
+                <Route path='/home-grocery' element={<HomeG />} />
+                <Route path='/home-grocery/address' element={<AddressG />} />
+                <Route path='/home-grocery/edit-all-addresses' element={<EditAllAddressG />} />
+                <Route path='/home-grocery/edit-address-values' element={<EditAddressValuesG />} />
+                <Route path='/home-grocery/payment' element={<PaymentG />} />
+                <Route path='/home-grocery/order' element={<OrderPlacedG />} />
+                <Route path='/home-grocery/order-list' element={<MyordersG />} />
+                <Route path='/home-grocery/order-list-filter' element={<MyordersFilterG />} />
+                <Route path='/home-grocery/cart' element={<CartG />} />
+                <Route path='/home-grocery/account' element={<AccountG />} />
+                <Route path='/home-grocery/profile' element={<ProfileG />} />
+                <Route path='/home-grocery/wishlist' element={<WishlistG />} />
+                <Route path='/home-grocery/settings' element={<SettingsG />} />
+                <Route path='/home-grocery/notification' element={<NotificationG />} />
+                <Route path='/home-grocery/terms-conditions' element={<TermsConditionsG />} />
+                <Route path='/home-grocery/privacy-policy' element={<PrivacyPolicyG />} />
+                <Route path='/home-grocery/about' element={<AboutG />} />
 
                 {/* Food */}
                 <Route path='/home-food' element={<HomeScreenF />} />
@@ -170,3 +206,11 @@ function Navbar() {
     )
 }
 export default Navbar;
+
+
+
+
+
+
+
+

@@ -1,8 +1,7 @@
-require('dotenv').config();
 const { Sequelize } = require('sequelize');
 
-const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASSWORD, {
-  host: process.env.DB_HOST,
+const sequelize = new Sequelize('superapp_db', 'root', 'password', {
+  host: 'localhost',
   dialect: 'mysql',
   logging: console.log,  // Enable logging temporarily for debugging
   define: {
@@ -42,4 +41,4 @@ const initializeDatabase = async () => {
 };
 
 module.exports = sequelize;
-module.exports.initializeDatabase = initializeDatabase; 
+module.exports.initializeDatabase = initializeDatabase;

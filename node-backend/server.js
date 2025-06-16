@@ -22,7 +22,12 @@ const restaurantCategoryRoutes = require('./src/routes/restaurantCategory.routes
 const app = express();
 
 // Middleware
-app.use(cors());
+const corsOptions = {
+  origin: ['http://localhost:3000', 'http://localhost:3001'],
+  credentials: true,
+  optionsSuccessStatus: 200 // For legacy browser support
+};
+app.use(cors(corsOptions));
 app.use(helmet());
 app.use(morgan('dev'));
 app.use(express.json());

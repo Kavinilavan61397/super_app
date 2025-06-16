@@ -28,14 +28,12 @@ export default function SignIn() {
     setServerError("");
 
     try {
-      const formData = new FormData();
-      formData.append("email", data.email);
-      formData.append("password", data.password);
-
-      const response = await fetch("https://yrpitsolutions.com/ecom_backend/api/admin/login", {
-        // const response = await fetch("https://c6e9-2405-201-d03c-832-a990-6f87-c52d-1139.ngrok-free.app/api/admin/login", {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/login`, {
         method: "POST",
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
       });
 
       const responseData = await response.json();

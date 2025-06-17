@@ -14,6 +14,15 @@ const API_CONFIG = {
     }
   },
 
+  CATEGORY: {
+    LIST: '/api/categories',
+    DETAIL: (id) => `/api/categories/${id}`,
+    CREATE: '/api/categories',
+    UPDATE: (id) => `/api/categories/${id}`,
+    DELETE: (id) => `/api/categories/${id}`,
+    TOGGLE_STATUS: (id) => `/api/categories/${id}/toggle-status`
+  },
+
   // Storage keys
   STORAGE_KEYS: {
     AUTH_TOKEN: 'OnlineShop-accessToken',
@@ -23,14 +32,14 @@ const API_CONFIG = {
 
   // Request headers
   HEADERS: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json'
+    'Accept': 'application/json',
+    'Content-Type': 'application/json'
   },
 
   // Routes
   ROUTES: {
-    LOGIN: '/login',
-    SIGNUP: '/signup',
+    LOGIN: '/auth/sign-in',
+    SIGNUP: '/auth/sign-up',
     DASHBOARD: '/admin/default'
   }
 };

@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
 import { FaEdit, FaTrashAlt, FaPlus, FaEllipsisV } from 'react-icons/fa';
 import * as Yup from 'yup';
 import { useForm, Controller } from 'react-hook-form';
@@ -10,6 +9,9 @@ import { TokenExpiration } from 'views/auth/TokenExpiration ';
 import 'react-toastify/dist/ReactToastify.css';
 import { toast, ToastContainer } from 'react-toastify';
 import Navbar from 'components/navbar';
+import { categoryService } from '../../../services/categoryService';
+import { authService } from "../../../services/authService";
+import { useNavigate } from "react-router-dom";
 
 function Category() {
     const [tableData, setTableData] = useState([]);
@@ -23,7 +25,7 @@ function Category() {
     const [selectedRows, setSelectedRows] = useState([]);
     const [openDropdown, setOpenDropdown] = useState(null);
     const [rowIdToDelete, setRowIdToDelete] = useState(null);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const [totalItems, setTotalItems] = useState(0);
@@ -32,67 +34,79 @@ function Category() {
     const [categoryData, setCategoryData] = useState(null);
     const [filteredData, setFilteredData] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
+    const [error, setError] = useState(null);
+    const navigate = useNavigate();
 
     const validationSchemaAdd = Yup.object({
-        brand_id: Yup.string().required('Brand is required'),
-        categoryName: Yup.string().required('Category Name is required'),
-        // categoryImage: Yup.mixed()
-        //     .required('Category Image is required')
-        //     .test('fileType', 'Only image files are allowed', (value) => {
-        //         return value && value instanceof File && value.type.startsWith('image/');
-        //     }),
+        name: Yup.string().required('Category Name is required'),
+        description: Yup.string(),
+        status: Yup.boolean(),
+        parent_id: Yup.number().nullable()
     });
 
     const validationSchemaEdit = Yup.object({
-        categoryName: Yup.string().required('Category Name is required'),
-        brand_id: Yup.string().required('Brand is required'),
+        name: Yup.string().required('Category Name is required'),
+        description: Yup.string(),
+        status: Yup.boolean(),
+        parent_id: Yup.number().nullable()
     });
 
     const { reset, control, handleSubmit, setValue, trigger, formState: { errors } } = useForm({
         resolver: yupResolver(openAddModal ? validationSchemaAdd : validationSchemaEdit),
         defaultValues: {
-            brandName: selectedCategory?.name || '',
-            brandImage: selectedCategory?.photo || null,
+            name: selectedCategory?.name || '',
+            description: selectedCategory?.description || '',
+            status: selectedCategory?.status || true,
+            parent_id: selectedCategory?.parent_id || null
         },
     });
 
-
-    // Fetch brand data from the API
-    const fetchBrandData = async () => {
-        try {
-            const response = await axios.get('https://yrpitsolutions.com/ecom_backend/api/admin/get_all_brand');
-            setBrands(response.data);
-        } catch (error) {
-            console.error('Error fetching brand data:', error);
-        }
-    };
-
-    // Fetch category data from the API
-    const fetchCategoryData = async () => {
-        try {
-            const response = await axios.get('https://yrpitsolutions.com/ecom_backend/api/admin/get_all_category');
-            setTableData(response.data);  // Store the data
-            setFilteredData(response.data);  // Show all data initially
-            setTotalItems(response.data.length);  // Set the total number of items
-        } catch (error) {
-            console.error('Error fetching category data:', error);
-        }
-    };
-
     useEffect(() => {
-        fetchCategoryData();
-        fetchBrandData();  // Fetch category data when the component mounts
-    }, []);
+        const checkAuth = async () => {
+            if (!authService.isAuthenticated()) {
+                navigate("/auth/sign-in");
+                return;
+            }
+            await fetchData();
+        };
 
-    // Handle page change
-    const handlePageChange = (page) => {
-        if (page >= 1 && page <= totalPages) {
-            setCurrentPage(page);
+        checkAuth();
+    }, [navigate]);
+
+    const fetchData = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const categoriesResponse = await categoryService.getAllCategories();
+            
+            // Ensure we have an array, even if empty
+            const categories = Array.isArray(categoriesResponse.data) ? categoriesResponse.data : [];
+            
+            setTableData(categories);
+            setFilteredData(categories);
+            setTotalItems(categories.length);
+        } catch (error) {
+            console.error("Error fetching data:", error);
+            setError(error.message || "Failed to load data. Please try again later.");
+            if (error.response?.status === 401) {
+                navigate("/auth/sign-in");
+            }
+        } finally {
+            setLoading(false);
         }
+    };
+
+    // Get paginated data
+    const getPaginatedData = () => {
+        if (!filteredData) return []; // Guard against undefined filteredData
+        
+        const start = (currentPage - 1) * itemsPerPage;
+        const end = start + itemsPerPage;
+        return filteredData.slice(start, end);
     };
 
     // Calculate total pages based on filtered data
-    const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+    const totalPages = Math.ceil((filteredData?.length || 0) / itemsPerPage);
 
     // Reset current page when itemsPerPage or searchQuery changes
     useEffect(() => {
@@ -101,31 +115,36 @@ function Category() {
 
     // Filter categories based on search query
     useEffect(() => {
+        if (!tableData) return; // Guard against undefined tableData
+        
         if (searchQuery) {
             const filtered = tableData.filter((category) =>
-                category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                (category.brand && category.brand.brand_name.toLowerCase().includes(searchQuery.toLowerCase()))
+                (category.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                (category.brand?.brand_name || '').toLowerCase().includes(searchQuery.toLowerCase())
             );
             setFilteredData(filtered);
-            setTotalItems(filtered.length);  // Update total items based on filtered data
+            setTotalItems(filtered.length);
         } else {
-            setFilteredData(tableData);  // Reset to all data if no search query
+            setFilteredData(tableData);
             setTotalItems(tableData.length);
         }
     }, [searchQuery, tableData]);
 
-    // Get paginated data
-    const getPaginatedData = () => {
-        const start = (currentPage - 1) * itemsPerPage;
-        const end = start + itemsPerPage;
-        return filteredData.slice(start, end);  // Paginate after filtering
+    // Handle page change
+    const handlePageChange = (page) => {
+        if (page >= 1 && page <= totalPages) {
+            setCurrentPage(page);
+        }
     };
+
     useEffect(() => {
         if (selectedCategory) {
             setCategoryData(selectedCategory);
-            setValue('categoryName', selectedCategory.name);
-            setImagePreview(selectedCategory.photo);
-            setValue('brand_id', selectedCategory.brand_id);
+            setValue('name', selectedCategory.name);
+            setValue('description', selectedCategory.description || '');
+            setValue('status', selectedCategory.status || true);
+            setValue('parent_id', selectedCategory.parent_id || null);
+            setImagePreview(selectedCategory.image);
         }
     }, [selectedCategory, setValue]);
 
@@ -140,122 +159,31 @@ function Category() {
         }
     };
 
-    // const handleFormSubmit = async (data) => {
-    //     setLoading(true);
-
-    //     const formData = new FormData();
-    //     formData.append('brand_id', data.brand_id);
-    //     formData.append('name', data.categoryName);
-    //     if (data.categoryImage instanceof File) formData.append('photo', data.categoryImage);
-
-    //     try {
-    //         const accessToken = localStorage.getItem('OnlineShop-accessToken');
-    //         const url = 'https://yrpitsolutions.com/ecom_backend/api/admin/save_category'; // For new category
-
-    //         await axios.post(url, formData, {
-    //             headers: { Authorization: `Bearer ${accessToken}` },
-    //         });
-
-    //         fetchCategoryData();
-    //         setOpenAddModal(false);
-    //         setCategoryImage(null);
-    //         reset();
-    //     } catch (error) {
-    //         console.error('Error submitting form:', error);
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    // };
-
-    // const handleFormUpdate = async (data) => {
-    //     setLoading(true);
-
-    //     const formData = new FormData();
-    //     formData.append('brand_id', data.brand_id);
-    //     formData.append('name', data.categoryName);
-    //     if (data.categoryImage instanceof File) formData.append('photo', data.categoryImage);
-
-    //     try {
-    //         const accessToken = localStorage.getItem('OnlineShop-accessToken');
-    //         const url = `https://yrpitsolutions.com/ecom_backend/api/admin/update_category_by_id/${selectedCategory.id}`;
-    //         formData.append('_method', 'put');
-
-    //         await axios.post(url, formData, {
-    //             headers: { Authorization: `Bearer ${accessToken}` },
-    //         });
-
-    //         fetchCategoryData();
-    //         setOpenEditModal(false);
-    //         setCategoryImage(null);
-    //         reset();
-    //     } catch (error) {
-    //         console.error('Error updating category:', error);
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    // };
-
-
     const handleFormSubmit = async (data) => {
         setLoading(true);
-
-        // Prevent form submission if category name already exists in the table
-        const categoryName = data.categoryName;
-        const existingCategory = getPaginatedData().find(category => category.name.toLowerCase() === categoryName.toLowerCase());
-    
-        if (existingCategory) {
-            toast.error("This category already exists.Provide a different name.", {
-                autoClose: 3000,
-                hideProgressBar: true,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-            });
-            setLoading(false); // Ensure loading state is stopped
-            return; // Prevent form submission if the category name already exists
-        }
-    
-        const formData = new FormData();
-        formData.append('brand_id', data.brand_id);
-        formData.append('category_id', data.category_id);
-        formData.append('name', data.categoryName);
-        if (data.categoryImage instanceof File) formData.append('photo', data.categoryImage);
-    
         try {
-            const accessToken = localStorage.getItem('OnlineShop-accessToken');
-            const url = 'https://yrpitsolutions.com/ecom_backend/api/admin/save_category'; // For new category
-    
-            await axios.post(url, formData, {
-                headers: { Authorization: `Bearer ${accessToken}` },
-            });
-    
-            // Success Toast for category creation
-            toast.success("Category added successfully!", {
-                autoClose: 3000,
-                hideProgressBar: true,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-            });
-    
-            fetchCategoryData();
+            const formData = new FormData();
+            formData.append('name', data.name);
+            formData.append('description', data.description || '');
+            formData.append('status', data.status);
+            if (data.parent_id) {
+                formData.append('parent_id', data.parent_id);
+            }
+            if (data.categoryImage instanceof File) {
+                formData.append('category_image', data.categoryImage);
+            }
+
+            await categoryService.createCategory(formData);
+            
+            toast.success('Category added successfully!');
+            await fetchData();
             setOpenAddModal(false);
             setCategoryImage(null);
             reset();
         } catch (error) {
             console.error('Error submitting form:', error);
-    
-            // Error Toast if submission fails
-            toast.error("Failed to add category. Please try again.", {
-                autoClose: 3000,
-                hideProgressBar: true,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-            });
+            const errorMessage = error.response?.data?.message || error.message || 'Failed to add category. Please try again.';
+            toast.error(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -263,47 +191,29 @@ function Category() {
 
     const handleFormUpdate = async (data) => {
         setLoading(true);
-
-        const formData = new FormData();
-        formData.append('brand_id', data.brand_id);
-        formData.append('name', data.categoryName);
-        if (data.categoryImage instanceof File) formData.append('photo', data.categoryImage);
-
         try {
-            const accessToken = localStorage.getItem('OnlineShop-accessToken');
-            const url = `https://yrpitsolutions.com/ecom_backend/api/admin/update_category_by_id/${selectedCategory.id}`;
-            formData.append('_method', 'put');
+            const formData = new FormData();
+            formData.append('name', data.name);
+            formData.append('description', data.description || '');
+            formData.append('status', data.status);
+            if (data.parent_id) {
+                formData.append('parent_id', data.parent_id);
+            }
+            if (data.categoryImage instanceof File) {
+                formData.append('category_image', data.categoryImage);
+            }
 
-            await axios.post(url, formData, {
-                headers: { Authorization: `Bearer ${accessToken}` },
-            });
-
-            // Success Toast for category update
-            toast.success("Category updated successfully!", {
-                autoClose: 3000,
-                hideProgressBar: true,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-            });
-
-            fetchCategoryData();
+            await categoryService.updateCategory(selectedCategory.id, formData);
+            
+            toast.success('Category updated successfully!');
+            await fetchData();
             setOpenEditModal(false);
             setCategoryImage(null);
             reset();
         } catch (error) {
             console.error('Error updating category:', error);
-
-            // Error Toast if update fails
-            toast.error("Failed to update category. Please try again.", {
-                autoClose: 3000,
-                hideProgressBar: true,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-            });
+            const errorMessage = error.response?.data?.message || error.message || 'Failed to update category. Please try again.';
+            toast.error(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -311,8 +221,10 @@ function Category() {
 
     const handleAddCategory = () => {
         setSelectedCategory(null);
-        setValue('BarndName', '');
-        setValue('categoryName', '');
+        setValue('name', '');
+        setValue('description', '');
+        setValue('status', true);
+        setValue('parent_id', null);
         setImagePreview(null);
         setOpenAddModal(true);
         reset();
@@ -324,7 +236,6 @@ function Category() {
         setOpenEditModal(true);
     };
 
-
     const handleDeleteRow = (id) => {
         setRowIdToDelete(id);
         setOpenDeleteDialog(true);
@@ -333,87 +244,41 @@ function Category() {
     const handleDeleteConfirmation = async () => {
         setIsDeleting(true);
         try {
-            const accessToken = localStorage.getItem('OnlineShop-accessToken');
-            const response = await axios.delete(`https://yrpitsolutions.com/ecom_backend/api/admin/delete_category_by_id/${rowIdToDelete}`, {
-                headers: { Authorization: `Bearer ${accessToken}` },
-            });
-
-            if (response.status === 200) {
-                // Show success toast after successful delete
-                toast.success("Category deleted successfully!", {
-                    autoClose: 3000,
-                    hideProgressBar: true,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                    progress: undefined,
-                });
-
-                fetchCategoryData();  // Refresh the data after successful delete
-                setOpenDeleteDialog(false); // Close the delete confirmation dialog
-            } else {
-                throw new Error('Failed to delete category');
-            }
+            await categoryService.deleteCategory(rowIdToDelete);
+            toast.success('Category deleted successfully!');
+            await fetchData();
+            setOpenDeleteDialog(false);
         } catch (error) {
             console.error('Error deleting category:', error);
-            // Show error toast if the delete operation fails
-            toast.error("Failed to delete the category. Please try again.", {
-                autoClose: 3000,
-                hideProgressBar: true,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-            });
+            const errorMessage = error.response?.data?.message || error.message || 'Failed to delete category. Please try again.';
+            toast.error(errorMessage);
         } finally {
-            setIsDeleting(false);  // Reset the loading state
+            setIsDeleting(false);
         }
     };
-
 
     const handleCancelDelete = () => {
         setOpenDeleteDialog(false);
     };
     const handleBulkDelete = async () => {
-        setLoading(true);
+        if (selectedRows.length === 0) {
+            toast.warning('Please select categories to delete');
+            return;
+        }
+
+        setIsDeleting(true);
         try {
-            const accessToken = localStorage.getItem('OnlineShop-accessToken');
-            for (let id of selectedRows) {
-                await axios.delete(`https://yrpitsolutions.com/ecom_backend/api/admin/delete_category_by_id/${id}`, {
-                    headers: { Authorization: `Bearer ${accessToken}` },
-                });
-            }
-
-            // Show success toast after bulk delete
-            toast.success("Selected categories deleted successfully!", {
-                autoClose: 3000,
-                hideProgressBar: true,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-            });
-
-            window.location.reload();  // Reload the page to reflect changes
-            await fetchCategoryData(); // Refresh the data
-            setSelectedRows([]); // Clear selection after bulk delete
+            await categoryService.bulkDeleteCategories(selectedRows);
+            toast.success('Selected categories deleted successfully!');
+            fetchData();
+            setSelectedRows([]);
         } catch (error) {
-            console.error('Error deleting selected categories:', error);
-
-            // Show error toast if bulk deletion fails
-            toast.error("Failed to delete selected categories. Please try again.", {
-                autoClose: 3000,
-                hideProgressBar: true,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-            });
+            console.error('Error deleting categories:', error);
+            toast.error(error.response?.data?.message || 'Failed to delete categories. Please try again.');
         } finally {
-            setLoading(false);
+            setIsDeleting(false);
         }
     };
-
 
     const handleRowSelection = (id) => {
         setSelectedRows((prevSelected) =>
@@ -438,6 +303,25 @@ function Category() {
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, []);
+
+    if (loading) {
+        return <div className="flex justify-center items-center h-screen">Loading...</div>;
+    }
+
+    if (error) {
+        return (
+            <div className="flex flex-col justify-center items-center h-screen">
+                <p className="text-red-500 mb-4">{error}</p>
+                <button
+                    onClick={fetchData}
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                >
+                    Retry
+                </button>
+            </div>
+        );
+    }
+
     return (
         <div className=" min-h-screen pt-6">
                 <Navbar brandText={"Category"} />
@@ -482,35 +366,11 @@ function Category() {
                             <h2 className="text-2xl font-semibold text-gray-800 mb-2">Add Category</h2>
 
 
-                            {/* Brand Dropdown */}
-                            <div className="mb-2">
-                                <label className="block text-lg text-gray-600 font-medium mb-2">Brand<span className="text-red-500 ">*</span></label>
-                                <Controller
-                                    name="brand_id"
-                                    control={control}
-                                    render={({ field }) => (
-                                        <select
-                                            {...field}
-                                            className="w-full border border-gray-300 rounded-md px-4 py-3 text-gray-800 focus:outline-none"
-                                        >
-                                            <option value="">Select a Brand</option>
-                                            {brands.map((brand) => (
-                                                <option key={brand.id} value={brand.id}>
-                                                    {brand.brand_name}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    )}
-                                />
-                                {errors.brand_id && <p className="text-red-500 text-sm">{errors.brand_id.message}</p>} {/* Error message for brand dropdown */}
-                            </div>
-
-
                             {/* Category Name Input */}
                             <div className="mb-2">
-                                <label className="block text-lg text-gray-600 font-medium mb-2">Category Name <span className="text-red-500 ">*</span></label>
+                                <label className="block text-lg text-gray-600 font-medium mb-2">Category Name <span className="text-red-500">*</span></label>
                                 <Controller
-                                    name="categoryName"
+                                    name="name"
                                     control={control}
                                     render={({ field }) => (
                                         <input
@@ -521,20 +381,83 @@ function Category() {
                                         />
                                     )}
                                 />
-                                {errors.categoryName && <p className="text-red-500 text-sm">{errors.categoryName.message}</p>}
+                                {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
+                            </div>
+
+                            {/* Description Input */}
+                            <div className="mb-2">
+                                <label className="block text-lg text-gray-600 font-medium mb-2">Description</label>
+                                <Controller
+                                    name="description"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <textarea
+                                            placeholder="Enter Category Description"
+                                            className="w-full border border-gray-300 rounded-md px-4 py-3 text-gray-800 focus:outline-none"
+                                            {...field}
+                                        />
+                                    )}
+                                />
+                            </div>
+
+                            {/* Parent Category Dropdown */}
+                            <div className="mb-2">
+                                <label className="block text-lg text-gray-600 font-medium mb-2">Parent Category</label>
+                                <Controller
+                                    name="parent_id"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <select
+                                            {...field}
+                                            className="w-full border border-gray-300 rounded-md px-4 py-3 text-gray-800 focus:outline-none"
+                                        >
+                                            <option value="">None (Top Level Category)</option>
+                                            {tableData.map((category) => (
+                                                <option key={category.id} value={category.id}>
+                                                    {category.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    )}
+                                />
+                            </div>
+
+                            {/* Status Toggle */}
+                            <div className="mb-2">
+                                <label className="block text-lg text-gray-600 font-medium mb-2">Status</label>
+                                <Controller
+                                    name="status"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <label className="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                checked={field.value}
+                                                onChange={(e) => field.onChange(e.target.checked)}
+                                                className="form-checkbox h-5 w-5 text-blue-600"
+                                            />
+                                            <span className="ml-2">Active</span>
+                                        </label>
+                                    )}
+                                />
                             </div>
 
                             {/* Category Image Input */}
                             <div className="mb-2">
-                                <label className="block text-lg text-gray-600 font-medium mb-2">Category Image (151x135)</label>
+                                <label className="block text-lg text-gray-600 font-medium mb-2">Category Image</label>
                                 <input
                                     type="file"
                                     accept="image/*"
-                                    onChange={handleImageChange} // Calls the function to handle image change
+                                    onChange={handleImageChange}
                                     className="w-full border border-gray-300 rounded-md px-4 py-3 text-gray-800 focus:outline-none"
                                 />
-                                {/* {errors.categoryImage && <p className="text-red-500 text-sm">{errors.categoryImage.message}</p>} */}
-                                {/* {imagePreview && <img src={imagePreview} alt="Image Preview" className="mt-4 w-24 h-24 object-cover" />} */}
+                                {imagePreview && (
+                                    <img
+                                        src={imagePreview}
+                                        alt="Preview"
+                                        className="mt-2 w-24 h-24 object-cover rounded"
+                                    />
+                                )}
                             </div>
 
                             {/* Buttons */}
@@ -573,35 +496,11 @@ function Category() {
                         <div className="bg-white rounded-lg shadow-2xl p-8" onClick={(e) => e.stopPropagation()}>
                             <h2 className="text-2xl font-semibold text-gray-800 mb-2">Edit Category</h2>
 
-                            {/* Brand Dropdown */}
-                            <div className="mb-2">
-                                <label className="block text-lg text-gray-600 font-medium mb-2">Brand<span className="text-red-500 ">*</span></label>
-                                <Controller
-                                    name="brand_id"
-                                    control={control}
-                                    defaultValue={categoryData?.brand_id || ''}  // Autofill with the selected category's brand ID
-                                    render={({ field }) => (
-                                        <select
-                                            {...field}
-                                            className="w-full border border-gray-300 rounded-md px-4 py-3 text-gray-800 focus:outline-none"
-                                        >
-                                            <option value="">Select a Brand</option>
-                                            {brands.map((brand) => (
-                                                <option key={brand.id} value={brand.id}>
-                                                    {brand.brand_name}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    )}
-                                />
-                                {errors.brand_id && !categoryData?.brand_id && <p className="text-red-500 text-sm">{errors.brand_id.message}</p>}
-                            </div>
-
                             {/* Category Name Input */}
                             <div className="mb-2">
                                 <label className="block text-lg text-gray-600 font-medium mb-2">Category Name<span className="text-red-500 ">*</span></label>
                                 <Controller
-                                    name="categoryName"
+                                    name="name"
                                     control={control}
                                     defaultValue={categoryData?.name || ''}  // Autofill with the selected category's name
                                     render={({ field }) => (
@@ -613,7 +512,45 @@ function Category() {
                                         />
                                     )}
                                 />
-                                {errors.categoryName && !categoryData?.name && <p className="text-red-500 text-sm">{errors.categoryName.message}</p>}
+                                {errors.name && !categoryData?.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
+                            </div>
+
+                            {/* Description Input */}
+                            <div className="mb-2">
+                                <label className="block text-lg text-gray-600 font-medium mb-2">Description</label>
+                                <Controller
+                                    name="description"
+                                    control={control}
+                                    defaultValue={categoryData?.description || ''}  // Autofill with the selected category's description
+                                    render={({ field }) => (
+                                        <textarea
+                                            placeholder="Enter Category Description"
+                                            className="w-full border border-gray-300 rounded-md px-4 py-3 text-gray-800 focus:outline-none"
+                                            {...field}
+                                        />
+                                    )}
+                                />
+                            </div>
+
+                            {/* Status Toggle */}
+                            <div className="mb-2">
+                                <label className="block text-lg text-gray-600 font-medium mb-2">Status</label>
+                                <Controller
+                                    name="status"
+                                    control={control}
+                                    defaultValue={categoryData?.status || true}  // Autofill with the selected category's status
+                                    render={({ field }) => (
+                                        <label className="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                checked={field.value}
+                                                onChange={(e) => field.onChange(e.target.checked)}
+                                                className="form-checkbox h-5 w-5 text-blue-600"
+                                            />
+                                            <span className="ml-2">Active</span>
+                                        </label>
+                                    )}
+                                />
                             </div>
 
                             {/* Category Image Input */}
@@ -666,116 +603,6 @@ function Category() {
 
 
                 {/* Table */}
-                {/* <div className="mt-8 bg-white shadow-lg rounded-lg p-6">
-                    <table className="w-full table-auto">
-                        <thead>
-                            <tr className="text-gray-600">
-                                <th className="px-6 py-4 text-left">
-                                    <div className="flex justify-between items-center">
-                                        <input
-                                            type="checkbox"
-                                            checked={selectedRows.length === getPaginatedData().length && getPaginatedData().length > 0}  // Ensure checkbox is checked only when there's data
-                                            onChange={() => {
-                                                if (selectedRows.length === getPaginatedData().length) {
-                                                    setSelectedRows([]);  // Deselect all rows
-                                                } else {
-                                                    setSelectedRows(getPaginatedData().map((row) => row.id));  // Select all rows
-                                                }
-                                            }}
-                                            disabled={getPaginatedData().length === 0}  // Disable checkbox when no data
-                                        />
-                                    </div>
-                                </th>
-                                <th className="px-6 py-4 text-left">Image</th>
-                                <th className="px-6 py-4 text-left">Brand Name</th>
-                                <th className="px-6 py-4 text-left">Category Name</th>
-                                <th className="px-6 py-4 text-left">
-                                    {selectedRows.length > 0 && (
-                                        <button
-                                            onClick={handleBulkDelete}
-                                            className={`text-gray-600 hover:text-red-600 text-xl flex items-center ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                            disabled={loading}
-                                        >
-                                            {loading ? (
-                                                <div className="relative">
-                                                    <div className="w-6 h-6 border-4 border-t-transparent border-red-600 rounded-full animate-spin"></div>
-                                                </div>
-                                            ) : (
-                                                <FaTrashAlt />
-                                            )}
-                                        </button>
-                                    )}
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {getPaginatedData().length === 0 ? (
-                                <tr>
-                                    <td colSpan="5" className="text-center py-4">No data available</td>
-                                </tr>
-                            ) : (
-                                getPaginatedData().map((category) => (
-                                    <tr key={category.id} className="border-t">
-                                        <td className="px-6 py-4">
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedRows.includes(category.id)}
-                                                onChange={() => handleRowSelection(category.id)}
-                                            />
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <img
-                                                src={category.photo || '/default-image.png'}
-                                                alt={category.name}
-                                                className="w-12 h-12 object-cover rounded-full"
-                                            />
-                                        </td>
-                                        <td className="px-6 py-4">{category.brand ? category.brand.brand_name : ''}</td>
-                                        <td className="px-6 py-4">{category.name}</td>
-                                        <td className="text-right">
-                                            <div className="relative inline-block">
-                                                <button
-                                                    onClick={() => setOpenDropdown(openDropdown === category.id ? null : category.id)}
-                                                    className="text-gray-600 hover:text-gray-900"
-                                                >
-                                                    <FaEllipsisV />
-                                                </button>
-                                                {openDropdown === category.id && (
-                                                    <div
-                                                        ref={dropdownRef}
-                                                        className="absolute right-0 mt-2 bg-white border border-gray-200 shadow-lg rounded-md w-40 z-10"
-                                                    >
-                                                        <div
-                                                            onClick={() => {
-                                                                handleEditRow(category);
-                                                                setOpenDropdown(null);
-                                                            }}
-                                                            className="flex items-center px-4 py-2 text-navy-700 hover:bg-gray-200 cursor-pointer"
-                                                        >
-                                                            <FaEdit className="mr-2 text-black" />
-                                                            Edit
-                                                        </div>
-                                                        <div
-                                                            onClick={() => {
-                                                                handleDeleteRow(category.id);
-                                                                setOpenDropdown(null);
-                                                            }}
-                                                            className="flex items-center px-4 py-2 text-red-600 hover:bg-gray-200 cursor-pointer"
-                                                        >
-                                                            <FaTrashAlt className="mr-2" />
-                                                            Delete
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div> */}
-
                 <div className="mt-8 bg-white shadow-lg rounded-lg p-6">
                     <table className="w-full table-auto">
                         <thead>
@@ -797,31 +624,16 @@ function Category() {
                                     </div>
                                 </th>
                                 <th className="px-6 py-4 text-left">Image</th>
-                                <th className="px-6 py-4 text-left">Brand Name</th>
-                                <th className="px-6 py-4 text-left">Category Name</th>
-                                <th className="px-6 py-4 text-left">
-                                    {selectedRows.length > 0 && (
-                                        <button
-                                            onClick={handleBulkDelete}
-                                            className={`text-gray-600 hover:text-red-600 text-xl flex items-center ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                            disabled={loading}
-                                        >
-                                            {loading ? (
-                                                <div className="relative">
-                                                    <div className="w-6 h-6 border-4 border-t-transparent border-red-600 rounded-full animate-spin"></div>
-                                                </div>
-                                            ) : (
-                                                <FaTrashAlt />
-                                            )}
-                                        </button>
-                                    )}
-                                </th>
+                                <th className="px-6 py-4 text-left">Name</th>
+                                <th className="px-6 py-4 text-left">Description</th>
+                                <th className="px-6 py-4 text-left">Status</th>
+                                <th className="px-6 py-4 text-left">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {getPaginatedData().length === 0 ? (
                                 <tr>
-                                    <td colSpan="5" className="text-center py-4">No data available</td>
+                                    <td colSpan="6" className="text-center py-4">No data available</td>
                                 </tr>
                             ) : (
                                 getPaginatedData().map((category) => (
@@ -835,13 +647,18 @@ function Category() {
                                         </td>
                                         <td className="px-6 py-4">
                                             <img
-                                                src={category.photo || '/default-image.png'}
+                                                src={category.image || '/default-image.png'}
                                                 alt={category.name}
                                                 className="w-12 h-12 object-cover rounded-full"
                                             />
                                         </td>
-                                        <td className="px-6 py-4">{category.brand ? category.brand.brand_name : ''}</td>
                                         <td className="px-6 py-4">{category.name}</td>
+                                        <td className="px-6 py-4">{category.description || '-'}</td>
+                                        <td className="px-6 py-4">
+                                            <span className={`px-2 py-1 rounded-full text-xs ${category.status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                                {category.status ? 'Active' : 'Inactive'}
+                                            </span>
+                                        </td>
                                         <td className="text-right">
                                             <div className="flex items-center space-x-2">
                                                 {/* Ellipsis icon */}
@@ -891,41 +708,28 @@ function Category() {
                     <select
                         value={itemsPerPage}
                         onChange={(e) => setItemsPerPage(Number(e.target.value))}
-                        className="border border-gray-300 px-4 py-2 rounded-md"
+                        className="border rounded px-2 py-1"
                     >
-                        {[ 10, 20, 50, 100].map((option) => (
-                            <option key={option} value={option}>
-                                {option}
-                            </option>
-                        ))}
+                        <option value={10}>10</option>
+                        <option value={25}>25</option>
+                        <option value={50}>50</option>
                     </select>
                     <span className="ml-2">entries</span>
                 </div>
 
-                <div className="flex space-x-4">
-                    {/* Showing Item Range */}
-
+                <div className="flex items-center">
                     <button
                         onClick={() => handlePageChange(currentPage - 1)}
                         disabled={currentPage === 1}
-                        className={`${currentPage === 1
-                            ? 'bg-[#4318ff] text-white opacity-50 cursor-not-allowed'
-                            : 'bg-[#4318ff] text-white hover:bg-[#3700b3]'
-                            } px-6 py-2 rounded-[20px]`}
+                        className="px-3 py-1 rounded bg-gray-200 mr-2 disabled:opacity-50"
                     >
                         Back
                     </button>
-                    <span className="text-gray-600 mt-2">
-                        {` ${(currentPage - 1) * itemsPerPage + 1} to ${Math.min(currentPage * itemsPerPage, totalItems)} of ${totalItems} items`}
-                    </span>
-
+                    <span>{`${currentPage} to ${totalPages} of ${totalItems} items`}</span>
                     <button
                         onClick={() => handlePageChange(currentPage + 1)}
                         disabled={currentPage === totalPages}
-                        className={`${currentPage === totalPages || totalItems === 0
-                            ? 'bg-[#4318ff] text-white opacity-50 cursor-not-allowed'
-                            : 'bg-[#4318ff] text-white hover:bg-[#3700b3]'
-                            } px-6 py-2 rounded-[20px]`}
+                        className="px-3 py-1 rounded bg-gray-200 ml-2 disabled:opacity-50"
                     >
                         Next
                     </button>

@@ -1,11 +1,13 @@
 import axios from 'axios';
 import API_CONFIG from '../config/api.config';
 
-// Create axios instance with default config
 const api = axios.create({
   baseURL: API_CONFIG.BASE_URL,
-  withCredentials: true,
-  headers: API_CONFIG.HEADERS
+  withCredentials: false,
+  headers: {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json'
+  }
 });
 
 // Add token to requests if it exists
@@ -80,28 +82,27 @@ export const authService = {
   // Login user
   login: async (credentials) => {
     try {
-      const response = await api.post(API_CONFIG.AUTH.LOGIN, credentials);
-      setAuthData(response.data);
+      const response = await api.post('/api/auth/login', credentials);
+      if (response.data.token) {
+        localStorage.setItem(API_CONFIG.STORAGE_KEYS.AUTH_TOKEN, response.data.token);
+        localStorage.setItem(API_CONFIG.STORAGE_KEYS.USER_DATA, JSON.stringify(response.data.user));
+      }
       return response.data;
     } catch (error) {
-      console.error('Login error:', error.response?.data || error.message);
-      throw error.response?.data || { 
-        message: 'Login failed. Please check your credentials and try again.' 
-      };
+      console.error('Login error:', error);
+      throw error;
     }
   },
 
   // Logout user
   logout: async () => {
     try {
-      await api.post(API_CONFIG.AUTH.LOGOUT);
+      await api.post('/api/auth/logout');
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
       localStorage.removeItem(API_CONFIG.STORAGE_KEYS.AUTH_TOKEN);
       localStorage.removeItem(API_CONFIG.STORAGE_KEYS.USER_DATA);
-      localStorage.removeItem(API_CONFIG.STORAGE_KEYS.TOKEN_EXPIRATION);
-      window.location.href = API_CONFIG.ROUTES.LOGIN;
     }
   },
 
@@ -114,33 +115,17 @@ export const authService = {
   // Check if user is authenticated
   isAuthenticated: () => {
     const token = localStorage.getItem(API_CONFIG.STORAGE_KEYS.AUTH_TOKEN);
-    const expiration = localStorage.getItem(API_CONFIG.STORAGE_KEYS.TOKEN_EXPIRATION);
-    
-    if (!token || !expiration) {
-      return false;
-    }
-
-    // Check if token is expired
-    if (Date.now() > parseInt(expiration, 10)) {
-      // Clear expired token
-      localStorage.removeItem(API_CONFIG.STORAGE_KEYS.AUTH_TOKEN);
-      localStorage.removeItem(API_CONFIG.STORAGE_KEYS.USER_DATA);
-      localStorage.removeItem(API_CONFIG.STORAGE_KEYS.TOKEN_EXPIRATION);
-      return false;
-    }
-
-    return true;
+    return !!token;
   },
 
   // Get user profile
   getProfile: async () => {
     try {
-      const response = await api.get(API_CONFIG.AUTH.PROFILE);
+      const response = await api.get('/api/auth/profile');
       return response.data;
     } catch (error) {
-      throw error.response?.data || { 
-        message: 'Failed to fetch profile. Please try again.' 
-      };
+      console.error('Get profile error:', error);
+      throw error;
     }
   },
 
@@ -154,5 +139,14 @@ export const authService = {
         message: 'Failed to update profile. Please try again.' 
       };
     }
+  },
+
+  getToken: () => {
+    return localStorage.getItem(API_CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+  },
+
+  getUserData: () => {
+    const userData = localStorage.getItem(API_CONFIG.STORAGE_KEYS.USER_DATA);
+    return userData ? JSON.parse(userData) : null;
   }
 }; 

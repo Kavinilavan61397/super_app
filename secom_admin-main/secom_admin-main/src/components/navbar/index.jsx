@@ -357,8 +357,8 @@ const Navbar = (props) => {
           button={
             <img
               className="h-10 w-10 rounded-full"
-              src={profileData?.logo || " "} // Use `logo` instead of `avatar`
-              alt={profileData?.name || "User"}  // Use `name` for alt text
+              src={profileData?.logo || avatar}
+              alt={profileData?.name || "Admin"}
             />
           }
           children={

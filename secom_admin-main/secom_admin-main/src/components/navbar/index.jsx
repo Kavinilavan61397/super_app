@@ -12,7 +12,8 @@ import {
   IoMdInformationCircleOutline,
 } from "react-icons/io";
 import avatar from "assets/img/avatars/avatar4.png";
-import axios from "axios";
+import { authService } from "../../services/authService";
+import API_CONFIG from "../../config/api.config";
 
 const Navbar = (props) => {
   const { onOpenSidenav, brandText } = props;
@@ -23,58 +24,47 @@ const Navbar = (props) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch profile data from the API
+  // Fetch profile data using authService
   useEffect(() => {
-    axios
-      .get("https://yrpitsolutions.com/ecom_backend/api/admin/profiles")
-      .then((response) => {
-        setProfileData(response.data[0]);
+    const fetchProfile = async () => {
+      try {
+        const response = await authService.getProfile();
+        setProfileData(response.data);
         setLoading(false);
-        console.log(response.data);
-      })
-      .catch((err) => {
+      } catch (err) {
         setError("Failed to fetch profile data");
         setLoading(false);
-      });
+      }
+    };
+    fetchProfile();
   }, []);
 
   const handleLogout = async () => {
-    setIsLoggingOut(true); // Set loading state to true
-
+    setIsLoggingOut(true);
     try {
-      // Perform logout request (replace with actual API call)
-      const response = await axios.post(
-        "https://yrpitsolutions.com/ecom_backend/api/admin/logout",
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("OnlineShop-accessToken")}`, // Send token in header
-          },
-        }
-      );
-
-      // Clear the session
-      localStorage.removeItem("OnlineShop-accessToken");
-
-      // Redirect to login page
-      window.location.href = "/"; // Redirect to login after logout
+      await authService.logout();
+      // The authService.logout() will handle the redirection
     } catch (error) {
       console.error("Error during logout:", error);
-      // Handle errors if any
+      // Even if there's an error, we should still clear local data and redirect
+      localStorage.removeItem(API_CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+      localStorage.removeItem(API_CONFIG.STORAGE_KEYS.USER_DATA);
+      localStorage.removeItem(API_CONFIG.STORAGE_KEYS.TOKEN_EXPIRATION);
+      window.location.href = API_CONFIG.ROUTES.LOGIN;
     } finally {
-      setIsLoggingOut(false); // Reset loading state after the request completes
+      setIsLoggingOut(false);
+      setShowModal(false);
     }
   };
 
   const confirmLogout = () => {
     handleLogout();
-    setShowModal(false); // Close the modal after logout
   };
 
-  // Handle cancellation of logout
   const cancelLogout = () => {
-    setShowModal(false); // Just close the modal without logging out
+    setShowModal(false);
   };
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [awbOrderNo, setAwbOrderNo] = useState("");
 

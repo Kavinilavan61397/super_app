@@ -1,11 +1,12 @@
 const API_CONFIG = {
   // Base API URL - use environment variable or default to localhost
-  BASE_URL: 'http://localhost:5000',
+  BASE_URL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000',
   
   // Authentication endpoints
   AUTH: {
     LOGIN: '/api/auth/login',
     REGISTER: '/api/auth/register',
+    LOGOUT: '/api/auth/logout',
     PROFILE: '/api/auth/profile',
     OTP: {
       GENERATE: '/api/auth/otp/generate',
@@ -24,6 +25,13 @@ const API_CONFIG = {
   HEADERS: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
+  },
+
+  // Routes
+  ROUTES: {
+    LOGIN: '/login',
+    SIGNUP: '/signup',
+    DASHBOARD: '/admin/default'
   }
 };
 

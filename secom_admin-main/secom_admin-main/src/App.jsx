@@ -6,6 +6,7 @@ import AdminLayout from "layouts/admin";
 import AuthLayout from "layouts/auth";
 
 import SignIn from "views/auth/SignIn";
+import SignUp from "views/auth/SignUp";
 
 const App = () => {
   return (
@@ -13,12 +14,9 @@ const App = () => {
       <Route path="auth/*" element={<AuthLayout />} />
       <Route path="admin/*" element={<AdminLayout />} />
       <Route path="rtl/*" element={<RtlLayout />} />
-
-      {/* <Route path="/" element={<Navigate to="/admin" replace />} /> */}
-       <Route path="/" element={<SignIn/>}/>
-
-      <Route path="/" element={<Navigate to="/admin" replace />} />
-
+      <Route path="/signup" element={<SignUp />} />
+      <Route path="/login" element={<SignIn />} />
+      <Route path="/" element={<Navigate to="/login" replace />} />
     </Routes>
   );
 };

@@ -32,9 +32,9 @@ api.interceptors.response.use(
       localStorage.removeItem(API_CONFIG.STORAGE_KEYS.USER_DATA);
       localStorage.removeItem(API_CONFIG.STORAGE_KEYS.TOKEN_EXPIRATION);
       
-      // Only redirect if not on auth pages
-      if (!window.location.pathname.includes('/auth/')) {
-        window.location.href = '/auth/sign-in';
+      // Only redirect if not already on login page
+      if (window.location.pathname !== API_CONFIG.ROUTES.LOGIN) {
+        window.location.href = API_CONFIG.ROUTES.LOGIN;
       }
     }
     return Promise.reject(error);
@@ -101,7 +101,7 @@ export const authService = {
       localStorage.removeItem(API_CONFIG.STORAGE_KEYS.AUTH_TOKEN);
       localStorage.removeItem(API_CONFIG.STORAGE_KEYS.USER_DATA);
       localStorage.removeItem(API_CONFIG.STORAGE_KEYS.TOKEN_EXPIRATION);
-      window.location.href = '/auth/sign-in';
+      window.location.href = API_CONFIG.ROUTES.LOGIN;
     }
   },
 

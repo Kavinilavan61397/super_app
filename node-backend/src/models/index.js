@@ -9,6 +9,7 @@ const Cart = require('./Cart');
 const CartItem = require('./CartItem');
 const Order = require('./Order');
 const OrderItem = require('./OrderItem');
+const OTP = require('./otp.model');
 const RestaurantCategory = require('./restaurantcategory')(sequelize, Sequelize.DataTypes);
 const Restaurant = require('./restaurant')(sequelize, Sequelize.DataTypes);
 const Dish = require('./dish')(sequelize, Sequelize.DataTypes);
@@ -177,6 +178,21 @@ if (TaxiDriver.associate) TaxiDriver.associate({ TaxiVehicle, TaxiRide });
 if (TaxiVehicle.associate) TaxiVehicle.associate({ TaxiDriver, TaxiRide });
 if (TaxiRide.associate) TaxiRide.associate({ TaxiDriver, TaxiVehicle, User });
 
+// Add OTP associations
+User.hasMany(OTP, {
+  foreignKey: 'user_id',
+  as: 'otps',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE'
+});
+
+OTP.belongsTo(User, {
+  foreignKey: 'user_id',
+  as: 'user',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE'
+});
+
 module.exports = {
   sequelize,
   User,
@@ -188,6 +204,7 @@ module.exports = {
   CartItem,
   Order,
   OrderItem,
+  OTP,
   RestaurantCategory,
   Restaurant,
   Dish,

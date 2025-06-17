@@ -3,20 +3,21 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
+import { authService } from "../../services/authService";
 import logo from "../../assets/img/logo/android-chrome-512x512.png";
 
 export default function SignIn() {
   const navigate = useNavigate();
   const validationSchema = Yup.object({
     email: Yup.string()
-      .email("Please enter a valid email address.")
+      .email("Please enter a valid email address")
       .required("Email is required"),
     password: Yup.string()
-      .min(6, "Password must be at least 6 characters.")
+      .min(6, "Password must be at least 6 characters")
       .required("Password is required"),
   });
 
-  const { register, handleSubmit, formState: { errors }, setError } = useForm({
+  const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: yupResolver(validationSchema),
   });
 
@@ -28,85 +29,107 @@ export default function SignIn() {
     setServerError("");
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/login`, {
-        method: "POST",
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      const responseData = await response.json();
-
-      if (response.ok) {
-        localStorage.setItem("OnlineShop-accessToken", responseData.access_token);
-        localStorage.setItem("OnlineShop-tokenExpiration", Date.now() + responseData.expires_in * 1000);
+      const response = await authService.login(data);
+      
+      // Check if login was successful based on the success flag
+      if (response.success) {
         navigate("/admin/default");
       } else {
-        setServerError(responseData.message || "Login failed");
+        setServerError(response.message || "Login failed. Please try again.");
       }
     } catch (error) {
-      setServerError("An error occurred. Please try again.");
+      console.error('Login error:', error);
+      setServerError(
+        error.message || 
+        "An error occurred while trying to sign in. Please try again."
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex h-screen w-full items-center justify-center px-2 md:px-0">
-      <div className="w-full max-w-full flex-col items-center md:pl-4 lg:pl-0 xl:max-w-[420px]">
-        <div className="rounded-lg border border-gray-200 bg-white p-8 shadow-lg dark:border-gray-700 dark:bg-navy-800">
-          <div className="mb-8 flex justify-center">
-            <img src={logo} alt="Logo" className="w-24 h-auto" />
+    <div className="flex min-h-screen">
+      {/* Left side - Login Form */}
+      <div className="w-full md:w-1/2 flex flex-col justify-center items-center p-8">
+        <div className="w-full max-w-md">
+          <div className="flex justify-center mb-8">
+            <img src={logo} alt="Logo" className="h-16 w-auto" />
           </div>
-          <h4 className="mb-2.5 text-4xl font-bold text-navy-700 dark:text-white text-center">
-            Sign In
-          </h4>
-          <p className="mb-9 ml-1 text-base text-gray-600">
+          
+          <h1 className="text-3xl font-bold text-center mb-2">Sign In</h1>
+          <p className="text-gray-600 text-center mb-8">
             Enter your email and password to sign in!
           </p>
 
-          <form onSubmit={handleSubmit(handleSignIn)}>
-            <div className="mb-3">
-              <label htmlFor="email" className="block text-sm font-semibold mb-1">Email*</label>
+          <form onSubmit={handleSubmit(handleSignIn)} className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Email*
+              </label>
               <input
-                type="text"
-                id="email"
+                type="email"
                 {...register("email")}
-                placeholder="Enter Email"
-                className={`w-full px-4 py-2 border ${errors.email ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                className={`w-full px-4 py-3 rounded-lg border ${
+                  errors.email ? 'border-red-500' : 'border-gray-300'
+                } focus:outline-none focus:ring-2 focus:ring-purple-600`}
+                placeholder="Enter your email"
               />
-              {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+              )}
             </div>
 
-            <div className="mb-3">
-              <label htmlFor="password" className="block text-sm font-semibold mb-1">Password*</label>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Password*
+              </label>
               <input
                 type="password"
-                id="password"
                 {...register("password")}
-                placeholder="Enter Password"
-                className={`w-full px-4 py-2 border ${errors.password ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                className={`w-full px-4 py-3 rounded-lg border ${
+                  errors.password ? 'border-red-500' : 'border-gray-300'
+                } focus:outline-none focus:ring-2 focus:ring-purple-600`}
+                placeholder="Enter your password"
               />
-              {errors.password && <p className="text-sm text-red-500">{errors.password.message}</p>}
+              {errors.password && (
+                <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
+              )}
             </div>
 
-            {serverError && <p className="mb-4 text-sm text-red-500">{serverError}</p>}
+            {serverError && (
+              <div className="p-4 rounded-lg bg-red-50 text-sm text-red-600">
+                {serverError}
+              </div>
+            )}
 
             <button
               type="submit"
               disabled={loading}
-              className={`relative mt-2 w-full h-12 rounded-xl bg-brand-500 py-[12px] text-base font-medium text-white transition duration-200 hover:bg-brand-600 active:bg-brand-700 dark:bg-brand-400 dark:text-white dark:hover:bg-brand-300 dark:active:bg-brand-200 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`w-full py-3 px-4 rounded-lg text-white text-lg font-medium 
+                bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2
+                ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               {loading ? (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-6 h-6 border-4 border-t-transparent border-white rounded-full animate-spin"></div>
+                <div className="flex items-center justify-center">
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                  Signing in...
                 </div>
               ) : (
-                "Sign In"
+                'Sign In'
               )}
             </button>
           </form>
+        </div>
+      </div>
+
+      {/* Right side - Background Image/Design */}
+      <div className="hidden md:block md:w-1/2 bg-gradient-to-br from-purple-600 to-blue-500">
+        <div className="h-full flex flex-col justify-center items-center text-white p-12">
+          <div className="text-center">
+            <h2 className="text-4xl font-bold mb-4">Welcome Back!</h2>
+            <p className="text-lg mb-8">Sign in to access your admin dashboard</p>
+          </div>
         </div>
       </div>
     </div>

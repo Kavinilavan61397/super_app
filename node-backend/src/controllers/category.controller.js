@@ -142,9 +142,32 @@ exports.updateCategory = async (req, res) => {
 // Delete category
 exports.deleteCategory = async (req, res) => {
   try {
-    const category = await Category.findByPk(req.params.id);
+    const category = await Category.findByPk(req.params.id, {
+      include: [
+        {
+          model: Category,
+          as: 'subcategories'
+        }
+      ]
+    });
+    
     if (!category) {
       return res.status(404).json({ message: 'Category not found' });
+    }
+
+    // Check if category has subcategories
+    if (category.subcategories && category.subcategories.length > 0) {
+      return res.status(400).json({
+        message: 'Cannot delete category with subcategories. Please delete or reassign subcategories first.'
+      });
+    }
+
+    // Check if category has associated products
+    const hasProducts = await category.hasProducts(); // Assuming there's a products association
+    if (hasProducts) {
+      return res.status(400).json({
+        message: 'Cannot delete category with associated products. Please delete or reassign products first.'
+      });
     }
 
     // Delete category image if exists
@@ -158,7 +181,16 @@ exports.deleteCategory = async (req, res) => {
     await category.destroy();
     res.json({ message: 'Category deleted successfully' });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Delete category error:', error);
+    if (error.name === 'SequelizeForeignKeyConstraintError') {
+      return res.status(400).json({
+        message: 'Cannot delete category because it has associated items (products or subcategories). Please remove these associations first.'
+      });
+    }
+    res.status(500).json({ 
+      message: 'Failed to delete category. ' + error.message,
+      error: error.name
+    });
   }
 };
 

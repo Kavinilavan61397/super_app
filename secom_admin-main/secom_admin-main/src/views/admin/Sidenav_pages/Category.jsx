@@ -96,23 +96,6 @@ function Category() {
         }
     };
 
-    // Get paginated data
-    const getPaginatedData = () => {
-        if (!filteredData) return []; // Guard against undefined filteredData
-        
-        const start = (currentPage - 1) * itemsPerPage;
-        const end = start + itemsPerPage;
-        return filteredData.slice(start, end);
-    };
-
-    // Calculate total pages based on filtered data
-    const totalPages = Math.ceil((filteredData?.length || 0) / itemsPerPage);
-
-    // Reset current page when itemsPerPage or searchQuery changes
-    useEffect(() => {
-        setCurrentPage(1);  // Reset to page 1 when search or itemsPerPage changes
-    }, [searchQuery, itemsPerPage]);
-
     // Filter categories based on search query
     useEffect(() => {
         if (!tableData) return; // Guard against undefined tableData
@@ -120,7 +103,7 @@ function Category() {
         if (searchQuery) {
             const filtered = tableData.filter((category) =>
                 (category.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-                (category.brand?.brand_name || '').toLowerCase().includes(searchQuery.toLowerCase())
+                (category.description || '').toLowerCase().includes(searchQuery.toLowerCase())
             );
             setFilteredData(filtered);
             setTotalItems(filtered.length);
@@ -130,12 +113,38 @@ function Category() {
         }
     }, [searchQuery, tableData]);
 
+    // Get paginated data
+    const getPaginatedData = () => {
+        if (!filteredData) return []; // Guard against undefined filteredData
+        
+        const start = (currentPage - 1) * itemsPerPage;
+        const end = start + itemsPerPage;
+        const paginatedData = filteredData.slice(start, end);
+        console.log('Paginated Data:', {
+            total: filteredData.length,
+            start,
+            end,
+            currentPage,
+            itemsPerPage,
+            paginatedData
+        });
+        return paginatedData;
+    };
+
+    // Calculate total pages based on filtered data
+    const totalPages = Math.ceil((filteredData?.length || 0) / itemsPerPage);
+
     // Handle page change
     const handlePageChange = (page) => {
         if (page >= 1 && page <= totalPages) {
             setCurrentPage(page);
         }
     };
+
+    // Reset current page when itemsPerPage or searchQuery changes
+    useEffect(() => {
+        setCurrentPage(1);  // Reset to page 1 when search or itemsPerPage changes
+    }, [searchQuery, itemsPerPage]);
 
     useEffect(() => {
         if (selectedCategory) {
@@ -236,25 +245,57 @@ function Category() {
         setOpenEditModal(true);
     };
 
-    const handleDeleteRow = (id) => {
-        setRowIdToDelete(id);
-        setOpenDeleteDialog(true);
-    };
-
     const handleDeleteConfirmation = async () => {
         setIsDeleting(true);
         try {
-            await categoryService.deleteCategory(rowIdToDelete);
+            console.log('Deleting category with ID:', rowIdToDelete);
+            const response = await categoryService.deleteCategory(rowIdToDelete);
+            console.log('Delete response:', response);
+            
             toast.success('Category deleted successfully!');
             await fetchData();
             setOpenDeleteDialog(false);
+            setRowIdToDelete(null);
         } catch (error) {
             console.error('Error deleting category:', error);
-            const errorMessage = error.response?.data?.message || error.message || 'Failed to delete category. Please try again.';
-            toast.error(errorMessage);
+            let errorMessage = 'Failed to delete category. Please try again.';
+            
+            // Handle specific error messages from backend
+            if (error.response?.data?.message) {
+                errorMessage = error.response.data.message;
+            }
+            
+            // Show error in toast
+            toast.error(errorMessage, {
+                autoClose: 5000, // Keep the message visible longer
+                position: 'top-center'
+            });
         } finally {
             setIsDeleting(false);
         }
+    };
+
+    // Add a function to check if a category can be deleted
+    const canDeleteCategory = (category) => {
+        // Check if category has subcategories
+        if (category.subcategories && category.subcategories.length > 0) {
+            return false;
+        }
+        // Add other conditions as needed
+        return true;
+    };
+
+    const handleDeleteRow = (id) => {
+        const category = tableData.find(cat => cat.id === id);
+        if (!canDeleteCategory(category)) {
+            toast.warning('Cannot delete this category because it has subcategories. Please delete or reassign subcategories first.', {
+                autoClose: 5000,
+                position: 'top-center'
+            });
+            return;
+        }
+        setRowIdToDelete(id);
+        setOpenDeleteDialog(true);
     };
 
     const handleCancelDelete = () => {

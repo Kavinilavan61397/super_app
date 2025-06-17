@@ -132,10 +132,16 @@ export const categoryService = {
   // Delete category
   deleteCategory: async (id) => {
     try {
+      console.log('Attempting to delete category:', id);
       const response = await api.delete(API_CONFIG.CATEGORY.DELETE(id));
+      console.log('Delete response:', response);
       return response.data;
     } catch (error) {
       console.error('Error deleting category:', error);
+      if (error.response) {
+        console.error('Error response:', error.response.data);
+        throw new Error(error.response.data.message || 'Failed to delete category');
+      }
       throw error;
     }
   },

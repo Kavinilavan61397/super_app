@@ -48,10 +48,29 @@ exports.getCart = async (req, res) => {
 // Add item to cart
 exports.addItem = async (req, res) => {
   try {
+    console.log('Adding item to cart:', {
+      product_id: req.body.product_id,
+      variation_id: req.body.variation_id,
+      quantity: req.body.quantity,
+      user_id: req.user?.id
+    });
+
     const { product_id, variation_id, quantity } = req.body;
 
-    // Validate product exists
+    // Log the database operations
+    console.log('Validating product...');
     const product = await Product.findByPk(product_id);
+    console.log('Product found:', product ? product.toJSON() : 'not found');
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found'
+      });
+    }
+
+    // Validate product exists
+     product = await Product.findByPk(product_id);
     if (!product) {
       return res.status(404).json({
         success: false,

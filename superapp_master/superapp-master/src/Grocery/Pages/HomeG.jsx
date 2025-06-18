@@ -1,8 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Footer from '../SubPages/Footer';
 import Header from '../SubPages/Header';
 import { FaFilter, FaSortAmountUp, FaSortAmountDown, FaHeart, FaEye, FaStar, FaSearch, FaChevronUp, FaChevronDown, FaMicrophone, FaMicrophoneSlash } from 'react-icons/fa';
 import { motion } from 'framer-motion';
+import banner1 from '../Images/banner1.png';
+import banner2 from '../Images/baner2.png';
+import banner3 from '../Images/banner3.png';
+import banner4 from '../Images/banner4.png';
+import banner5 from '../Images/banner5.png';
+import catFruits from '../Images/cat_fruits.png';
+import catMasala from '../Images/cat_masala.png';
+import catInstant from '../Images/cat_instant.png';
+import catDairy from '../Images/cat_dairy.png';
 
 // -------------------------------------
 // Image Imports for Grocery Categories
@@ -40,7 +49,6 @@ import muffinImage from '../Images/muffin.png';
 // --- Snacks & Dry Fruits Images ---
 import chipsImage from '../Images/potato_chips.png';
 import cookiesImage from '../Images/cookies.png';
-import chocolateImage from '../Images/chocolate.webp';
 import namkeenImage from '../Images/namkeen.jpg';
 import biscuitsImage from '../Images/biscuits.png';
 import dryFruitsImage from '../Images/dry_fruits.webp';
@@ -129,7 +137,6 @@ import darkChocolateImage from '../Images/dark_chocolate.png';
 
 // Default placeholder image for items without specific images
 const defaultImage = 'https://via.placeholder.com/300x200?text=Image+Coming+Soon';
-
 
 // Fruits & Vegetables
 const fruitsAndVegetables = [
@@ -741,14 +748,126 @@ function Groceries() {
     }));
   };
 
+  // Banner carousel state
+  const bannerImages = [banner1, banner2, banner3, banner4, banner5];
+  const [currentBanner, setCurrentBanner] = useState(0);
+  // Auto-slide effect
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentBanner((prev) => (prev + 1) % bannerImages.length);
+    }, 6000); // Increased from 3500ms to 6000ms
+    return () => clearInterval(interval);
+  }, [bannerImages.length]);
+  // Manual navigation
+  const goToBanner = (idx) => setCurrentBanner(idx);
+  const prevBanner = () => setCurrentBanner((prev) => (prev - 1 + bannerImages.length) % bannerImages.length);
+  const nextBanner = () => setCurrentBanner((prev) => (prev + 1) % bannerImages.length);
+
+  // Category data for 'Shop by category' section
+  const categoryList = [
+    { name: 'Fruits & Vegetables', image: catFruits, label: 'Fruits & Vegetables' },
+    { name: 'Bakery, Cakes & Dairy', image: catDairy, label: 'Bakery, Cakes & Dairy' },
+    { name: 'Breakfast & More', image: cerealImage, label: 'Breakfast & More' },
+    { name: 'Eggs, Meat & Fish', image: eggImage, label: 'Eggs, Meat & Fish' },
+    { name: 'Masalas, Oils & Dry Fruits', image: catMasala, label: 'Masalas, Oils & Dry Fruits' },
+    { name: 'Atta, Rice, Dals & Sugar', image: riceImage, label: 'Atta, Rice, Dals & Sugar' },
+    { name: 'Chips, Biscuits & Namkeen', image: chipsImage, label: 'Chips, Biscuits & Namkeen' },
+    { name: 'Hot & Cold Beverages', image: coffeeImage, label: 'Hot & Cold Beverages' },
+    { name: 'Instant & Frozen Foods', image: catInstant, label: 'Instant & Frozen Foods' },
+    { name: 'Chocolates & Ice Creams', image: chocolateBarsImage, label: 'Chocolates & Ice Creams' },
+  ];
+  const [showAllCategories, setShowAllCategories] = useState(false);
+  // Ref for filter/search bar container
+  const filterBarRef = useRef(null);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      
       <div className="pt-24 px-4 sm:px-6 lg:px-8 pb-32">
+        {/* Shop by category section */}
+        <div className="max-w-4xl mx-auto mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-xl font-bold">Shop by category</h2>
+            <button
+              className="text-[#00BB1C] font-semibold text-sm hover:underline focus:outline-none"
+              onClick={() => setShowAllCategories((prev) => !prev)}
+            >
+              {showAllCategories ? 'Show less' : 'Show more'}
+            </button>
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            {(showAllCategories ? categoryList : categoryList.slice(0, 3)).map((cat, idx) => (
+              <button
+                key={cat.name}
+                className="flex flex-col items-center bg-white rounded-lg shadow p-1 hover:bg-gray-100 focus:outline-none transition"
+                onClick={() => {
+                  setSelectedCategory(cat.label);
+                  setTimeout(() => {
+                    filterBarRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }, 100);
+                }}
+                type="button"
+              >
+                <img src={cat.image} alt={cat.label} className="w-20 h-20 object-contain mb-1" />
+                <span className="text-xs font-medium text-center text-gray-700">{cat.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+        {/* Banner Carousel */}
+        <div className="max-w-4xl mx-auto mb-6 relative">
+          <motion.div
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            onDragEnd={(e, info) => {
+              if (info.offset.x < -50) {
+                nextBanner();
+              } else if (info.offset.x > 50) {
+                prevBanner();
+              }
+            }}
+            className="w-full h-56 md:h-80 object-cover rounded-xl shadow-md transition-all duration-500 cursor-grab active:cursor-grabbing"
+            style={{ touchAction: 'pan-y' }}
+          >
+            <img
+              src={bannerImages[currentBanner]}
+              alt={`Banner ${currentBanner + 1}`}
+              className="w-full h-56 md:h-80 object-cover rounded-xl"
+              draggable="false"
+            />
+          </motion.div>
+          {/* Left Arrow */}
+          <button
+            onClick={prevBanner}
+            className="absolute left-2 top-1/2 -translate-y-1/2 bg-white bg-opacity-70 hover:bg-opacity-100 rounded-full p-2 shadow-md z-10"
+            aria-label="Previous banner"
+          >
+            <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
+          </button>
+          {/* Right Arrow */}
+          <button
+            onClick={nextBanner}
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-white bg-opacity-70 hover:bg-opacity-100 rounded-full p-2 shadow-md z-10"
+            aria-label="Next banner"
+          >
+            <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+          </button>
+          {/* Dots */}
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+            {bannerImages.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => goToBanner(idx)}
+                className={`w-2.5 h-2.5 rounded-full ${currentBanner === idx ? 'bg-[#00BB1C]' : 'bg-white border border-gray-300'} transition-all`}
+                aria-label={`Go to banner ${idx + 1}`}
+              />
+            ))}
+          </div>
+        </div>
+        
         <div className="max-w-7xl mx-auto">
           {/* Search and Filter Bar */}
-          <div className="bg-white p-4 rounded-lg shadow-sm mb-6">
+          <div ref={filterBarRef} className="bg-white p-4 rounded-lg shadow-sm mb-6">
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1 relative">
                 <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />

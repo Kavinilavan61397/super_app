@@ -3,6 +3,17 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   up: async (queryInterface, Sequelize) => {
+    // Check if products already exist
+    const existingProducts = await queryInterface.sequelize.query(
+      'SELECT id FROM products LIMIT 1',
+      { type: queryInterface.sequelize.QueryTypes.SELECT }
+    );
+
+    // If products already exist, skip seeding
+    if (existingProducts && existingProducts.length > 0) {
+      console.log('Products already exist, skipping seeding');
+      return;
+    }
     // First, create the products
     await queryInterface.bulkInsert('products', [
       {
@@ -102,7 +113,16 @@ module.exports = {
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.bulkDelete('product_variations', null, {});
-    return queryInterface.bulkDelete('products', null, {});
+    // Only delete the demo products
+    await queryInterface.bulkDelete('product_variations', {
+      product_id: {
+        [Sequelize.Op.in]: [1, 2, 3] // Only delete the demo products
+      }
+    });
+    await queryInterface.bulkDelete('products', {
+      id: {
+        [Sequelize.Op.in]: [1, 2, 3] // Only delete the demo products
+      }
+    });
   }
 };

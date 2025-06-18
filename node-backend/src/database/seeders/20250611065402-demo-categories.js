@@ -5,6 +5,18 @@ const { Op } = require('sequelize');
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   up: async (queryInterface, Sequelize) => {
+    // First, check if categories already exist
+    const existingCategories = await queryInterface.sequelize.query(
+      'SELECT id FROM categories LIMIT 1',
+      { type: queryInterface.sequelize.QueryTypes.SELECT }
+    );
+
+    // If categories already exist, skip seeding
+    if (existingCategories && existingCategories.length > 0) {
+      console.log('Categories already exist, skipping seeding');
+      return;
+    }
+
     // First, create parent categories
     await queryInterface.bulkInsert('categories', [
       {
@@ -79,7 +91,11 @@ module.exports = {
       { parent_id: { [Op.ne]: null } }
     );
     
-    // Then delete all categories
-    await queryInterface.bulkDelete('categories', null, {});
+    // Only delete the demo data, not all categories
+    await queryInterface.bulkDelete('categories', {
+      id: {
+        [Sequelize.Op.in]: [1, 2, 3, 4, 5, 6] // Only delete the demo categories
+      }
+    });
   }
 };

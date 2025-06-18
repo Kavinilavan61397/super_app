@@ -3,6 +3,17 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
+    // Check if restaurants already exist
+    const existingRestaurants = await queryInterface.sequelize.query(
+      'SELECT id FROM restaurants LIMIT 1',
+      { type: queryInterface.sequelize.QueryTypes.SELECT }
+    );
+
+    // If restaurants already exist, skip seeding
+    if (existingRestaurants && existingRestaurants.length > 0) {
+      console.log('Restaurants already exist, skipping seeding');
+      return;
+    }
     await queryInterface.bulkInsert('restaurants', [
       {
         id: 1,
@@ -47,6 +58,11 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.bulkDelete('restaurants', null, {});
+    // Only delete the demo restaurants
+    await queryInterface.bulkDelete('restaurants', {
+      id: {
+        [Sequelize.Op.in]: [1, 2, 3] // Only delete the demo restaurants
+      }
+    });
   }
 };

@@ -1,5 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
+const Brand = require('./Brand');
+const Category = require('./Category');
 
 const Product = sequelize.define('Product', {
   id: {
@@ -39,8 +41,12 @@ const Product = sequelize.define('Product', {
     defaultValue: 0
   },
   category_id: {
-    type: DataTypes.BIGINT.UNSIGNED,
-    allowNull: false
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'categories',
+      key: 'id'
+    }
   },
   featured_image: {
     type: DataTypes.STRING,
@@ -57,6 +63,18 @@ const Product = sequelize.define('Product', {
   meta_description: {
     type: DataTypes.TEXT,
     allowNull: true
+  },
+  photo: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  brand_id: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'brands',
+      key: 'id'
+    }
   }
 }, {
   tableName: 'products',
@@ -67,5 +85,9 @@ const Product = sequelize.define('Product', {
     }
   ]
 });
+
+// Define associations
+Product.belongsTo(Brand, { foreignKey: 'brand_id', as: 'brand' });
+Product.belongsTo(Category, { foreignKey: 'category_id', as: 'category' });
 
 module.exports = Product; 

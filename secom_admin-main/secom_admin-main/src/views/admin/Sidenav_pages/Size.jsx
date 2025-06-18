@@ -10,6 +10,9 @@ import { TokenExpiration } from 'views/auth/TokenExpiration ';
 import 'react-toastify/dist/ReactToastify.css';
 import { toast, ToastContainer } from 'react-toastify';
 import Navbar from 'components/navbar';
+import { apiGet, apiPost, apiPut, apiDelete } from '../../../utils/apiUtils';
+import API_CONFIG from '../../../config/api.config';
+
 function Size() {
     const [tableData, setTableData] = useState([]);
     const [openAddModal, setOpenAddModal] = useState(false);
@@ -27,13 +30,17 @@ function Size() {
     const [isDeleting, setIsDeleting] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [filteredData, setFilteredData] = useState([]);  // For storing the filtered data
-
-
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [formData, setFormData] = useState({
+        size_name: ''
+    });
+    const [editSize, setEditSize] = useState(null);
+    const [sizeToDelete, setSizeToDelete] = useState(null);
 
     // Yup validation schema
     const validationSchemaAdd = Yup.object({
         size_name: Yup.string().required('Size Name is required'),
-
     });
 
     const validationSchemaEdit = Yup.object({
@@ -49,22 +56,11 @@ function Size() {
 
     const fetchSizeData = async () => {
         try {
-            const response = await axios.get('https://yrpitsolutions.com/ecom_backend/api/admin/get_all_size');
-            let data = response.data.data;
-            console.log(data);
-
-            // Apply the search query filter here
-            if (searchQuery.trim() !== '') {
-                data = data.filter((size) =>
-                    size.size_name.toLowerCase().includes(searchQuery.toLowerCase())
-                );
-            }
-
-            // Set filtered data (filtered by search query)
-            setFilteredData(data);
+            const data = await apiGet(API_CONFIG.ENDPOINTS.ADMIN.SIZES);
+            setTableData(data);
             setTotalItems(data.length);  // Set total items for pagination
         } catch (error) {
-            console.error('Error fetching data:', error);
+            toast.error('Error fetching sizes');
         }
     };
 
@@ -87,8 +83,6 @@ function Size() {
         }
     }, [searchQuery, tableData]);
 
-
-
     // Handle Page Change
     const handlePageChange = (page) => {
         if (page < 1 || page > totalPages) return;
@@ -101,107 +95,27 @@ function Size() {
         fetchSizeData();
     }, [itemsPerPage]);
 
-
-
-
-
-
     const handleFormSubmit = async (data) => {
         const formData = new FormData();
         formData.append('size_name', data.size_name);
         setLoading(true);
 
         try {
-            const accessToken = localStorage.getItem('OnlineShop-accessToken');
-            const url = 'https://yrpitsolutions.com/ecom_backend/api/admin/save_size';
-
-            setTimeout(async () => {
-                try {
-                    const response = await axios.post(url, formData, {
-                        headers: { Authorization: `Bearer ${accessToken}` }
-                    });
-
-                    if (response.status === 200) {
-                        fetchSizeData();
-                        setOpenAddModal(false);
-                        setBrandImage(null);
-                        reset();
-
-                        // Success toast
-                        toast.success('Size added successfully!', {
-                            progress: undefined,  // Hide progress bar
-                            hideProgressBar: true,
-                        });
-                    }
-                } catch (error) {
-                    console.error('Error submitting form:', error);
-
-                    // Error toast
-                    toast.error('Error adding size!', {
-                        progress: undefined,  // Hide progress bar
-                        hideProgressBar: true,
-                    });
-                } finally {
-                    setLoading(false);
-                }
-            }, 2000);
+            if (isEditMode) {
+                await apiPut(`${API_CONFIG.ENDPOINTS.ADMIN.SIZES}/${editSize.id}`, formData);
+                toast.success('Size updated successfully');
+            } else {
+                await apiPost(API_CONFIG.ENDPOINTS.ADMIN.SIZES, formData);
+                toast.success('Size created successfully');
+            }
+            setIsModalOpen(false);
+            fetchSizeData();
+            reset();
         } catch (error) {
+            toast.error('Error saving size');
+        } finally {
             setLoading(false);
-            console.error('Error preparing form data:', error);
         }
-    };
-
-    const handleFormUpdate = async (data) => {
-        setLoading(true);
-
-        const formData = new FormData();
-        formData.append('_method', 'PUT');
-        formData.append('size_name', data.size_name || selectedSize.size_name);
-
-        try {
-            const accessToken = localStorage.getItem('OnlineShop-accessToken');
-            const url = `https://yrpitsolutions.com/ecom_backend/api/admin/update_size_by_id/${selectedSize.id}`;
-
-            setTimeout(async () => {
-                try {
-                    const response = await axios.post(url, formData, {
-                        headers: { Authorization: `Bearer ${accessToken}` },
-                    });
-
-                    if (response.status === 200) {
-                        fetchSizeData();
-                        setOpenEditModal(false);
-                        setBrandImage(null);
-                        reset();
-
-                        // Success toast
-                        toast.success('Size updated successfully!', {
-                            progress: undefined,  // Hide progress bar
-                            hideProgressBar: true,
-                        });
-                    }
-                } catch (error) {
-                    console.error('Error updating form:', error);
-
-                    // Error toast
-                    toast.error('Error updating size!', {
-                        progress: undefined,  // Hide progress bar
-                        hideProgressBar: true,
-                    });
-                } finally {
-                    setLoading(false);
-                }
-            }, 2000);
-        } catch (error) {
-            setLoading(false);
-            console.error('Error preparing form data:', error);
-        }
-    };
-
-    const handleAddBrand = () => {
-        setSelectedSize(null);
-        setValue('size_name', '');
-        setOpenAddModal(true);
     };
 
     const handleEditRow = (size) => {
@@ -211,7 +125,6 @@ function Size() {
         trigger();
     };
 
-
     const handleDeleteRow = (id) => {
         setRowIdToDelete(id);
         setOpenDeleteDialog(true);
@@ -220,31 +133,12 @@ function Size() {
     const handleDeleteConfirmation = async () => {
         setIsDeleting(true);
         try {
-            const accessToken = localStorage.getItem('OnlineShop-accessToken');
-
-            // Perform the delete request
-            await axios.delete(`https://yrpitsolutions.com/ecom_backend/api/admin/delete_size_by_id/${rowIdToDelete}`, {
-                headers: { Authorization: `Bearer ${accessToken}` },
-            });
-
-            // Refresh size data and close the delete dialog
-            fetchSizeData();
+            await apiDelete(`${API_CONFIG.ENDPOINTS.ADMIN.SIZES}/${sizeToDelete}`);
+            toast.success('Size deleted successfully');
             setOpenDeleteDialog(false);
-
-            // Show success toast
-            toast.success('Size deleted successfully!', {
-                progress: undefined,  // Hide progress bar
-                hideProgressBar: true,
-            });
-
+            fetchSizeData();
         } catch (error) {
-            console.error('Error deleting size:', error);
-
-            // Show error toast
-            toast.error('Error deleting size!', {
-                progress: undefined,  // Hide progress bar
-                hideProgressBar: true,
-            });
+            toast.error('Error deleting size');
         } finally {
             setIsDeleting(false);
         }
@@ -253,37 +147,19 @@ function Size() {
     const handleCancelDelete = () => {
         setOpenDeleteDialog(false);
     };
+
     const handleBulkDelete = async () => {
         setLoading(true);
         try {
-            const accessToken = localStorage.getItem('OnlineShop-accessToken');
-
-            // Iterate through selected rows and delete each size
             for (let id of selectedRows) {
-                await axios.delete(`https://yrpitsolutions.com/ecom_backend/api/admin/delete_size_by_id/${id}`, {
-                    headers: { Authorization: `Bearer ${accessToken}` },
-                });
+                await apiDelete(`${API_CONFIG.ENDPOINTS.ADMIN.SIZES}/${id}`);
             }
-
-            // Refresh size data
             await fetchSizeData();
             setSelectedRows([]); // Clear selection
             window.location.reload(); // Optionally refresh the page
-
-            // Show success toast after bulk delete is complete
-            toast.success('Selected sizes deleted successfully!', {
-                progress: undefined,  // Hide progress bar
-                hideProgressBar: true,
-            });
-
+            toast.success('Selected sizes deleted successfully');
         } catch (error) {
-            console.error('Error deleting selected sizes:', error);
-
-            // Show error toast if something goes wrong
-            toast.error('Error deleting selected sizes!', {
-                progress: undefined,  // Hide progress bar
-                hideProgressBar: true,
-            });
+            toast.error('Error deleting selected sizes');
         } finally {
             setLoading(false);
         }
@@ -319,10 +195,7 @@ function Size() {
         return filteredData.slice(start, end);
     };
 
-
-    // const [openDropdown, setOpenDropdown] = useState(null);
     const dropdownRef = useRef(null);
-
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -337,9 +210,39 @@ function Size() {
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, []);
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleEdit = (size) => {
+        setEditSize(size);
+        setFormData({
+            size_name: size.size_name
+        });
+        setIsEditMode(true);
+        setIsModalOpen(true);
+    };
+
+    const handleResetForm = () => {
+        setFormData({
+            size_name: ''
+        });
+        setEditSize(null);
+        setIsEditMode(false);
+    };
+
+    useEffect(() => {
+        fetchSizeData();
+    }, []);
+
     return (
         <div className=" min-h-screen pt-6">
-             <Navbar brandText={"Size"} />
+            <Navbar brandText={"Size"} />
             <TokenExpiration />
             <ToastContainer />
             <div className="w-full mx-auto">
@@ -360,26 +263,29 @@ function Size() {
                         </div>
                     </div>
 
-
                     <button
-                        onClick={handleAddBrand}
+                        onClick={() => {
+                            handleResetForm();
+                            setIsModalOpen(true);
+                        }}
                         className="bg-[#4318ff] text-white px-6 py-2 rounded-full text-lg font-medium flex items-center ml-auto"
                     >
                         <FaPlus className="mr-2" /> Add Size
                     </button>
                 </span>
 
-
-                {openAddModal && !openEditModal && (
+                {isModalOpen && (
                     <div
                         className="fixed inset-0 flex items-center justify-center z-50 bg-gray-900 bg-opacity-50"
-                        onClick={() => setOpenAddModal(false)}
+                        onClick={() => setIsModalOpen(false)}
                     >
                         <div
                             className="bg-white rounded-lg shadow-2xl p-12  w-[35%]  max-h-[80%] overflow-y-auto"
                             onClick={(e) => e.stopPropagation()}
                         >
-                            <h2 className="text-2xl font-semibold text-gray-800 mb-6">Add Size</h2>
+                            <h2 className="text-2xl font-semibold text-gray-800 mb-6">
+                                {isEditMode ? 'Edit Size' : 'Add Size'}
+                            </h2>
 
                             <div className="mb-6">
                                 <label className="block text-lg text-gray-600 font-medium mb-2">Size Name<span className="text-red-500 ">*</span></label>
@@ -398,11 +304,9 @@ function Size() {
                                 {errors.size_name && <p className="text-red-500 text-sm">{errors.size_name.message}</p>}
                             </div>
 
-
-
                             <div className="flex justify-end space-x-4 mt-4">
                                 <button
-                                    onClick={() => setOpenAddModal(false)}
+                                    onClick={() => setIsModalOpen(false)}
                                     className="bg-gray-300 text-gray-800 px-6 py-3 rounded-md"
                                 >
                                     Cancel
@@ -426,68 +330,6 @@ function Size() {
                     </div>
                 )}
 
-                {openEditModal && (
-                    <div
-                        className="fixed inset-0 flex items-center justify-center z-50 bg-gray-900 bg-opacity-50"
-                        onClick={() => setOpenEditModal(false)}
-                    >
-                        <div
-                            className="bg-white rounded-lg shadow-2xl p-12  w-[35%]  max-h-[80%] overflow-y-auto"
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <h2 className="text-2xl font-semibold text-gray-800 mb-6">Edit Size</h2>
-
-                            <div className="mb-6">
-                                <label className="block text-lg text-gray-600 font-medium mb-2">Size Name<span className="text-red-500 ">*</span></label>
-                                <Controller
-                                    name="size_name"
-                                    control={control}
-                                    render={({ field }) => (
-                                        <input
-                                            type="text"
-                                            placeholder="Enter Size Name"
-                                            className="w-full border border-gray-300 rounded-md px-4 py-3 text-gray-800 focus:outline-none"
-                                            {...field}
-                                        />
-                                    )}
-                                />
-                                {errors.size_name && (
-                                    <p className="text-red-500 text-sm">{errors.size_name.message}</p>
-                                )}
-                            </div>
-
-
-
-
-
-                            <div className="flex justify-end space-x-4 mt-4">
-                                <button
-                                    onClick={() => setOpenEditModal(false)}
-                                    className="bg-gray-300 text-gray-800 px-6 py-3 rounded-md"
-                                >
-                                    Cancel
-                                </button>
-
-                                <button
-                                    onClick={handleSubmit(handleFormUpdate)}
-                                    disabled={loading}
-                                    className="relative bg-[#4318ff] text-white px-6 py-3 rounded-lg flex items-center ml-auto max-w-xs"
-                                >
-                                    {loading ? (
-                                        <div className="absolute inset-0 flex items-center justify-center">
-                                            <div className="w-6 h-6 border-4 border-t-transparent border-white rounded-full animate-spin"></div>
-                                        </div>
-                                    ) : (
-                                        'Save Changes'
-                                    )}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-
-
                 {/* Table */}
                 <div className="mt-8 bg-white shadow-lg rounded-lg p-6">
                     <table className="w-full table-auto">
@@ -497,8 +339,7 @@ function Size() {
                                     <div className="flex justify-between items-center">
                                         <input
                                             type="checkbox"
-                                            // checked={selectedRows.length === getPaginatedData().length}
-                                            checked={false} 
+                                            checked={selectedRows.length === getPaginatedData().length}
                                             onChange={() => {
                                                 if (selectedRows.length === getPaginatedData().length) {
                                                     setSelectedRows([]);
@@ -543,43 +384,6 @@ function Size() {
                                         </td>
 
                                         <td className="px-6 py-4">{size.size_name}</td>
-                                        {/* <td className="text-right">
-                                            <div className="relative inline-block">
-                                                <button
-                                                    onClick={() => setOpenDropdown(openDropdown === size.id ? null : size.id)}
-                                                    className="text-gray-600 hover:text-gray-900"
-                                                >
-                                                    <FaEllipsisV />
-                                                </button>
-                                                {openDropdown === size.id && (
-                                                    <div
-                                                        ref={dropdownRef}
-                                                        className="absolute right-0 mt-2 bg-white border border-gray-200 shadow-lg rounded-md w-40 z-10"
-                                                    >
-                                                        <div
-                                                            onClick={() => {
-                                                                handleEditRow(size);
-                                                                setOpenDropdown(null);
-                                                            }}
-                                                            className="flex items-center px-4 py-2 text-navy-700 hover:bg-gray-200 cursor-pointer"
-                                                        >
-                                                            <FaEdit className="mr-2 text-black" />
-                                                            Edit
-                                                        </div>
-                                                        <div
-                                                            onClick={() => {
-                                                                handleDeleteRow(size.id);
-                                                                setOpenDropdown(null);
-                                                            }}
-                                                            className="flex items-center px-4 py-2 text-red-600 hover:bg-gray-200 cursor-pointer"
-                                                        >
-                                                            <FaTrashAlt className="mr-2" />
-                                                            Delete
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </td> */}
 
                                         <td className="text-right">
                                             <div className="relative inline-block group">
@@ -594,7 +398,7 @@ function Size() {
                                                 >
                                                     <div
                                                         onClick={() => {
-                                                            handleEditRow(size);
+                                                            handleEdit(size);
                                                             setOpenDropdown(null);
                                                         }}
                                                         className="flex items-center px-4 py-2 text-navy-700 hover:bg-gray-200 cursor-pointer"
@@ -603,8 +407,8 @@ function Size() {
                                                     </div>
                                                     <div
                                                         onClick={() => {
-                                                            handleDeleteRow(size.id);
-                                                            setOpenDropdown(null);
+                                                            setSizeToDelete(size.id);
+                                                            setOpenDeleteDialog(true);
                                                         }}
                                                         className="flex items-center px-4 py-2 text-red-600 hover:bg-gray-200 cursor-pointer"
                                                     >
@@ -625,8 +429,6 @@ function Size() {
                         </tbody>
                     </table>
                 </div>
-
-
             </div>
 
             {/* Pagination */}
@@ -706,10 +508,6 @@ function Size() {
                 </div>
             )}
         </div>
-
-
-
-
     );
 }
 

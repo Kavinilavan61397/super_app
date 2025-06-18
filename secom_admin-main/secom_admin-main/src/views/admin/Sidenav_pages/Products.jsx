@@ -12,6 +12,8 @@ import { FiSearch } from 'react-icons/fi';
 import 'react-toastify/dist/ReactToastify.css';
 import { toast, ToastContainer } from 'react-toastify';
 import Navbar from 'components/navbar';
+import API_CONFIG from '../../../config/api.config';
+import { apiGet, apiPost, apiPut, apiDelete } from '../../../utils/apiUtils';
 
 function Products() {
   const navigate = useNavigate();
@@ -38,6 +40,18 @@ function Products() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredData, setFilteredData] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    price: '',
+    brand_id: '',
+    category_id: '',
+    photo: null
+  });
+  const [editProduct, setEditProduct] = useState(null);
+  const [productToDelete, setProductToDelete] = useState(null);
 
   const productSchemaAdd = Yup.object().shape({
     brand_id: Yup.string().required("Brand is required"),
@@ -79,7 +93,6 @@ function Products() {
 
   });
 
-  const isEditMode = selectedProduct !== undefined && selectedProduct !== null;
   const { control, handleSubmit, formState: { errors }, reset, setValue } = useForm({
     resolver: yupResolver(isEditMode ? productSchemaEdit : productSchemaAdd),
     defaultValues: {
@@ -100,25 +113,6 @@ function Products() {
     },
   });
 
-  //   resolver: yupResolver(productSchema),
-  //   defaultValues: {
-  //     brand_id: selectedProduct?.brand_id || '',
-  //     category_id: selectedProduct?.category_id || '',
-  //     sub_category_id: selectedProduct?.sub_category_id || '',
-  //     name: selectedProduct?.name || '',
-  //     purchase_price_type: selectedProduct?.purchase_price_type || '',
-  //     purchase_price: selectedProduct?.purchase_price || 0,
-  //     sales_price: selectedProduct?.sales_price || 0,
-  //     mrp: selectedProduct?.mrp || 0,
-  //     discount_type: selectedProduct?.discount_type || '',
-  //     discount_field: selectedProduct?.discount_field || 0,
-  //     tag_id: selectedProduct?.tag_id || '',
-  //     product_description: selectedProduct?.product_description || '',
-  //     primary_image: selectedProduct?.primary_image || '',
-  //     images: selectedProduct?.images || [],
-  //   },
-  // });
-
   // Reset categories and subcategories when the brand changes
   useEffect(() => {
     if (!selectedBrand) {
@@ -133,7 +127,7 @@ function Products() {
   useEffect(() => {
     const fetchBrandData = async () => {
       try {
-        const response = await axios.get('https://yrpitsolutions.com/ecom_backend/api/admin/get_all_brand');
+        const response = await apiGet(API_CONFIG.ENDPOINTS.ADMIN.BRANDS);
         console.log('Brands fetched:', response.data);
         setBrands(response.data);
       } catch (error) {
@@ -155,7 +149,7 @@ function Products() {
     if (!brandId) return;
 
     try {
-      const response = await axios.get(`https://yrpitsolutions.com/ecom_backend/api/admin/category_by_brand_id/${brandId}`);
+      const response = await apiGet(API_CONFIG.ENDPOINTS.ADMIN.CATEGORIES);
       console.log('Categories fetched:', response.data);
       setCategories(response.data);
       setValue('category_id', '');
@@ -170,7 +164,7 @@ function Products() {
     if (!categoryId) return;
 
     try {
-      const response = await axios.get(`https://yrpitsolutions.com/ecom_backend/api/admin/get_subcategory_by_category_id/${categoryId}`);
+      const response = await apiGet(API_CONFIG.ENDPOINTS.ADMIN.SUBCATEGORIES);
       console.log('Subcategories fetched:', response.data);
       setSubCategories(response.data);
 
@@ -192,7 +186,7 @@ function Products() {
   // Fetch Products from API
   const fetchProducts = async () => {
     try {
-      const response = await axios.get('https://yrpitsolutions.com/ecom_backend/api/admin/get_all_product');
+      const response = await apiGet(API_CONFIG.ENDPOINTS.ADMIN.PRODUCTS);
       setTableData(response.data);
       setTotalItems(response.data.length);
     } catch (error) {
@@ -204,15 +198,15 @@ function Products() {
     fetchProducts();
   }, []);
 
-
   const [tags, setTags] = useState([]);
   const [selectedTag, setSelectedTag] = useState("");
 
   useEffect(() => {
     const fetchTags = async () => {
       try {
-        const response = await axios.get("https://yrpitsolutions.com/ecom_backend/api/admin/get_all_tags");
-        setTags(response.data); console.log('Tags fetched:', response.data);
+        const response = await apiGet(API_CONFIG.ENDPOINTS.ADMIN.TAGS);
+        setTags(response.data); 
+        console.log('Tags fetched:', response.data);
       } catch (error) {
         console.error("Error fetching tags:", error);
       }
@@ -225,158 +219,6 @@ function Products() {
     setOpenAddModal(false);
     fetchSubCategoryData();
   };
-
-  // const handleFormSubmit = async (data) => {
-  //   setLoading(true);
-  //   const formData = new FormData();
-
-  //   // Append form data
-  //   formData.append('brand_id', data.brand_id);
-  //   formData.append('category_id', data.category_id);
-  //   formData.append('sub_category_id', data.sub_category_id);
-  //   formData.append('name', data.name);
-  //   // formData.append('quantity', data.quantity);
-  //   formData.append('purchase_price_type', data.purchase_price_type);
-  //   formData.append('purchase_price', data.purchase_price);
-  //   formData.append('sales_price', data.sales_price);
-  //   formData.append('mrp', data.mrp);
-  //   formData.append('discount_type', data.discount_type);
-  //   formData.append('discount_field', data.discount_field);
-  //   formData.append('tag_id', data.tag_id);
-  //   formData.append('product_description', data.product_description);
-
-  //   if (data.primary_image && data.primary_image[0]) {
-  //     formData.append('primary_image', data.primary_image[0]);
-  //   }
-  //   if (images.length > 0) {
-  //     images.forEach((image) => {
-  //       formData.append('images[]', image);
-  //     });
-  //   }
-  //   try {
-  //     const accessToken = localStorage.getItem('OnlineShop-accessToken');
-
-  //     if (!accessToken) {
-  //       console.error('Access token is missing. Please login.');
-  //       return;
-  //     }
-
-  //     const response = await axios.post('https://yrpitsolutions.com/ecom_backend/api/admin/save_product', formData, {
-  //       headers: {
-  //         Authorization: `Bearer ${accessToken}`,
-  //       },
-  //     });
-
-  //     console.log('Product created successfully:', response.data);
-  //     reset();
-  //     setOpenAddModal(false);
-  //     fetchProducts();
-
-  //   } catch (error) {
-  //     console.error('Error submitting form:', error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-
-  const [productList, setProductList] = useState([]);
-  // const handleFormSubmit = async (data) => {
-  //   setLoading(true);
-
-  //   // Check if product already exists in your product list (replace 'productList' with your actual product list state)
-  //   const isProductExist = productList.some(product => product.name === data.name);
-
-  //   if (isProductExist) {
-  //     // If product exists, show a toaster and prevent submission
-  //     toast.error('Product already exists in the table!', {
-  //       position: "top-right",
-  //       autoClose: 5000,
-  //       hideProgressBar: false,
-  //       closeOnClick: true,
-  //       pauseOnHover: true,
-  //       draggable: true,
-  //       progress: undefined,
-  //     });
-  //     setLoading(false);
-  //     return;
-  //   }
-
-  //   const formData = new FormData();
-
-  //   // Append form data
-  //   formData.append('brand_id', data.brand_id);
-  //   formData.append('category_id', data.category_id);
-  //   formData.append('sub_category_id', data.sub_category_id);
-  //   formData.append('name', data.name);
-  //   formData.append('purchase_price_type', data.purchase_price_type);
-  //   formData.append('purchase_price', data.purchase_price);
-  //   formData.append('sales_price', data.sales_price);
-  //   formData.append('mrp', data.mrp);
-  //   formData.append('discount_type', data.discount_type);
-  //   formData.append('discount_field', data.discount_field);
-  //   formData.append('tag_id', data.tag_id);
-  //   formData.append('product_description', data.product_description);
-
-  //   if (data.primary_image && data.primary_image[0]) {
-  //     formData.append('primary_image', data.primary_image[0]);
-  //   }
-
-  //   if (images.length > 0) {
-  //     images.forEach((image) => {
-  //       formData.append('images[]', image);
-  //     });
-  //   }
-
-  //   try {
-  //     const accessToken = localStorage.getItem('OnlineShop-accessToken');
-
-  //     if (!accessToken) {
-  //       console.error('Access token is missing. Please login.');
-  //       return;
-  //     }
-
-  //     const response = await axios.post('https://yrpitsolutions.com/ecom_backend/api/admin/save_product', formData, {
-  //       headers: {
-  //         Authorization: `Bearer ${accessToken}`,
-  //       },
-  //     });
-
-  //     console.log('Product created successfully:', response.data);
-
-  //     // Success toast
-  //     toast.success('Product added successfully!', {
-  //       // position: "top-right",
-  //       autoClose: 3000,
-  //       hideProgressBar: true,
-  //       closeOnClick: true,
-  //       pauseOnHover: true,
-  //       draggable: true,
-  //       progress: undefined,
-  //     });
-
-  //     reset();
-  //     setOpenAddModal(false);
-  //     fetchProducts();
-
-  //   } catch (error) {
-  //     console.error('Error submitting form:', error);
-
-  //     // Error toast
-  //     toast.error('Error while adding product!', {
-  //       position: "top-right",
-  //       autoClose: 5000,
-  //       hideProgressBar: false,
-  //       closeOnClick: true,
-  //       pauseOnHover: true,
-  //       draggable: true,
-  //       progress: undefined,
-  //     });
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
 
   const handleFormSubmit = async (data) => {
     setLoading(true);
@@ -430,15 +272,7 @@ function Products() {
         return;
       }
   
-      const response = await axios.post(
-        "https://yrpitsolutions.com/ecom_backend/api/admin/save_product",
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
+      const response = await apiPost(API_CONFIG.ENDPOINTS.ADMIN.PRODUCTS, formData);
   
       console.log("Product created successfully:", response.data);
   
@@ -479,61 +313,6 @@ function Products() {
     }
   }, [selectedBrand]);
 
-  // const handleFormUpdate = async (data) => {
-  //   if (!selectedProduct) {
-  //     console.error('Product ID is not set!');
-  //     return;
-  //   }
-
-  //   setLoading(true);
-
-  //   const formData = new FormData();
-  //   formData.append('brand_id', data.brand_id);
-  //   formData.append('category_id', data.category_id);
-  //   formData.append('sub_category_id', data.sub_category_id);
-  //   formData.append('name', data.name);
-  //   formData.append('quantity', data.quantity);
-  //   formData.append('purchase_price_type', data.purchase_price_type);
-  //   formData.append('purchase_price', data.purchase_price);
-  //   formData.append('sales_price', data.sales_price);
-  //   formData.append('mrp', data.mrp);
-  //   formData.append('discount_type', data.discount_type);
-  //   formData.append('discount_field', data.discount_field);
-  //   formData.append('tag_id', data.tag_id);
-  //   formData.append('product_description', data.product_description);
-
-  //   // Append primary image if exists
-  //   if (data.primary_image) {
-  //     formData.append('primary_image', data.primary_image);
-  //   }
-
-  //   // // Append other images if exists
-  //   // if (images.length > 0) {
-  //   //   images.forEach((image) => {
-  //   //     formData.append('images[]', image);
-  //   //   });
-  //   // }
-
-  //   try {
-  //     const accessToken = localStorage.getItem('OnlineShop-accessToken');
-  //     const url = `https://yrpitsolutions.com/ecom_backend/api/admin/update_product_by_id/${selectedProduct.id}`;
-
-  //     formData.append('_method', 'put');
-
-  //     await axios.post(url, formData, {
-  //       headers: { Authorization: `Bearer ${accessToken}` },
-  //     });
-
-  //     fetchProducts();
-  //     setOpenEditModal(false);
-  //     setCategoryImage(null);
-  //     reset();
-  //   } catch (error) {
-  //     console.error('Error updating product:', error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
   const handleFormUpdate = async (data) => {
     if (!selectedProduct) {
       console.error('Product ID is not set!');
@@ -590,19 +369,14 @@ function Products() {
         return;
       }
 
-      const url = `https://yrpitsolutions.com/ecom_backend/api/admin/update_product_by_id/${selectedProduct.id}`;
+      const url = API_CONFIG.ENDPOINTS.ADMIN.PRODUCTS + '/' + selectedProduct.id;
       formData.append('_method', 'put'); // To force a PUT request
 
       for (let pair of formData.entries()) {
         console.log(pair[0] + ': ' + pair[1]);
       }
 
-      const response = await axios.post(url, formData, {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'multipart/form-data', // Ensure the request is treated as form data
-        },
-      });
+      const response = await apiPut(url, formData);
 
       // Handle the response
       if (response.status === 200) {
@@ -644,8 +418,6 @@ function Products() {
     }
   };
 
-
-
   const handleAddCategory = () => {
     reset();
     setOpenAddModal(true);
@@ -666,7 +438,6 @@ function Products() {
     setValue('primary_image', '');
     setValue('images', []);
     setValue('purchase_price_type', '');
-
   };
 
   const handleEditRow = (product) => {
@@ -760,12 +531,10 @@ function Products() {
     return () => clearTimeout(debounceSearch);
   }, [searchQuery]);
 
-
   const handleDeleteRow = (id) => {
     setRowIdToDelete(id);
     setOpenDeleteDialog(true);
   };
-
 
   const handleDeleteConfirmation = async () => {
     setIsDeleting(true);
@@ -784,9 +553,7 @@ function Products() {
         return;
       }
 
-      await axios.delete(`https://yrpitsolutions.com/ecom_backend/api/admin/delete_product_by_id/${rowIdToDelete}`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
+      await apiDelete(API_CONFIG.ENDPOINTS.ADMIN.PRODUCTS + '/' + rowIdToDelete);
 
       // Show success toast
       toast.success('Product deleted successfully!', {
@@ -819,6 +586,7 @@ function Products() {
   const handleCancelDelete = () => {
     setOpenDeleteDialog(false);
   };
+
   const handleBulkDelete = async () => {
     setLoading(true);
     try {
@@ -837,9 +605,7 @@ function Products() {
 
       // Loop through selected rows and delete each product
       for (let id of selectedRows) {
-        await axios.delete(`https://yrpitsolutions.com/ecom_backend/api/admin/delete_product_by_id/${id}`, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        });
+        await apiDelete(API_CONFIG.ENDPOINTS.ADMIN.PRODUCTS + '/' + id);
       }
 
       // Success toaster for successful deletion of selected products
@@ -870,7 +636,6 @@ function Products() {
       setLoading(false);  // End the loading state
     }
   };
-
 
   const dropdownRef = useRef(null);
 
@@ -909,6 +674,52 @@ function Products() {
     setImages(newImages);
   };
 
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmitForm = async (e) => {
+    e.preventDefault();
+    try {
+      const formDataToSend = new FormData();
+      Object.keys(formData).forEach(key => {
+        if (formData[key] !== null) {
+          formDataToSend.append(key, formData[key]);
+        }
+      });
+
+      if (isEditMode) {
+        await apiPut(API_CONFIG.ENDPOINTS.ADMIN.PRODUCTS + '/' + editProduct.id, formDataToSend);
+        toast.success('Product updated successfully');
+      } else {
+        await apiPost(API_CONFIG.ENDPOINTS.ADMIN.PRODUCTS, formDataToSend);
+        toast.success('Product created successfully');
+      }
+      setIsModalOpen(false);
+      fetchProducts();
+      reset();
+    } catch (error) {
+      toast.error('Error saving product');
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      description: '',
+      price: '',
+      brand_id: '',
+      category_id: '',
+      photo: null
+    });
+    setEditProduct(null);
+    setIsEditMode(false);
+  };
+
   return (
     <div className=" min-h-screen pt-6">
       {/* <TokenExpiration /> */}
@@ -931,7 +742,6 @@ function Products() {
               />
             </div>
           </div>
-
 
           <button
             onClick={handleAddCategory}
@@ -992,7 +802,6 @@ function Products() {
                       )}
                     />
 
-
                     <Controller
                       name="category_id"
                       control={control}
@@ -1025,7 +834,6 @@ function Products() {
                         </div>
                       )}
                     />
-
 
                     {/* SubCategory Dropdown */}
                     <Controller
@@ -1073,8 +881,6 @@ function Products() {
                       />
                       {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
                     </div>
-
-
 
                     {/* Purchase With Dropdown */}
                     <div>
@@ -1192,8 +998,6 @@ function Products() {
                       )}
                     </div>
 
-
-
                     {/* Tags Dropdown */}
                     <div className="mb-4">
                       <label className="block text-lg text-gray-600 font-medium mb-2">Tags</label>
@@ -1248,35 +1052,6 @@ function Products() {
                         <p className="text-red-500 text-sm">{errors.primary_image.message}</p>
                       )}
                     </div>
-                    {/* <div>
-                      <label className="block text-lg text-gray-600 font-medium mb-2">Upload Multiple Images (Max 5)<span className="text-red-500 ">*</span></label>
-                      <input
-                        name='images'
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        onChange={handleFileChange}
-                        disabled={images.length >= 5}
-                        className="w-full border border-gray-300 rounded-md px-4 py-3 text-gray-800 focus:outline-none"
-                      />
-
-                      <div style={{ marginTop: '10px' }}>
-                        {images.map((file, index) => (
-                          <div key={index} className="flex items-center justify-between my-2">
-                            <mark className="px-3 py-1 bg-yellow-200 rounded-md">{file.name}</mark>
-                            <button
-                              onClick={() => handleRemoveImage(index)}
-                              className="ml-2 text-sm text-red-600 hover:text-red-800"
-                            >
-                              Remove
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-
-                      <p className="text-sm text-gray-600">{images.length} / 5 images uploaded</p>
-                    </div> */}
-
                   </div>
                 </div>
                 <div className="col-span-4">
@@ -1303,7 +1078,6 @@ function Products() {
                   )}
                 </div>
 
-
                 {/* Buttons */}
                 <div className="flex justify-end gap-4 mt-16">
                   <button
@@ -1326,11 +1100,9 @@ function Products() {
                     )}
                   </button>
                 </div>
-
               </form>
             </div>
           </div>
-
         )}
 
         {openEditModal && (
@@ -1603,8 +1375,6 @@ function Products() {
                       )}
                     </div>
 
-
-
                     {/* Tags Dropdown */}
                     <div className="mb-4">
                       <label className="block text-lg text-gray-600 font-medium mb-2">Tags</label>
@@ -1712,127 +1482,6 @@ function Products() {
         )}
 
         {/* Table */}
-        {/* <div className="mt-8 bg-white shadow-lg rounded-lg p-6">
-          <table className="w-full table-auto">
-            <thead>
-              <tr className="text-gray-600">
-                <th className="px-6 py-4 text-left">
-                  <div className="flex justify-between items-center">
-                    <input
-                      type="checkbox"
-                      onChange={() => {
-                        if (selectedRows.length === getPaginatedData().length) {
-                          setSelectedRows([]); // Deselect all rows
-                        } else {
-                          setSelectedRows(getPaginatedData().map((row) => row.id)); // Select all rows
-                        }
-                      }}
-                    />
-                  </div>
-                </th>
-                <th className="px-6 py-4 text-left">Image</th>
-                <th className="px-6 py-4 text-left">Brand Name</th>
-                <th className="px-6 py-4 text-left">Category Name</th>
-                <th className="px-6 py-4 text-left">Sub-Category Name</th>
-                <th className="px-6 py-4 text-left">Product Name</th>
-                <th className="">
-                  {selectedRows.length > 0 && (
-                    <button
-                      onClick={handleBulkDelete}
-                      className={`text-gray-600 hover:text-red-600 text-xl flex items-center ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      disabled={loading}
-                    >
-                      {loading ? (
-                        <div className="relative">
-                          <div className="w-6 h-6 border-4 border-t-transparent border-red-600 rounded-full animate-spin"></div>
-                        </div>
-                      ) : (
-                        <FaTrashAlt />
-                      )}
-                    </button>
-                  )}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {getPaginatedData().length === 0 ? (
-                <tr>
-                  <td colSpan="4" className="text-center py-4 text-gray-500">
-                    No Products found
-                  </td>
-                </tr>
-              ) : (
-                getPaginatedData().map((product) => (
-                  <tr key={product.id} className="border-t">
-                    <td className="px-6 py-4">
-                      <input
-                        type="checkbox"
-                        onChange={() => handleRowSelection(product.id)} // Handle selection on row level
-                      />
-                    </td>
-                    <td className="px-6 py-4">
-                      <img
-                        src={product.primary_image}
-                        alt={product.name}
-                        className="w-12 h-12 object-cover rounded-full"
-                      />
-                    </td>
-                    <td className="px-6 py-4">{product.brand?.brand_name || ''}</td>
-                    <td className="px-6 py-4">{product.category?.name || ''}</td>
-                    <td className="px-6 py-4">{product.sub_category?.name || ''}</td>
-                    <td className="px-6 py-4">
-                      <button
-                        onClick={() =>
-                          navigate(`/admin/productvariation?product_id=${product.id}&brand_id=${product.brand_id}&category_id=${product.category_id}&sub_category_id=${product.sub_category_id}`)
-                        }
-                        className="bg-transparent text-[#4318ff] border-2 border-[#4318ff] px-4 py-2 text-sm rounded-md cursor-pointer transition-all duration-300 hover:bg-[#4318ff1a] mt-4"
-                      >
-                        {product.name}
-                      </button>
-                    </td>
-                    <td className="text-right">
-                      <div className="relative inline-block">
-                        <button
-                          onClick={() => setOpenDropdown(openDropdown === product.id ? null : product.id)}
-                          className="text-gray-600 hover:text-gray-900"
-                        >
-                          <FaEllipsisV />
-                        </button>
-                        {openDropdown === product.id && (
-                          <div
-                            ref={dropdownRef}
-                            className="absolute right-0 mt-2 bg-white border border-gray-200 shadow-lg rounded-md w-40 z-10"
-                          >
-                            <div
-                              onClick={() => {
-                                handleEditRow(product);
-                                setOpenDropdown(null);
-                              }}
-                              className="flex items-center px-4 py-2 text-navy-700 hover:bg-gray-200 cursor-pointer"
-                            >
-                              <FaEdit className="mr-2 text-black" />
-                              Edit
-                            </div>
-                            <div
-                              onClick={() => {
-                                handleDeleteRow(product.id);
-                                setOpenDropdown(null);
-                              }}
-                              className="flex items-center px-4 py-2 text-red-600 hover:bg-gray-200 cursor-pointer"
-                            >
-                              <FaTrashAlt className="mr-2" />
-                              Delete
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div> */}
         <div className="mt-8 bg-white shadow-lg rounded-lg p-6">
           <table className="w-full table-auto">
             <thead>
@@ -1851,7 +1500,6 @@ function Products() {
                       }}
                       disabled={getPaginatedData().length === 0}  // Disable checkbox when no data is available
                     />
-
                   </div>
                 </th>
                 <th className="px-6 py-4 text-left">Image</th>
@@ -1859,7 +1507,6 @@ function Products() {
                 <th className="px-6 py-4 text-left">Category Name</th>
                 <th className="px-6 py-4 text-left">SubCategory Name</th>
                 <th className="px-6 py-4 text-left">Product Name</th>
-                {/* <th className="px-6 py-4 text-left"></th> */}
                 <th className="text-right">
                   {selectedRows.length > 0 && (
                     <button
@@ -1895,7 +1542,6 @@ function Products() {
                         checked={selectedRows.includes(product.id)}
                         onChange={() => handleRowSelection(product.id)} // Handle selection on row level
                       />
-
                     </td>
                     <td className="px-6 py-4">
                       <img
@@ -1948,9 +1594,6 @@ function Products() {
           </table>
         </div>
 
-
-
-
         {/* Pagination */}
         <div className="flex justify-between items-center mt-4">
           <div className="flex items-center">
@@ -1971,7 +1614,6 @@ function Products() {
 
           <div className="flex space-x-4">
             {/* Showing Item Range */}
-
             <button
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
@@ -2024,11 +1666,9 @@ function Products() {
               </div>
             </div>
           </div>
-        )
-        }
-      </div >
+        )}
+      </div>
     </div>
-
   );
 }
 

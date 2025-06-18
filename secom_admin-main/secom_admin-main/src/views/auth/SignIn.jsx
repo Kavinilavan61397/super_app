@@ -33,7 +33,12 @@ export default function SignIn() {
       const response = await authService.login(data);
       
       if (response.success) {
-        navigate(API_CONFIG.ROUTES.DASHBOARD);
+        // Check if there's a saved redirect URL
+        const redirectUrl = sessionStorage.getItem('redirectUrl');
+        sessionStorage.removeItem('redirectUrl'); // Clear it after use
+        
+        // Navigate to the saved URL or default dashboard
+        navigate(redirectUrl || API_CONFIG.ROUTES.DASHBOARD);
       } else {
         setServerError(response.message || "Login failed. Please try again.");
       }

@@ -138,11 +138,20 @@ export const categoryService = {
       return response.data;
     } catch (error) {
       console.error('Error deleting category:', error);
-      if (error.response) {
-        console.error('Error response:', error.response.data);
-        throw new Error(error.response.data.message || 'Failed to delete category');
+      console.error('Error response:', error.response?.data);
+      
+      // If we have a specific error message from the backend, use it
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
       }
-      throw error;
+      
+      // If we have details about the error, include them
+      if (error.response?.data?.error?.details) {
+        throw new Error(`Failed to delete category: ${error.response.data.error.details}`);
+      }
+      
+      // Default error message
+      throw new Error('Failed to delete category. Please try again.');
     }
   },
 

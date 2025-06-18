@@ -9,6 +9,8 @@ import { FiSearch } from 'react-icons/fi';
 import 'react-toastify/dist/ReactToastify.css';
 import { toast, ToastContainer } from 'react-toastify';
 import Navbar from 'components/navbar';
+import { getApiUrl, getAuthHeaders, handleApiError } from '../../../utils/apiUtils';
+
 function Tags() {
   const [tableData, setTableData] = useState([]);
   const [openAddModal, setOpenAddModal] = useState(false);
@@ -26,12 +28,9 @@ function Tags() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredData, setFilteredData] = useState([]);
 
-
-
   // Yup validation schema
   const validationSchemaAdd = Yup.object({
     tag_name: Yup.string().required('Tag Name is required'),
-
   });
 
   const validationSchemaEdit = Yup.object({
@@ -42,19 +41,17 @@ function Tags() {
     resolver: yupResolver(openAddModal ? validationSchemaAdd : validationSchemaEdit),
     defaultValues: {
       tag_name: selectTags?.tag_name || '',
-
     },
   });
 
-
-
   const fetchTagsData = async () => {
     try {
-      const response = await axios.get('https://yrpitsolutions.com/ecom_backend/api/admin/get_all_tags');
+      const response = await axios.get(getApiUrl('/api/admin/get_all_tags'));
       setTableData(response.data);
       setTotalItems(response.data.length);
     } catch (error) {
       console.error('Error fetching data:', error);
+      toast.error(handleApiError(error));
     }
   };
 
@@ -101,65 +98,54 @@ function Tags() {
   };
 
   const handleFormSubmit = async (data) => {
-    const formData = new FormData();
-    formData.append('tag_name', data.tag_name);
-
     setLoading(true);
-
     try {
       const accessToken = localStorage.getItem('OnlineShop-accessToken');
-      const url = 'https://yrpitsolutions.com/ecom_backend/api/admin/save_tag';
+      if (!accessToken) {
+        throw new Error('Access token is missing. Please login.');
+      }
 
-      // Send the request to create a new tag
-      const response = await axios.post(url, formData, {
-        headers: { Authorization: `Bearer ${accessToken}` }
-      });
+      const response = await axios.post(
+        getApiUrl('/api/admin/save_tag'),
+        data,
+        { headers: getAuthHeaders() }
+      );
 
-
-      fetchTagsData();  // Refresh tags data
-      setOpenAddModal(false);  // Close the add modal
-      reset();  // Reset form fields
-      toast.success('Tag created successfully!', { hideProgressBar: true });  // Success toast
-
-
+      fetchTagsData();
+      setOpenAddModal(false);
+      reset();
+      toast.success('Tag created successfully!', { hideProgressBar: true });
     } catch (error) {
       console.error('Error submitting form:', error);
-      toast.error('Failed to create tag. Please try again.', { hideProgressBar: true });  // Error toast
+      toast.error(handleApiError(error));
     } finally {
-      setLoading(false);  // Hide loading spinner
+      setLoading(false);
     }
   };
 
   const handleFormUpdate = async (data) => {
     setLoading(true);
-
-    const formData = new FormData();
-    formData.append('_method', 'PUT');
-    formData.append('tag_name', data.tag_name || selectTags.tag_name);
-
     try {
       const accessToken = localStorage.getItem('OnlineShop-accessToken');
-      const url = `https://yrpitsolutions.com/ecom_backend/api/admin/update_tag_by_id/${selectTags.id}`;
-
-      // Send the request to update the tag
-      const response = await axios.post(url, formData, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
-
-      // Check if the update was successful
-      if (response.status === 200) {
-        fetchTagsData(); // Refresh tags data
-        setOpenEditModal(false); // Close the edit modal
-        reset(); // Reset form fields
-        toast.success('Tag updated successfully!'); // Show success toast
-      } else {
-        toast.error('Failed to update tag. Please try again.', { hideProgressBar: true }); // Show error toast
+      if (!accessToken) {
+        throw new Error('Access token is missing. Please login.');
       }
+
+      const response = await axios.put(
+        getApiUrl(`/api/admin/update_tag_by_id/${selectTags.id}`),
+        data,
+        { headers: getAuthHeaders() }
+      );
+
+      fetchTagsData();
+      setOpenEditModal(false);
+      reset();
+      toast.success('Tag updated successfully!', { hideProgressBar: true });
     } catch (error) {
-      console.error('Error updating form:', error);
-      toast.error('Error updating tag. Please try again.', { hideProgressBar: true }); // Show error toast
+      console.error('Error updating tag:', error);
+      toast.error(handleApiError(error));
     } finally {
-      setLoading(false); // Hide the loading spinner
+      setLoading(false);
     }
   };
 
@@ -177,48 +163,60 @@ function Tags() {
     trigger();
   };
 
-
   const handleDeleteRow = (id) => {
     setRowIdToDelete(id);
     setOpenDeleteDialog(true);
   };
 
-  const handleDeleteConfirmation = async () => {
+  const handleDelete = async () => {
     setIsDeleting(true);
     try {
       const accessToken = localStorage.getItem('OnlineShop-accessToken');
-      await axios.delete(`https://yrpitsolutions.com/ecom_backend/api/admin/delete_tag_by_id/${rowIdToDelete}`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
+      if (!accessToken) {
+        throw new Error('Access token is missing. Please login.');
+      }
+
+      await axios.delete(
+        getApiUrl(`/api/admin/delete_tag_by_id/${rowIdToDelete}`),
+        { headers: getAuthHeaders() }
+      );
+
       fetchTagsData();
       setOpenDeleteDialog(false);
-      toast.success('Tag deleted successfully!', { hideProgressBar: true });  // Success toast
+      toast.success('Tag deleted successfully!', { hideProgressBar: true });
     } catch (error) {
       console.error('Error deleting tag:', error);
-      toast.error('Failed to delete tag. Please try again.', { hideProgressBar: true });  // Error toast
+      toast.error(handleApiError(error));
     } finally {
       setIsDeleting(false);
     }
   };
 
-
   const handleCancelDelete = () => {
     setOpenDeleteDialog(false);
   };
+
   const handleBulkDelete = async () => {
     setLoading(true);
     try {
       const accessToken = localStorage.getItem('OnlineShop-accessToken');
-      for (let id of selectedRows) {
-        await axios.delete(`https://yrpitsolutions.com/ecom_backend/api/admin/delete_tag_by_id/${id}`, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        });
+      if (!accessToken) {
+        throw new Error('Access token is missing. Please login.');
       }
-      window.location.reload();
-      await fetchTagsData(); // Refresh the data
-      setSelectedRows([]); // Clear selection after bulk delete
+
+      for (let id of selectedRows) {
+        await axios.delete(
+          getApiUrl(`/api/admin/delete_tag_by_id/${id}`),
+          { headers: getAuthHeaders() }
+        );
+      }
+
+      fetchTagsData();
+      setSelectedRows([]);
+      toast.success('Selected tags deleted successfully!', { hideProgressBar: true });
     } catch (error) {
-      console.error('Error deleting selected tag:', error);
+      console.error('Error bulk deleting tags:', error);
+      toast.error(handleApiError(error));
     } finally {
       setLoading(false);
     }
@@ -226,7 +224,6 @@ function Tags() {
 
   // const [openDropdown, setOpenDropdown] = useState(null);
   const dropdownRef = useRef(null);
-
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -241,6 +238,7 @@ function Tags() {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
   return (
     <div className=" min-h-screen pt-6">
       <Navbar brandText={"Tags"} />
@@ -271,62 +269,6 @@ function Tags() {
             <FaPlus className="mr-2" /> Add Tags
           </button>
         </span>
-
-
-        {/* {openAddModal && !openEditModal && (
-                    <div
-                        className="fixed inset-0 flex items-center justify-center z-50 bg-gray-900 bg-opacity-50"
-                        onClick={() => setOpenAddModal(false)}
-                    >
-                        <div
-                            className="bg-white rounded-lg shadow-2xl p-12 "
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <h2 className="text-2xl font-semibold text-gray-800 mb-6">Add Tag</h2>
-
-                            <div className="mb-6">
-                                <label className="block text-lg text-gray-600 font-medium mb-2">Tag Name<span className="text-red-500 ">*</span></label>
-                                <Controller
-                                    name="tag_name"
-                                    control={control}
-                                    render={({ field }) => (
-                                        <input
-                                            type="text"
-                                            placeholder="Enter Tag Name"
-                                            className="w-full border border-gray-300 rounded-md px-4 py-3 text-gray-800 focus:outline-none"
-                                            {...field}
-                                        />
-                                    )}
-                                />
-                                {errors.tag_name && <p className="text-red-500 text-sm">{errors.tag_name.message}</p>}
-                            </div>
-
-
-                            <div className="flex justify-end space-x-4 mt-4">
-                                <button
-                                    onClick={() => setOpenAddModal(false)}
-                                    className="bg-gray-300 text-gray-800 px-6 py-3 rounded-md"
-                                >
-                                    Cancel
-                                </button>
-
-                                <button
-                                    onClick={handleSubmit(handleFormSubmit)}
-                                    disabled={loading}
-                                    className="relative bg-[#4318ff] text-white px-6 py-3 rounded-lg flex items-center ml-auto max-w-xs"
-                                >
-                                    {loading ? (
-                                        <div className="absolute inset-0 flex items-center justify-center w-full h-full">
-                                            <div className="w-6 h-6 border-4 border-t-transparent border-white rounded-full animate-spin"></div>
-                                        </div>
-                                    ) : (
-                                        'Create'
-                                    )}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )} */}
 
         {openAddModal && !openEditModal && (
           <div
@@ -440,8 +382,6 @@ function Tags() {
             </div>
           </div>
         )}
-
-
 
         {/* Table */}
         <div className="mt-8 bg-white shadow-lg rounded-lg p-6">
@@ -605,7 +545,7 @@ function Tags() {
                 Cancel
               </button>
               <button
-                onClick={handleDeleteConfirmation}
+                onClick={handleDelete}
                 className="px-4 py-2 text-white bg-red-600 rounded-md hover:bg-red-700 flex items-center justify-center"
                 disabled={isDeleting}
               >
@@ -621,10 +561,6 @@ function Tags() {
         </div>
       )}
     </div>
-
-
-
-
   );
 }
 

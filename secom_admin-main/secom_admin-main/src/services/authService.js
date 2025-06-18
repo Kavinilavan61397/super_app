@@ -3,7 +3,7 @@ import API_CONFIG from '../config/api.config';
 
 const api = axios.create({
   baseURL: API_CONFIG.BASE_URL,
-  withCredentials: false,
+  withCredentials: true,
   headers: {
     'Accept': 'application/json',
     'Content-Type': 'application/json'
@@ -73,8 +73,13 @@ export const authService = {
       setAuthData(response.data);
       return response.data;
     } catch (error) {
-      throw error.response?.data || { 
-        message: 'Registration failed. Please try again.' 
+      if (error.response?.data) {
+        throw error.response.data;
+      }
+      throw { 
+        success: false,
+        message: 'Registration failed. Please try again.',
+        error: error.message 
       };
     }
   },
@@ -82,27 +87,48 @@ export const authService = {
   // Login user
   login: async (credentials) => {
     try {
-      const response = await api.post('/api/auth/login', credentials);
-      if (response.data.token) {
-        localStorage.setItem(API_CONFIG.STORAGE_KEYS.AUTH_TOKEN, response.data.token);
-        localStorage.setItem(API_CONFIG.STORAGE_KEYS.USER_DATA, JSON.stringify(response.data.user));
+      const response = await api.post(API_CONFIG.AUTH.LOGIN, credentials);
+      if (response.data.success && response.data.data?.token) {
+        localStorage.setItem(API_CONFIG.STORAGE_KEYS.AUTH_TOKEN, response.data.data.token);
+        localStorage.setItem('OnlineShop-accessToken', response.data.data.token);
+        if (response.data.data.user) {
+          localStorage.setItem(API_CONFIG.STORAGE_KEYS.USER_DATA, JSON.stringify(response.data.data.user));
+        }
+        return {
+          success: true,
+          message: 'Login successful',
+          data: response.data.data
+        };
       }
-      return response.data;
+      return {
+        success: false,
+        message: response.data.message || 'Login failed'
+      };
     } catch (error) {
       console.error('Login error:', error);
-      throw error;
+      if (error.response?.data) {
+        return {
+          success: false,
+          message: error.response.data.message || 'Invalid credentials'
+        };
+      }
+      return {
+        success: false,
+        message: 'Network error. Please check your connection.'
+      };
     }
   },
 
   // Logout user
   logout: async () => {
     try {
-      await api.post('/api/auth/logout');
+      await api.post(API_CONFIG.AUTH.LOGOUT);
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
       localStorage.removeItem(API_CONFIG.STORAGE_KEYS.AUTH_TOKEN);
       localStorage.removeItem(API_CONFIG.STORAGE_KEYS.USER_DATA);
+      localStorage.removeItem(API_CONFIG.STORAGE_KEYS.TOKEN_EXPIRATION);
     }
   },
 
@@ -115,17 +141,32 @@ export const authService = {
   // Check if user is authenticated
   isAuthenticated: () => {
     const token = localStorage.getItem(API_CONFIG.STORAGE_KEYS.AUTH_TOKEN);
-    return !!token;
+    if (!token) return false;
+
+    const expiration = localStorage.getItem(API_CONFIG.STORAGE_KEYS.TOKEN_EXPIRATION);
+    if (expiration && Date.now() > parseInt(expiration)) {
+      // Token has expired, clear auth data
+      localStorage.removeItem(API_CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+      localStorage.removeItem(API_CONFIG.STORAGE_KEYS.USER_DATA);
+      localStorage.removeItem(API_CONFIG.STORAGE_KEYS.TOKEN_EXPIRATION);
+      return false;
+    }
+
+    return true;
   },
 
   // Get user profile
   getProfile: async () => {
     try {
-      const response = await api.get('/api/auth/profile');
+      const response = await api.get(API_CONFIG.AUTH.PROFILE);
       return response.data;
     } catch (error) {
       console.error('Get profile error:', error);
-      throw error;
+      throw error.response?.data || {
+        success: false,
+        message: 'Failed to fetch profile',
+        error: error.message
+      };
     }
   },
 
@@ -136,7 +177,9 @@ export const authService = {
       return response.data;
     } catch (error) {
       throw error.response?.data || { 
-        message: 'Failed to update profile. Please try again.' 
+        success: false,
+        message: 'Failed to update profile. Please try again.',
+        error: error.message
       };
     }
   },
@@ -149,4 +192,4 @@ export const authService = {
     const userData = localStorage.getItem(API_CONFIG.STORAGE_KEYS.USER_DATA);
     return userData ? JSON.parse(userData) : null;
   }
-}; 
+};

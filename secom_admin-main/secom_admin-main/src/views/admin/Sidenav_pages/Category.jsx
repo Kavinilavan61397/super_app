@@ -12,6 +12,8 @@ import Navbar from 'components/navbar';
 import { categoryService } from '../../../services/categoryService';
 import { authService } from "../../../services/authService";
 import { useNavigate } from "react-router-dom";
+import { apiGet, apiPost, apiPut, apiDelete } from '../../../utils/apiUtils';
+import API_CONFIG from '../../../config/api.config';
 
 function Category() {
     const [tableData, setTableData] = useState([]);
@@ -36,6 +38,15 @@ function Category() {
     const [searchQuery, setSearchQuery] = useState('');
     const [error, setError] = useState(null);
     const navigate = useNavigate();
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [formData, setFormData] = useState({
+        category_name: '',
+        photo: null
+    });
+    const [editCategory, setEditCategory] = useState(null);
+    const [categoryToDelete, setCategoryToDelete] = useState(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
     const validationSchemaAdd = Yup.object({
         name: Yup.string().required('Category Name is required'),
@@ -345,6 +356,90 @@ function Category() {
         };
     }, []);
 
+    useEffect(() => {
+        fetchCategories();
+    }, []);
+
+    const fetchCategories = async () => {
+        try {
+            const data = await apiGet(API_CONFIG.ENDPOINTS.ADMIN.CATEGORIES);
+            setTableData(data);
+        } catch (error) {
+            toast.error('Error fetching categories');
+        }
+    };
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        setFormData(prev => ({
+            ...prev,
+            photo: file
+        }));
+    };
+
+    const handleSubmitForm = async (e) => {
+        e.preventDefault();
+        try {
+            const formDataToSend = new FormData();
+            Object.keys(formData).forEach(key => {
+                if (formData[key] !== null) {
+                    formDataToSend.append(key, formData[key]);
+                }
+            });
+
+            if (isEditMode) {
+                await apiPut(`${API_CONFIG.ENDPOINTS.ADMIN.CATEGORIES}/${editCategory.id}`, formDataToSend);
+                toast.success('Category updated successfully');
+            } else {
+                await apiPost(API_CONFIG.ENDPOINTS.ADMIN.CATEGORIES, formDataToSend);
+                toast.success('Category created successfully');
+            }
+            setIsModalOpen(false);
+            fetchCategories();
+            resetForm();
+        } catch (error) {
+            toast.error('Error saving category');
+        }
+    };
+
+    const handleEdit = (category) => {
+        setEditCategory(category);
+        setFormData({
+            category_name: category.category_name,
+            photo: null
+        });
+        setIsEditMode(true);
+        setIsModalOpen(true);
+    };
+
+    const handleDelete = async () => {
+        try {
+            await apiDelete(`${API_CONFIG.ENDPOINTS.ADMIN.CATEGORIES}/${categoryToDelete}`);
+            toast.success('Category deleted successfully');
+            setIsDeleteModalOpen(false);
+            fetchCategories();
+        } catch (error) {
+            toast.error('Error deleting category');
+        }
+    };
+
+    const resetForm = () => {
+        setFormData({
+            category_name: '',
+            photo: null
+        });
+        setEditCategory(null);
+        setIsEditMode(false);
+    };
+
     if (loading) {
         return <div className="flex justify-center items-center h-screen">Loading...</div>;
     }
@@ -388,260 +483,15 @@ function Category() {
 
 
                     <button
-                        onClick={handleAddCategory}
+                        onClick={() => {
+                            resetForm();
+                            setIsModalOpen(true);
+                        }}
                         className="bg-[#4318ff] text-white px-6 py-2 rounded-full text-lg font-medium flex items-center ml-auto"
                     >
                         <FaPlus className="mr-2" /> Add Category
                     </button>
                 </span>
-
-                {openAddModal && (
-                    <div
-                        className="fixed inset-0 flex items-center justify-center z-50 bg-gray-900 bg-opacity-50"
-                        onClick={() => setOpenAddModal(false)} // Close modal on background click
-                    >
-                        <div
-                            className="bg-white rounded-lg shadow-2xl p-8 "
-                            onClick={(e) => e.stopPropagation()} // Prevent modal from closing on inner content click
-                        >
-                            <h2 className="text-2xl font-semibold text-gray-800 mb-2">Add Category</h2>
-
-
-                            {/* Category Name Input */}
-                            <div className="mb-2">
-                                <label className="block text-lg text-gray-600 font-medium mb-2">Category Name <span className="text-red-500">*</span></label>
-                                <Controller
-                                    name="name"
-                                    control={control}
-                                    render={({ field }) => (
-                                        <input
-                                            type="text"
-                                            placeholder="Enter Category Name"
-                                            className="w-full border border-gray-300 rounded-md px-4 py-3 text-gray-800 focus:outline-none"
-                                            {...field}
-                                        />
-                                    )}
-                                />
-                                {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
-                            </div>
-
-                            {/* Description Input */}
-                            <div className="mb-2">
-                                <label className="block text-lg text-gray-600 font-medium mb-2">Description</label>
-                                <Controller
-                                    name="description"
-                                    control={control}
-                                    render={({ field }) => (
-                                        <textarea
-                                            placeholder="Enter Category Description"
-                                            className="w-full border border-gray-300 rounded-md px-4 py-3 text-gray-800 focus:outline-none"
-                                            {...field}
-                                        />
-                                    )}
-                                />
-                            </div>
-
-                            {/* Parent Category Dropdown */}
-                            <div className="mb-2">
-                                <label className="block text-lg text-gray-600 font-medium mb-2">Parent Category</label>
-                                <Controller
-                                    name="parent_id"
-                                    control={control}
-                                    render={({ field }) => (
-                                        <select
-                                            {...field}
-                                            className="w-full border border-gray-300 rounded-md px-4 py-3 text-gray-800 focus:outline-none"
-                                        >
-                                            <option value="">None (Top Level Category)</option>
-                                            {tableData.map((category) => (
-                                                <option key={category.id} value={category.id}>
-                                                    {category.name}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    )}
-                                />
-                            </div>
-
-                            {/* Status Toggle */}
-                            <div className="mb-2">
-                                <label className="block text-lg text-gray-600 font-medium mb-2">Status</label>
-                                <Controller
-                                    name="status"
-                                    control={control}
-                                    render={({ field }) => (
-                                        <label className="flex items-center">
-                                            <input
-                                                type="checkbox"
-                                                checked={field.value}
-                                                onChange={(e) => field.onChange(e.target.checked)}
-                                                className="form-checkbox h-5 w-5 text-blue-600"
-                                            />
-                                            <span className="ml-2">Active</span>
-                                        </label>
-                                    )}
-                                />
-                            </div>
-
-                            {/* Category Image Input */}
-                            <div className="mb-2">
-                                <label className="block text-lg text-gray-600 font-medium mb-2">Category Image</label>
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleImageChange}
-                                    className="w-full border border-gray-300 rounded-md px-4 py-3 text-gray-800 focus:outline-none"
-                                />
-                                {imagePreview && (
-                                    <img
-                                        src={imagePreview}
-                                        alt="Preview"
-                                        className="mt-2 w-24 h-24 object-cover rounded"
-                                    />
-                                )}
-                            </div>
-
-                            {/* Buttons */}
-                            <div className="flex justify-end space-x-4 mt-4">
-                                <button
-                                    onClick={() => setOpenAddModal(false)} // Close the modal
-                                    className="bg-gray-300 text-gray-800 px-6 py-3 rounded-md"
-                                >
-                                    Cancel
-                                </button>
-
-                                <button
-                                    onClick={handleSubmit(handleFormSubmit)} // Handle form submission
-                                    disabled={loading} // Disable if loading
-                                    className="relative bg-[#4318ff] text-white px-6 py-3 rounded-lg flex items-center ml-auto max-w-xs"
-                                >
-                                    {loading ? (
-                                        <div className="absolute inset-0 flex items-center justify-center w-full h-full">
-                                            <div className="w-6 h-6 border-4 border-t-transparent border-white rounded-full animate-spin"></div>
-                                        </div>
-                                    ) : (
-                                        'Create'
-                                    )}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {openEditModal && (
-                    <div className="fixed inset-0 flex items-center justify-center z-50 bg-gray-900 bg-opacity-50"
-                        onClick={() => {
-                            setOpenAddModal(false);  // Close the modal
-                            reset();  // Reset the form
-                        }}>
-                        <div className="bg-white rounded-lg shadow-2xl p-8" onClick={(e) => e.stopPropagation()}>
-                            <h2 className="text-2xl font-semibold text-gray-800 mb-2">Edit Category</h2>
-
-                            {/* Category Name Input */}
-                            <div className="mb-2">
-                                <label className="block text-lg text-gray-600 font-medium mb-2">Category Name<span className="text-red-500 ">*</span></label>
-                                <Controller
-                                    name="name"
-                                    control={control}
-                                    defaultValue={categoryData?.name || ''}  // Autofill with the selected category's name
-                                    render={({ field }) => (
-                                        <input
-                                            type="text"
-                                            placeholder="Enter Category Name"
-                                            className="w-full border border-gray-300 rounded-md px-4 py-3 text-gray-800 focus:outline-none"
-                                            {...field}
-                                        />
-                                    )}
-                                />
-                                {errors.name && !categoryData?.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
-                            </div>
-
-                            {/* Description Input */}
-                            <div className="mb-2">
-                                <label className="block text-lg text-gray-600 font-medium mb-2">Description</label>
-                                <Controller
-                                    name="description"
-                                    control={control}
-                                    defaultValue={categoryData?.description || ''}  // Autofill with the selected category's description
-                                    render={({ field }) => (
-                                        <textarea
-                                            placeholder="Enter Category Description"
-                                            className="w-full border border-gray-300 rounded-md px-4 py-3 text-gray-800 focus:outline-none"
-                                            {...field}
-                                        />
-                                    )}
-                                />
-                            </div>
-
-                            {/* Status Toggle */}
-                            <div className="mb-2">
-                                <label className="block text-lg text-gray-600 font-medium mb-2">Status</label>
-                                <Controller
-                                    name="status"
-                                    control={control}
-                                    defaultValue={categoryData?.status || true}  // Autofill with the selected category's status
-                                    render={({ field }) => (
-                                        <label className="flex items-center">
-                                            <input
-                                                type="checkbox"
-                                                checked={field.value}
-                                                onChange={(e) => field.onChange(e.target.checked)}
-                                                className="form-checkbox h-5 w-5 text-blue-600"
-                                            />
-                                            <span className="ml-2">Active</span>
-                                        </label>
-                                    )}
-                                />
-                            </div>
-
-                            {/* Category Image Input */}
-                            <div className="mb-2">
-                                <label className="block text-lg text-gray-600 font-medium mb-2">Category Image</label>
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleImageChange}
-                                    className="w-full border border-gray-300 rounded-md px-4 py-3 text-gray-800 focus:outline-none"
-                                />
-                                {errors.categoryImage && <p className="text-red-500 text-sm">{errors.categoryImage.message}</p>}
-                                {/* {categoryData?.photo && (
-                                    <div className="mt-4">
-                                        <img
-                                            src={categoryData.photo} // Show the existing image for the selected category
-                                            alt="Current Category"
-                                            className="w-24 h-24 object-cover"
-                                        />
-                                    </div>
-                                )} */}
-                            </div>
-
-                            {/* Buttons */}
-                            <div className="flex justify-end space-x-4 mt-4">
-                                <button
-                                    onClick={() => setOpenEditModal(false)} // Close the modal
-                                    className="bg-gray-300 text-gray-800 px-6 py-3 rounded-md"
-                                >
-                                    Cancel
-                                </button>
-
-                                <button
-                                    onClick={handleSubmit(handleFormUpdate)} // Handle form submission
-                                    disabled={loading} // Disable if loading
-                                    className="relative bg-[#4318ff] text-white px-6 py-3 rounded-lg flex items-center ml-auto max-w-xs"
-                                >
-                                    {loading ? (
-                                        <div className="absolute inset-0 flex items-center justify-center">
-                                            <div className="w-6 h-6 border-4 border-t-transparent border-white rounded-full animate-spin"></div>
-                                        </div>
-                                    ) : (
-                                        'Save Changes'
-                                    )}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
 
                 {/* Table */}
                 <div className="mt-8 bg-white shadow-lg rounded-lg p-6">
@@ -714,7 +564,7 @@ function Category() {
                                                 <div className="absolute right-40 flex space-x-2 opacity-0 group-hover:opacity-100 group-hover:flex transition-all duration-200">
                                                     <button
                                                         onClick={() => {
-                                                            handleEditRow(category);
+                                                            handleEdit(category);
                                                         }}
                                                         className="text-navy-700 hover:bg-gray-200"
                                                     >
@@ -722,7 +572,8 @@ function Category() {
                                                     </button>
                                                     <button
                                                         onClick={() => {
-                                                            handleDeleteRow(category.id);
+                                                            setCategoryToDelete(category.id);
+                                                            setIsDeleteModalOpen(true);
                                                         }}
                                                         className="text-red-600 hover:bg-gray-200"
                                                     >
@@ -800,6 +651,87 @@ function Category() {
                                     'Delete'
                                 )}
                                 {isDeleting ? 'Deleting...' : ''}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Add/Edit Modal */}
+            {isModalOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                    <div className="bg-white p-6 rounded-lg w-96">
+                        <h2 className="text-xl font-bold mb-4">
+                            {isEditMode ? 'Edit Category' : 'Add Category'}
+                        </h2>
+                        <form onSubmit={handleSubmitForm}>
+                            <div className="mb-4">
+                                <label className="block text-gray-700 text-sm font-bold mb-2">
+                                    Category Name
+                                </label>
+                                <input
+                                    type="text"
+                                    name="category_name"
+                                    value={formData.category_name}
+                                    onChange={handleInputChange}
+                                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                    required
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label className="block text-gray-700 text-sm font-bold mb-2">
+                                    Photo
+                                </label>
+                                <input
+                                    type="file"
+                                    name="photo"
+                                    onChange={handleFileChange}
+                                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                    accept="image/*"
+                                    required={!isEditMode}
+                                />
+                            </div>
+                            <div className="flex justify-end">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setIsModalOpen(false);
+                                        resetForm();
+                                    }}
+                                    className="bg-gray-500 text-white px-4 py-2 rounded mr-2 hover:bg-gray-600"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                                >
+                                    {isEditMode ? 'Update' : 'Save'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Confirmation Modal */}
+            {isDeleteModalOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                    <div className="bg-white p-6 rounded-lg">
+                        <h2 className="text-xl font-bold mb-4">Confirm Delete</h2>
+                        <p className="mb-4">Are you sure you want to delete this category?</p>
+                        <div className="flex justify-end">
+                            <button
+                                onClick={() => setIsDeleteModalOpen(false)}
+                                className="bg-gray-500 text-white px-4 py-2 rounded mr-2 hover:bg-gray-600"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleDelete}
+                                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                            >
+                                Delete
                             </button>
                         </div>
                     </div>

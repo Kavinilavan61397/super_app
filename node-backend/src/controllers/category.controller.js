@@ -3,6 +3,7 @@ const { processImage } = require('../utils/imageProcessor');
 const path = require('path');
 const slugify = require('slugify');
 const fs = require('fs');
+const db = require('../config/database');
 
 // Get all categories
 exports.getAllCategories = async (req, res) => {
@@ -142,6 +143,8 @@ exports.updateCategory = async (req, res) => {
 // Delete category
 exports.deleteCategory = async (req, res) => {
   try {
+    console.log('Attempting to delete category:', req.params.id);
+    
     const category = await Category.findByPk(req.params.id, {
       include: [
         {
@@ -152,44 +155,78 @@ exports.deleteCategory = async (req, res) => {
     });
     
     if (!category) {
+      console.log('Category not found:', req.params.id);
       return res.status(404).json({ message: 'Category not found' });
     }
 
     // Check if category has subcategories
     if (category.subcategories && category.subcategories.length > 0) {
+      console.log('Category has subcategories:', category.subcategories.length);
       return res.status(400).json({
         message: 'Cannot delete category with subcategories. Please delete or reassign subcategories first.'
       });
     }
 
-    // Check if category has associated products
-    const hasProducts = await category.hasProducts(); // Assuming there's a products association
-    if (hasProducts) {
-      return res.status(400).json({
-        message: 'Cannot delete category with associated products. Please delete or reassign products first.'
-      });
+    // Check if category has associated products using raw query
+    try {
+      const [products] = await db.query(
+        'SELECT COUNT(*) as count FROM products WHERE category_id = ?',
+        {
+          replacements: [req.params.id],
+          type: db.QueryTypes.SELECT
+        }
+      );
+
+      console.log('Products count:', products.count);
+
+      if (products.count > 0) {
+        return res.status(400).json({
+          message: 'Cannot delete category with associated products. Please delete or reassign products first.'
+        });
+      }
+    } catch (queryError) {
+      console.error('Error checking products:', queryError);
+      // If products table doesn't exist or other DB error, continue with deletion
     }
 
     // Delete category image if exists
     if (category.image) {
       const imagePath = path.join(__dirname, '..', '..', category.image);
       if (fs.existsSync(imagePath)) {
-        fs.unlinkSync(imagePath);
+        try {
+          fs.unlinkSync(imagePath);
+          console.log('Category image deleted:', imagePath);
+        } catch (unlinkError) {
+          console.error('Error deleting image file:', unlinkError);
+          // Continue with category deletion even if image deletion fails
+        }
       }
     }
 
     await category.destroy();
+    console.log('Category deleted successfully:', req.params.id);
     res.json({ message: 'Category deleted successfully' });
   } catch (error) {
     console.error('Delete category error:', error);
+    console.error('Error details:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack
+    });
+
     if (error.name === 'SequelizeForeignKeyConstraintError') {
       return res.status(400).json({
-        message: 'Cannot delete category because it has associated items (products or subcategories). Please remove these associations first.'
+        message: 'Cannot delete category because it has associated items. Please remove these associations first.'
       });
     }
+
+    // Send more detailed error information
     res.status(500).json({ 
-      message: 'Failed to delete category. ' + error.message,
-      error: error.name
+      message: 'Failed to delete category: ' + error.message,
+      error: {
+        name: error.name,
+        details: error.original ? error.original.message : error.message
+      }
     });
   }
 };

@@ -5,28 +5,28 @@ import 'react-toastify/dist/ReactToastify.css';
 import { apiGet, apiPost, apiPut, apiDelete } from '../../../utils/apiUtils';
 import API_CONFIG from '../../../config/api.config';
 
-function Color() {
+function Unit() {
   const [tableData, setTableData] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [formData, setFormData] = useState({
-    color_name: '',
-    color_code: ''
+    unit_name: '',
+    unit_symbol: ''
   });
-  const [editColor, setEditColor] = useState(null);
-  const [colorToDelete, setColorToDelete] = useState(null);
+  const [editUnit, setEditUnit] = useState(null);
+  const [unitToDelete, setUnitToDelete] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   useEffect(() => {
-    fetchColors();
+    fetchUnits();
   }, []);
 
-  const fetchColors = async () => {
+  const fetchUnits = async () => {
     try {
-      const data = await apiGet(API_CONFIG.ENDPOINTS.ADMIN.COLORS);
+      const data = await apiGet(API_CONFIG.ENDPOINTS.ADMIN.UNITS);
       setTableData(data);
     } catch (error) {
-      toast.error('Error fetching colors');
+      toast.error('Error fetching units');
     }
   };
 
@@ -42,25 +42,25 @@ function Color() {
     e.preventDefault();
     try {
       if (isEditMode) {
-        await apiPut(`${API_CONFIG.ENDPOINTS.ADMIN.COLORS}/${editColor.id}`, formData);
-        toast.success('Color updated successfully');
+        await apiPut(`${API_CONFIG.ENDPOINTS.ADMIN.UNITS}/${editUnit.id}`, formData);
+        toast.success('Unit updated successfully');
       } else {
-        await apiPost(API_CONFIG.ENDPOINTS.ADMIN.COLORS, formData);
-        toast.success('Color created successfully');
+        await apiPost(API_CONFIG.ENDPOINTS.ADMIN.UNITS, formData);
+        toast.success('Unit created successfully');
       }
       setIsModalOpen(false);
-      fetchColors();
+      fetchUnits();
       resetForm();
     } catch (error) {
-      toast.error('Error saving color');
+      toast.error('Error saving unit');
     }
   };
 
-  const handleEdit = (color) => {
-    setEditColor(color);
+  const handleEdit = (unit) => {
+    setEditUnit(unit);
     setFormData({
-      color_name: color.color_name,
-      color_code: color.color_code
+      unit_name: unit.unit_name,
+      unit_symbol: unit.unit_symbol
     });
     setIsEditMode(true);
     setIsModalOpen(true);
@@ -68,28 +68,28 @@ function Color() {
 
   const handleDelete = async () => {
     try {
-      await apiDelete(`${API_CONFIG.ENDPOINTS.ADMIN.COLORS}/${colorToDelete}`);
-      toast.success('Color deleted successfully');
+      await apiDelete(`${API_CONFIG.ENDPOINTS.ADMIN.UNITS}/${unitToDelete}`);
+      toast.success('Unit deleted successfully');
       setIsDeleteModalOpen(false);
-      fetchColors();
+      fetchUnits();
     } catch (error) {
-      toast.error('Error deleting color');
+      toast.error('Error deleting unit');
     }
   };
 
   const resetForm = () => {
     setFormData({
-      color_name: '',
-      color_code: ''
+      unit_name: '',
+      unit_symbol: ''
     });
-    setEditColor(null);
+    setEditUnit(null);
     setIsEditMode(false);
   };
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Colors</h1>
+        <h1 className="text-2xl font-bold">Units</h1>
         <button
           onClick={() => {
             resetForm();
@@ -97,43 +97,35 @@ function Color() {
           }}
           className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 flex items-center"
         >
-          <FaPlus className="mr-2" /> Add Color
+          <FaPlus className="mr-2" /> Add Unit
         </button>
       </div>
 
-      {/* Color Table */}
+      {/* Unit Table */}
       <div className="bg-white rounded-lg shadow overflow-x-auto">
         <table className="min-w-full">
           <thead>
             <tr className="bg-gray-100">
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Color Name</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Color Code</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Name</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Symbol</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {tableData.map((color) => (
-              <tr key={color.id}>
-                <td className="px-6 py-4 whitespace-nowrap">{color.color_name}</td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <div
-                      className="w-6 h-6 rounded-full mr-2"
-                      style={{ backgroundColor: color.color_code }}
-                    ></div>
-                    {color.color_code}
-                  </div>
-                </td>
+            {tableData.map((unit) => (
+              <tr key={unit.id}>
+                <td className="px-6 py-4 whitespace-nowrap">{unit.unit_name}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{unit.unit_symbol}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <button
-                    onClick={() => handleEdit(color)}
+                    onClick={() => handleEdit(unit)}
                     className="text-blue-600 hover:text-blue-900 mr-4"
                   >
                     <FaEdit />
                   </button>
                   <button
                     onClick={() => {
-                      setColorToDelete(color.id);
+                      setUnitToDelete(unit.id);
                       setIsDeleteModalOpen(true);
                     }}
                     className="text-red-600 hover:text-red-900"
@@ -152,17 +144,17 @@ function Color() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-white p-6 rounded-lg w-96">
             <h2 className="text-xl font-bold mb-4">
-              {isEditMode ? 'Edit Color' : 'Add Color'}
+              {isEditMode ? 'Edit Unit' : 'Add Unit'}
             </h2>
             <form onSubmit={handleSubmit}>
               <div className="mb-4">
                 <label className="block text-gray-700 text-sm font-bold mb-2">
-                  Color Name
+                  Unit Name
                 </label>
                 <input
                   type="text"
-                  name="color_name"
-                  value={formData.color_name}
+                  name="unit_name"
+                  value={formData.unit_name}
                   onChange={handleInputChange}
                   className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                   required
@@ -170,12 +162,12 @@ function Color() {
               </div>
               <div className="mb-4">
                 <label className="block text-gray-700 text-sm font-bold mb-2">
-                  Color Code
+                  Unit Symbol
                 </label>
                 <input
-                  type="color"
-                  name="color_code"
-                  value={formData.color_code}
+                  type="text"
+                  name="unit_symbol"
+                  value={formData.unit_symbol}
                   onChange={handleInputChange}
                   className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                   required
@@ -209,7 +201,7 @@ function Color() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-white p-6 rounded-lg">
             <h2 className="text-xl font-bold mb-4">Confirm Delete</h2>
-            <p className="mb-4">Are you sure you want to delete this color?</p>
+            <p className="mb-4">Are you sure you want to delete this unit?</p>
             <div className="flex justify-end">
               <button
                 onClick={() => setIsDeleteModalOpen(false)}
@@ -233,4 +225,4 @@ function Color() {
   );
 }
 
-export default Color;
+export default Unit; 

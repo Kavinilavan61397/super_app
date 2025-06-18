@@ -10,6 +10,9 @@ import { TokenExpiration } from 'views/auth/TokenExpiration ';
 import 'react-toastify/dist/ReactToastify.css';
 import { toast, ToastContainer } from 'react-toastify';
 import Navbar from 'components/navbar';
+import { apiGet, apiPost, apiPut, apiDelete } from '../../../utils/apiUtils';
+import API_CONFIG from '../../../config/api.config';
+
 function Units() {
     const [tableData, setTableData] = useState([]);
     const [openAddModal, setOpenAddModal] = useState(false);
@@ -27,13 +30,18 @@ function Units() {
     const [isDeleting, setIsDeleting] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [filteredData, setFilteredData] = useState([]);  // For storing the filtered data
-
-
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [formData, setFormData] = useState({
+        unit_name: '',
+        unit_symbol: ''
+    });
+    const [editUnit, setEditUnit] = useState(null);
+    const [unitToDelete, setUnitToDelete] = useState(null);
 
     // Yup validation schema
     const validationSchemaAdd = Yup.object({
         unit_name: Yup.string().required('Unit Name is required'),
-
     });
 
     const validationSchemaEdit = Yup.object({
@@ -49,22 +57,11 @@ function Units() {
 
     const fetchSizeData = async () => {
         try {
-            const response = await axios.get('https://yrpitsolutions.com/ecom_backend/api/admin/get_all_unit');
-            let data = response.data.data;
-            console.log(data);
-
-            // Apply the search query filter here
-            if (searchQuery.trim() !== '') {
-                data = data.filter((unit) =>
-                    unit.unit_name.toLowerCase().includes(searchQuery.toLowerCase())
-                );
-            }
-
-            // Set filtered data (filtered by search query)
-            setFilteredData(data);
+            const data = await apiGet(API_CONFIG.ENDPOINTS.ADMIN.UNITS);
+            setTableData(data);
             setTotalItems(data.length);  // Set total items for pagination
         } catch (error) {
-            console.error('Error fetching data:', error);
+            toast.error('Error fetching units');
         }
     };
 
@@ -87,8 +84,6 @@ function Units() {
         }
     }, [searchQuery, tableData]);
 
-
-
     // Handle Page Change
     const handlePageChange = (page) => {
         if (page < 1 || page > totalPages) return;
@@ -101,96 +96,50 @@ function Units() {
         fetchSizeData();
     }, [itemsPerPage]);
 
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
 
-    const handleFormSubmit = async (data) => {
-        const formData = new FormData();
-        formData.append('unit_name', data.unit_name);
-        setLoading(true);
-
+    const handleSubmitForm = async (e) => {
+        e.preventDefault();
         try {
-            const accessToken = localStorage.getItem('OnlineShop-accessToken');
-            const url = 'https://yrpitsolutions.com/ecom_backend/api/admin/save_unit';
-
-            setTimeout(async () => {
-                try {
-                    const response = await axios.post(url, formData, {
-                        headers: { Authorization: `Bearer ${accessToken}` }
-                    });
-
-                    if (response.status === 200) {
-                        fetchSizeData();
-                        setOpenAddModal(false);
-                        setBrandImage(null);
-                        reset();
-
-                        // Success toast
-                        toast.success('Unit added successfully!', {
-                            progress: undefined,  // Hide progress bar
-                            hideProgressBar: true,
-                        });
-                    }
-                } catch (error) {
-                    console.error('Error submitting form:', error);
-
-                    // Error toast
-                    toast.error('Error adding size!', {
-                        progress: undefined,  // Hide progress bar
-                        hideProgressBar: true,
-                    });
-                } finally {
-                    setLoading(false);
-                }
-            }, 2000);
+            if (isEditMode) {
+                await apiPut(`${API_CONFIG.ENDPOINTS.ADMIN.UNITS}/${editUnit.id}`, formData);
+                toast.success('Unit updated successfully');
+            } else {
+                await apiPost(API_CONFIG.ENDPOINTS.ADMIN.UNITS, formData);
+                toast.success('Unit created successfully');
+            }
+            setIsModalOpen(false);
+            fetchSizeData();
+            reset();
         } catch (error) {
-            setLoading(false);
-            console.error('Error preparing form data:', error);
+            toast.error('Error saving unit');
         }
     };
 
-    const handleFormUpdate = async (data) => {
-        setLoading(true);
+    const handleEdit = (unit) => {
+        setEditUnit(unit);
+        setFormData({
+            unit_name: unit.unit_name,
+            unit_symbol: unit.unit_symbol
+        });
+        setIsEditMode(true);
+        setIsModalOpen(true);
+    };
 
-        const formData = new FormData();
-        formData.append('_method', 'PUT');
-        formData.append('unit_name', data.unit_name || selectedSize.unit_name);
-
+    const handleDelete = async () => {
         try {
-            const accessToken = localStorage.getItem('OnlineShop-accessToken');
-            const url = `https://yrpitsolutions.com/ecom_backend/api/admin/update_unit_by_id/${selectedSize.id}`;
-
-            setTimeout(async () => {
-                try {
-                    const response = await axios.post(url, formData, {
-                        headers: { Authorization: `Bearer ${accessToken}` },
-                    });
-
-                    if (response.status === 200) {
-                        fetchSizeData();
-                        setOpenEditModal(false);
-                        setBrandImage(null);
-                        reset();
-
-                        // Success toast
-                        toast.success('Unit updated successfully!', {
-                            progress: undefined,  // Hide progress bar
-                            hideProgressBar: true,
-                        });
-                    }
-                } catch (error) {
-                    console.error('Error updating form:', error);
-
-                    // Error toast
-                    toast.error('Error updating size!', {
-                        progress: undefined,  // Hide progress bar
-                        hideProgressBar: true,
-                    });
-                } finally {
-                    setLoading(false);
-                }
-            }, 2000);
+            await apiDelete(`${API_CONFIG.ENDPOINTS.ADMIN.UNITS}/${unitToDelete}`);
+            toast.success('Unit deleted successfully');
+            setOpenDeleteDialog(false);
+            fetchSizeData();
         } catch (error) {
-            setLoading(false);
-            console.error('Error preparing form data:', error);
+            toast.error('Error deleting unit');
         }
     };
 
@@ -207,7 +156,6 @@ function Units() {
         trigger();
     };
 
-
     const handleDeleteRow = (id) => {
         setRowIdToDelete(id);
         setOpenDeleteDialog(true);
@@ -216,31 +164,7 @@ function Units() {
     const handleDeleteConfirmation = async () => {
         setIsDeleting(true);
         try {
-            const accessToken = localStorage.getItem('OnlineShop-accessToken');
-
-            // Perform the delete request
-            await axios.delete(`https://yrpitsolutions.com/ecom_backend/api/admin/delete_unit_by_id/${rowIdToDelete}`, {
-                headers: { Authorization: `Bearer ${accessToken}` },
-            });
-
-            // Refresh size data and close the delete dialog
-            fetchSizeData();
-            setOpenDeleteDialog(false);
-
-            // Show success toast
-            toast.success('Unit deleted successfully!', {
-                progress: undefined,  // Hide progress bar
-                hideProgressBar: true,
-            });
-
-        } catch (error) {
-            console.error('Error deleting Units:', error);
-
-            // Show error toast
-            toast.error('Error deleting Units!', {
-                progress: undefined,  // Hide progress bar
-                hideProgressBar: true,
-            });
+            await handleDelete();
         } finally {
             setIsDeleting(false);
         }
@@ -249,6 +173,7 @@ function Units() {
     const handleCancelDelete = () => {
         setOpenDeleteDialog(false);
     };
+
     const handleBulkDelete = async () => {
         setLoading(true);
         try {
@@ -256,9 +181,7 @@ function Units() {
 
             // Iterate through selected rows and delete each size
             for (let id of selectedRows) {
-                await axios.delete(`https://yrpitsolutions.com/ecom_backend/api/admin/delete_unit_by_id/${id}`, {
-                    headers: { Authorization: `Bearer ${accessToken}` },
-                });
+                await apiDelete(`${API_CONFIG.ENDPOINTS.ADMIN.UNITS}/${id}`);
             }
 
             // Refresh size data
@@ -293,22 +216,6 @@ function Units() {
         );
     };
 
-    // useEffect(() => {
-    //     if (searchQuery) {
-    //         // Ensure you're filtering by the discount name
-    //         const filtered = tableData.filter((size) =>
-    //             size.size_name?.toLowerCase().includes(searchQuery.toLowerCase()) // Filter by discount name
-    //         );
-    //         setFilteredData(filtered);
-    //         setTotalItems(filtered.length);
-    //         setCurrentPage(1); // Reset to first page when search query changes
-    //     } else {
-    //         setFilteredData(tableData); // If no search query, show all discounts
-    //         setTotalItems(tableData.length);
-    //     }
-    // }, [searchQuery, tableData]);
-
-
     // Get paginated data
     const getPaginatedData = () => {
         const start = (currentPage - 1) * itemsPerPage;
@@ -316,10 +223,7 @@ function Units() {
         return filteredData.slice(start, end);
     };
 
-
-    // const [openDropdown, setOpenDropdown] = useState(null);
     const dropdownRef = useRef(null);
-
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -334,9 +238,10 @@ function Units() {
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, []);
+
     return (
         <div className=" min-h-screen pt-6">
-             <Navbar brandText={"Units"} />
+            <Navbar brandText={"Units"} />
             <TokenExpiration />
             <ToastContainer />
             <div className="w-full mx-auto">
@@ -357,7 +262,6 @@ function Units() {
                         </div>
                     </div>
 
-
                     <button
                         onClick={handleAddBrand}
                         className="bg-[#4318ff] text-white px-6 py-2 rounded-full text-lg font-medium flex items-center ml-auto"
@@ -365,7 +269,6 @@ function Units() {
                         <FaPlus className="mr-2" /> Add Units
                     </button>
                 </span>
-
 
                 {openAddModal && !openEditModal && (
                     <div
@@ -395,8 +298,6 @@ function Units() {
                                 {errors.unit_name && <p className="text-red-500 text-sm">{errors.unit_name.message}</p>}
                             </div>
 
-
-
                             <div className="flex justify-end space-x-4 mt-4">
                                 <button
                                     onClick={() => setOpenAddModal(false)}
@@ -406,7 +307,7 @@ function Units() {
                                 </button>
 
                                 <button
-                                    onClick={handleSubmit(handleFormSubmit)}
+                                    onClick={handleSubmit(handleSubmitForm)}
                                     disabled={loading}
                                     className="relative bg-[#4318ff] text-white px-6 py-3 rounded-lg flex items-center ml-auto max-w-xs"
                                 >
@@ -462,7 +363,7 @@ function Units() {
                                 </button>
 
                                 <button
-                                    onClick={handleSubmit(handleFormUpdate)}
+                                    onClick={handleSubmit(handleSubmitForm)}
                                     disabled={loading}
                                     className="relative bg-[#4318ff] text-white px-6 py-3 rounded-lg flex items-center ml-auto max-w-xs"
                                 >
@@ -479,8 +380,6 @@ function Units() {
                     </div>
                 )}
 
-
-
                 {/* Table */}
                 <div className="mt-8 bg-white shadow-lg rounded-lg p-6">
                     <table className="w-full table-auto">
@@ -490,7 +389,6 @@ function Units() {
                                     <div className="flex justify-between items-center">
                                         <input
                                             type="checkbox"
-                                            // checked={selectedRows.length === getPaginatedData().length}
                                             checked={false} 
                                             onChange={() => {
                                                 if (selectedRows.length === getPaginatedData().length) {
@@ -504,6 +402,7 @@ function Units() {
                                 </th>
 
                                 <th className="px-6 py-4 text-left">Units Name</th>
+                                <th className="px-6 py-4 text-left">Unit Symbol</th>
                                 <th className="">
                                     {selectedRows.length > 0 && (
                                         <button
@@ -536,43 +435,7 @@ function Units() {
                                         </td>
 
                                         <td className="px-6 py-4">{unit.unit_name}</td>
-                                        {/* <td className="text-right">
-                                            <div className="relative inline-block">
-                                                <button
-                                                    onClick={() => setOpenDropdown(openDropdown === size.id ? null : size.id)}
-                                                    className="text-gray-600 hover:text-gray-900"
-                                                >
-                                                    <FaEllipsisV />
-                                                </button>
-                                                {openDropdown === size.id && (
-                                                    <div
-                                                        ref={dropdownRef}
-                                                        className="absolute right-0 mt-2 bg-white border border-gray-200 shadow-lg rounded-md w-40 z-10"
-                                                    >
-                                                        <div
-                                                            onClick={() => {
-                                                                handleEditRow(size);
-                                                                setOpenDropdown(null);
-                                                            }}
-                                                            className="flex items-center px-4 py-2 text-navy-700 hover:bg-gray-200 cursor-pointer"
-                                                        >
-                                                            <FaEdit className="mr-2 text-black" />
-                                                            Edit
-                                                        </div>
-                                                        <div
-                                                            onClick={() => {
-                                                                handleDeleteRow(size.id);
-                                                                setOpenDropdown(null);
-                                                            }}
-                                                            className="flex items-center px-4 py-2 text-red-600 hover:bg-gray-200 cursor-pointer"
-                                                        >
-                                                            <FaTrashAlt className="mr-2" />
-                                                            Delete
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </td> */}
+                                        <td className="px-6 py-4">{unit.unit_symbol}</td>
 
                                         <td className="text-right">
                                             <div className="relative inline-block group">
@@ -587,7 +450,7 @@ function Units() {
                                                 >
                                                     <div
                                                         onClick={() => {
-                                                            handleEditRow(unit);
+                                                            handleEdit(unit);
                                                             setOpenDropdown(null);
                                                         }}
                                                         className="flex items-center px-4 py-2 text-navy-700 hover:bg-gray-200 cursor-pointer"
@@ -596,8 +459,8 @@ function Units() {
                                                     </div>
                                                     <div
                                                         onClick={() => {
-                                                            handleDeleteRow(unit.id);
-                                                            setOpenDropdown(null);
+                                                            setUnitToDelete(unit.id);
+                                                            setOpenDeleteDialog(true);
                                                         }}
                                                         className="flex items-center px-4 py-2 text-red-600 hover:bg-gray-200 cursor-pointer"
                                                     >
@@ -618,7 +481,6 @@ function Units() {
                         </tbody>
                     </table>
                 </div>
-
 
             </div>
 
@@ -698,11 +560,64 @@ function Units() {
                     </div>
                 </div>
             )}
+
+            {/* Add/Edit Modal */}
+            {isModalOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                    <div className="bg-white p-6 rounded-lg w-96">
+                        <h2 className="text-xl font-bold mb-4">
+                            {isEditMode ? 'Edit Unit' : 'Add Unit'}
+                        </h2>
+                        <form onSubmit={handleSubmitForm}>
+                            <div className="mb-4">
+                                <label className="block text-gray-700 text-sm font-bold mb-2">
+                                    Unit Name
+                                </label>
+                                <input
+                                    type="text"
+                                    name="unit_name"
+                                    value={formData.unit_name}
+                                    onChange={handleInputChange}
+                                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                    required
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label className="block text-gray-700 text-sm font-bold mb-2">
+                                    Unit Symbol
+                                </label>
+                                <input
+                                    type="text"
+                                    name="unit_symbol"
+                                    value={formData.unit_symbol}
+                                    onChange={handleInputChange}
+                                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                    required
+                                />
+                            </div>
+                            <div className="flex justify-end">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setIsModalOpen(false);
+                                        reset();
+                                    }}
+                                    className="bg-gray-500 text-white px-4 py-2 rounded mr-2 hover:bg-gray-600"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                                >
+                                    {isEditMode ? 'Update' : 'Save'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
-
-
-
-
     );
 }
 

@@ -8,7 +8,8 @@ const PORT = process.env.PORT || 5000;
 const startServer = async () => {
   try {
     // Initialize database without force/alter options
-    await sequelize.sync();
+    
+    await sequelize.sync({ alter: true }); // 🔄 Auto-creates or updates tables
 
     // Start server
     app.listen(PORT, () => {

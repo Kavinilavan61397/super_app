@@ -40,7 +40,8 @@ app.use('/api/admin', unitRoutes);  // Unit routes under /api/admin prefix
 app.use('/api/hotels', hotelRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/bookings', bookingRoutes);
-
+const groceryRoutes = require('./routes/grocery.routes');
+app.use('/api/groceries', groceryRoutes);
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
@@ -58,5 +59,6 @@ app.use((req, res) => {
     message: 'Route not found'
   });
 });
+
 
 module.exports = app; 

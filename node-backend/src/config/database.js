@@ -1,6 +1,6 @@
 const { Sequelize } = require('sequelize');
 
-const sequelize = new Sequelize('superapp_db', 'root', 'password', {
+const sequelize = new Sequelize('superapp_db', 'root', 'Ajey@123', {
   host: 'localhost',
   dialect: 'mysql',
   logging: console.log,  // Enable logging temporarily for debugging

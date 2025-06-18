@@ -183,3 +183,20 @@ CREATE TABLE IF NOT EXISTS taxi_rides (
     PRIMARY KEY (id),
     FOREIGN KEY (user_id) REFERENCES users(id)
 ); 
+-- Groceries Table
+CREATE TABLE IF NOT EXISTS groceries (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  name VARCHAR(255) NOT NULL,
+  description TEXT,
+  original_price DECIMAL(10, 2) NOT NULL,
+  discounted_price DECIMAL(10, 2) NOT NULL,
+  image VARCHAR(255),
+  rating DECIMAL(3,2),
+  is_best_seller BOOLEAN DEFAULT false,
+  quantity INT DEFAULT 1,
+  category VARCHAR(255),
+  status BOOLEAN DEFAULT true,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id)
+);

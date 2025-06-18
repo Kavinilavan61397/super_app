@@ -24,7 +24,7 @@ function Login() {
             if (response.ok) {
                 alert('Login successful!');
                 localStorage.setItem('token', data.data.token);
-                navigate('/home-clothes/profile'); 
+                navigate('/home'); 
             } else {
                 alert(data.message || 'Invalid email or password');
             }

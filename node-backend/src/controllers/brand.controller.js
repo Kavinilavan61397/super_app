@@ -6,13 +6,30 @@ const fs = require('fs').promises;
 // Get all brands
 exports.getAllBrands = async (req, res) => {
   try {
+    console.log("getAllBrands controller called");
+    console.log("Fetching all brands...");
+    
+    // Test database connection
+    const testQuery = await Brand.findOne();
+    console.log("Database connection test:", testQuery ? "successful" : "no data found");
+    
     const brands = await Brand.findAll({
       order: [['createdAt', 'DESC']]
     });
-    res.json(brands);
+    
+    console.log("Brands found:", brands.length);
+    console.log("Brands data:", JSON.stringify(brands, null, 2));
+    
+    // Return just the array of brands
+    return res.json(brands);
   } catch (error) {
-    console.error('Error fetching brands:', error);
-    res.status(500).json({
+    console.error('Error in getAllBrands:', error);
+    console.error('Error details:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack
+    });
+    return res.status(500).json({
       success: false,
       message: 'Error fetching brands',
       error: error.message

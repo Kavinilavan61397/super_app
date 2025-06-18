@@ -14,8 +14,13 @@ const {
   bulkDeleteBrands
 } = require('../controllers/brand.controller');
 
-// Public routes
-router.get('/get_all_brand', getAllBrands);
+// Public routes with logging
+router.get('/get_all_brand', (req, res, next) => {
+  console.log('GET /api/admin/get_all_brand route hit');
+  console.log('Headers:', req.headers);
+  next();
+}, getAllBrands);
+
 router.get('/:id', getBrandById);
 
 // Protected routes (admin only)

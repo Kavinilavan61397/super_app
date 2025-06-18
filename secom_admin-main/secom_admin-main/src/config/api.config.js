@@ -25,7 +25,7 @@ const API_CONFIG = {
 
   // Storage keys
   STORAGE_KEYS: {
-    AUTH_TOKEN: 'token',
+    AUTH_TOKEN: 'OnlineShop-accessToken',
     USER_DATA: 'userData',
     TOKEN_EXPIRATION: 'OnlineShop-tokenExpiration'
   },

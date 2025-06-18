@@ -13,7 +13,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import Navbar from 'components/navbar';
 import API_CONFIG from '../../../config/api.config';
 import { authService } from '../../../services/authService';
-import { brandService } from '../../../services/brandService';
+import brandService from '../../../services/brandService';
 
 function BrandTable() {
     const navigate = useNavigate();
@@ -98,14 +98,25 @@ function BrandTable() {
     const fetchBrandsData = async () => {
         try {
             setLoading(true);
-            const response = await api.get('/api/admin/get_all_brand');
-            setTableData(response.data);
-            setTotalItems(response.data.length);
+            const token = localStorage.getItem(API_CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+            console.log("Auth token for brand fetch:", token);
+            
+            const brands = await brandService.getAllBrands();
+            console.log("Brands data:", brands);
+            
+            if (Array.isArray(brands)) {
+                setTableData(brands);
+                setTotalItems(brands.length);
+                setFilteredData(brands); // Initialize filtered data with all data
+            } else {
+                console.error("Unexpected response format:", brands);
+                toast.error('Unexpected response format from server');
+            }
         } catch (error) {
-            console.error('Error fetching data:', error);
-            toast.error('Error fetching brands');
+            console.error('Error fetching brands:', error);
+            toast.error(error.response?.data?.message || 'Error fetching brands');
             if (error.response?.status === 401) {
-                navigate(API_CONFIG.ROUTES.LOGIN);
+                navigate('/login');
             }
         } finally {
             setLoading(false);
@@ -143,6 +154,7 @@ function BrandTable() {
     }, [itemsPerPage, searchQuery]);
 
     const getPaginatedData = () => {
+        console.log("filteredData================================>",filteredData);
         const start = (currentPage - 1) * itemsPerPage;
         const end = start + itemsPerPage;
         return filteredData.slice(start, end);  // Paginate after filtering
@@ -343,7 +355,7 @@ function BrandTable() {
         setOpenEditModal(false);
         reset(); // Reset the form data and errors
     };
-
+    
     return (
         <div className="min-h-screen pt-6">
           <Navbar brandText={"Brand"} />

@@ -14,6 +14,7 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem(API_CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+    // console.log("token================================>",token);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -89,11 +90,24 @@ export const authService = {
     try {
       const response = await api.post(API_CONFIG.AUTH.LOGIN, credentials);
       if (response.data.success && response.data.data?.token) {
+        // Store token consistently
         localStorage.setItem(API_CONFIG.STORAGE_KEYS.AUTH_TOKEN, response.data.data.token);
-        localStorage.setItem('OnlineShop-accessToken', response.data.data.token);
+        
+        // Set token expiration (default to 24 hours if not provided)
+        const expiresIn = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+        localStorage.setItem(
+          API_CONFIG.STORAGE_KEYS.TOKEN_EXPIRATION, 
+          String(Date.now() + expiresIn)
+        );
+
+        // Store user data if available
         if (response.data.data.user) {
-          localStorage.setItem(API_CONFIG.STORAGE_KEYS.USER_DATA, JSON.stringify(response.data.data.user));
+          localStorage.setItem(
+            API_CONFIG.STORAGE_KEYS.USER_DATA, 
+            JSON.stringify(response.data.data.user)
+          );
         }
+
         return {
           success: true,
           message: 'Login successful',

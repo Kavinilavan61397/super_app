@@ -126,9 +126,12 @@ export const authService = {
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
+      // Clear all auth-related items
       localStorage.removeItem(API_CONFIG.STORAGE_KEYS.AUTH_TOKEN);
       localStorage.removeItem(API_CONFIG.STORAGE_KEYS.USER_DATA);
       localStorage.removeItem(API_CONFIG.STORAGE_KEYS.TOKEN_EXPIRATION);
+      localStorage.removeItem('OnlineShop-accessToken');
+      localStorage.removeItem('OnlineShop-tokenExpiration');
     }
   },
 

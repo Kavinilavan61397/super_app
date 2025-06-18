@@ -43,13 +43,23 @@ const Navbar = (props) => {
     setIsLoggingOut(true);
     try {
       await authService.logout();
-      // The authService.logout() will handle the redirection
+      // Clear all auth-related items from localStorage
+      localStorage.removeItem(API_CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+      localStorage.removeItem(API_CONFIG.STORAGE_KEYS.USER_DATA);
+      localStorage.removeItem(API_CONFIG.STORAGE_KEYS.TOKEN_EXPIRATION);
+      localStorage.removeItem('OnlineShop-accessToken');
+      localStorage.removeItem('OnlineShop-tokenExpiration');
+      
+      // Redirect to login page
+      window.location.href = API_CONFIG.ROUTES.LOGIN;
     } catch (error) {
       console.error("Error during logout:", error);
       // Even if there's an error, we should still clear local data and redirect
       localStorage.removeItem(API_CONFIG.STORAGE_KEYS.AUTH_TOKEN);
       localStorage.removeItem(API_CONFIG.STORAGE_KEYS.USER_DATA);
       localStorage.removeItem(API_CONFIG.STORAGE_KEYS.TOKEN_EXPIRATION);
+      localStorage.removeItem('OnlineShop-accessToken');
+      localStorage.removeItem('OnlineShop-tokenExpiration');
       window.location.href = API_CONFIG.ROUTES.LOGIN;
     } finally {
       setIsLoggingOut(false);

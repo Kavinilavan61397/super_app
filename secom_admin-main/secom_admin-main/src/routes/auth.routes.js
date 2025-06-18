@@ -1,19 +1,19 @@
 import React from "react";
-import LoginForm from "../components/auth/RegisterForm";
-import RegisterForm from "../components/auth/RegisterForm";
+import SignIn from "../views/auth/SignIn";
+import SignUp from "../views/auth/SignUp";
 
 const authRoutes = [
   {
-    name: "Login",
+    name: "Sign In",
     layout: "/auth",
-    path: "login",
-    component: <LoginForm />,
+    path: "sign-in",
+    component: <SignIn />,
   },
   {
-    name: "Register",
+    name: "Sign Up",
     layout: "/auth",
-    path: "register",
-    component: <RegisterForm />,
+    path: "sign-up",
+    component: <SignUp />,
   },
 ];
 

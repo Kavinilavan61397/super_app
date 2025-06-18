@@ -42,6 +42,25 @@ app.use('/api/rooms', roomRoutes);
 app.use('/api/bookings', bookingRoutes);
 const groceryRoutes = require('./routes/grocery.routes');
 app.use('/api/groceries', groceryRoutes);
+
+// Default route
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Welcome to the Super App API',
+    version: '1.0.0',
+    endpoints: {
+      auth: '/api/auth',
+      categories: '/api/categories',
+      admin: '/api/admin',
+      hotels: '/api/hotels',
+      rooms: '/api/rooms',
+      bookings: '/api/bookings',
+      groceries: '/api/groceries'
+    }
+  });
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
@@ -59,6 +78,5 @@ app.use((req, res) => {
     message: 'Route not found'
   });
 });
-
 
 module.exports = app; 

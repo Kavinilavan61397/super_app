@@ -35,7 +35,8 @@ import {
   MdLocalPizza,
   MdHotel,
   MdLocationCity,
-  MdHelpOutline
+  MdHelpOutline,
+  MdLocalGroceryStore
 } from "react-icons/md";
 import { FaTags, FaPercentage } from "react-icons/fa";
 import { AiOutlineShoppingCart, AiOutlineAppstore } from 'react-icons/ai';
@@ -88,6 +89,8 @@ import AllHotel from "views/admin/Sidenav_pages/AllHotel";
 import HotelFaqs from "views/admin/Sidenav_pages/HotelFaqs";
 import ManageRooms from "views/admin/Sidenav_pages/ManageRooms";
 import AvailableRooms from "views/admin/Sidenav_pages/AvailableRooms";
+import GroceryTable from "views/admin/Sidenav_pages/GroceryTable";
+import GroceryForm from "views/admin/Sidenav_pages/GroceryForm";
 
 const routes = [
   ...authRoutes,
@@ -97,6 +100,27 @@ const routes = [
     path: "default",
     icon: <MdHome className="h-6 w-6" />,
     component: <MainDashboard />,
+  },
+  {
+    name: "Grocery",
+    layout: "/admin",
+    icon: <MdLocalGroceryStore className="h-6 w-6" />,
+    subNav: [
+      {
+        name: "All Groceries",
+        layout: "/admin",
+        icon: <MdLocalGroceryStore className="h-6 w-6" />,
+        path: "groceries",
+        component: <GroceryTable />,
+      },
+      {
+        name: "Add Grocery",
+        layout: "/admin",
+        icon: <MdLocalGroceryStore className="h-6 w-6" />,
+        path: "groceries/new",
+        component: <GroceryForm />,
+      }
+    ]
   },
   {
     name: "Ecommerce",
@@ -159,25 +183,23 @@ const routes = [
         path: "stockadjustment",
         component: <StockAdjustment />,
       },
-      
-
       {
         name: "Roles and Permissions",
         layout: "/admin",
         path: null,
-        icon: <MdSecurity className="h-6 w-6" />, // Main icon remains the same
+        icon: <MdSecurity className="h-6 w-6" />,
         subNav: [
           {
             name: "Roles",
             layout: "/admin",
-            icon: <MdSupervisorAccount  className="h-6 w-6" />, // Group icon for roles
+            icon: <MdSupervisorAccount  className="h-6 w-6" />,
             path: "role",
             component: <Role />,
           },
           {
             name: "Staff",
             layout: "/admin",
-            icon: <MdPerson className="h-6 w-6" />, // Person icon for staff
+            icon: <MdPerson className="h-6 w-6" />,
             path: "staff",
             component: <Staff />,
           },
@@ -185,7 +207,7 @@ const routes = [
             name: "Roles and Permission",
             layout: "/admin",
             path: "rolepermission",
-            icon: <MdLock className="h-6 w-6" />, // Lock icon for roles and permissions
+            icon: <MdLock className="h-6 w-6" />,
             component: <RolePermission />,
           },
         ]
@@ -538,6 +560,12 @@ const routes = [
       // icon: <MdInventory  className="h-6 w-6" />, 
       path: "available-rooms",
       component: <AvailableRooms />,
+    },
+    {
+      name: "",
+      layout: "/admin",
+      path: "groceries/edit/:id",
+      component: <GroceryForm />,
     },
     ]
 

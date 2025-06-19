@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
+
 const hotelRoutes = require('./routes/hotelRoutes');
 const roomRoutes = require('./routes/roomRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
@@ -10,40 +12,41 @@ const productRoutes = require('./routes/product.routes');
 const sizeRoutes = require('./routes/size.routes');
 const colorRoutes = require('./routes/color.routes');
 const unitRoutes = require('./routes/unit.routes');
-const path = require('path');
+const gcartRoutes = require('./routes/gcart.routes');
+const groceryRoutes = require('./routes/grocery.routes');
 
 const app = express();
 
-// CORS configuration
+// ✅ CORS configuration
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:3001'],
+  origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:5000'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Body parser middleware
+// ✅ Body parsers
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files from uploads directory
+// ✅ Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
-// Routes
+// ✅ API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/categories', categoryRoutes);
-app.use('/api/admin', brandRoutes);  // Brand routes under /api/admin prefix
-app.use('/api/admin', productRoutes);  // Product routes under /api/admin prefix
-app.use('/api/admin', sizeRoutes);  // Size routes under /api/admin prefix
-app.use('/api/admin', colorRoutes);  // Color routes under /api/admin prefix
-app.use('/api/admin', unitRoutes);  // Unit routes under /api/admin prefix
+app.use('/api/admin', brandRoutes);     // /admin/brands
+app.use('/api/admin', productRoutes);   // /admin/products
+app.use('/api/admin', sizeRoutes);      // /admin/sizes
+app.use('/api/admin', colorRoutes);     // /admin/colors
+app.use('/api/admin', unitRoutes);      // /admin/units
 app.use('/api/hotels', hotelRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/bookings', bookingRoutes);
-const groceryRoutes = require('./routes/grocery.routes');
 app.use('/api/groceries', groceryRoutes);
+app.use('/api/gcart', gcartRoutes);     // ✅ Grocery cart items
 
-// Default route
+// ✅ Default API welcome route
 app.get('/', (req, res) => {
   res.json({
     success: true,
@@ -56,12 +59,13 @@ app.get('/', (req, res) => {
       hotels: '/api/hotels',
       rooms: '/api/rooms',
       bookings: '/api/bookings',
-      groceries: '/api/groceries'
+      groceries: '/api/groceries',
+      gcart: '/api/gcart'
     }
   });
 });
 
-// Error handling middleware
+// ✅ Error handling
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({
@@ -71,7 +75,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-// 404 handler
+// ✅ 404 fallback
 app.use((req, res) => {
   res.status(404).json({
     success: false,
@@ -79,4 +83,4 @@ app.use((req, res) => {
   });
 });
 
-module.exports = app; 
+module.exports = app;

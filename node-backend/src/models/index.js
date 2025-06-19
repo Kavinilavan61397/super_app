@@ -1,5 +1,6 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../config/database');
+
 const User = require('./User');
 const UserProfile = require('./UserProfile');
 const Category = require('./Category');
@@ -20,14 +21,16 @@ const Hotel = require('./hotel')(sequelize, Sequelize.DataTypes);
 const Room = require('./room')(sequelize, Sequelize.DataTypes);
 const Booking = require('./booking')(sequelize, Sequelize.DataTypes);
 
-// Define User-UserProfile association
+// ✅ GCartItem model
+const GCartItem = require('./gcart_items')(sequelize, Sequelize.DataTypes);
+
+// User-UserProfile
 User.hasOne(UserProfile, {
   foreignKey: 'user_id',
   as: 'profile',
   onDelete: 'CASCADE',
   onUpdate: 'CASCADE'
 });
-
 UserProfile.belongsTo(User, {
   foreignKey: 'user_id',
   as: 'user',
@@ -35,87 +38,95 @@ UserProfile.belongsTo(User, {
   onUpdate: 'CASCADE'
 });
 
-// Define associations for categories (self-referential)
-Category.belongsTo(Category, { 
-  as: 'parentCategory',
-  foreignKey: 'parent_id',
-  onDelete: 'SET NULL',
-  onUpdate: 'CASCADE'
-});
-
-Category.hasMany(Category, { 
-  as: 'childCategories',
-  foreignKey: 'parent_id',
-  onDelete: 'SET NULL',
-  onUpdate: 'CASCADE'
-});
-
-// Define associations between categories and products
-Category.hasMany(Product, { 
-  as: 'categoryProducts',
-  foreignKey: 'category_id',
-  onDelete: 'CASCADE',
-  onUpdate: 'CASCADE'
-});
-
-Product.belongsTo(Category, { 
-  as: 'productCategory',
-  foreignKey: 'category_id',
-  onDelete: 'CASCADE',
-  onUpdate: 'CASCADE'
-});
-
-// Define associations between products and variations
-Product.hasMany(ProductVariation, { 
-  as: 'productVariations',
-  foreignKey: 'product_id',
-  onDelete: 'CASCADE',
-  onUpdate: 'CASCADE'
-});
-
-ProductVariation.belongsTo(Product, { 
-  as: 'baseProduct',
-  foreignKey: 'product_id',
-  onDelete: 'CASCADE',
-  onUpdate: 'CASCADE'
-});
-
-// Define Cart associations
-User.hasMany(Cart, {
+// ✅ GCartItem associations
+User.hasMany(GCartItem, {
   foreignKey: 'user_id',
-  as: 'carts',
+  as: 'gcartItems',
   onDelete: 'CASCADE',
   onUpdate: 'CASCADE'
 });
-
-Cart.belongsTo(User, {
+GCartItem.belongsTo(User, {
   foreignKey: 'user_id',
   as: 'user',
   onDelete: 'CASCADE',
   onUpdate: 'CASCADE'
 });
 
+// Groceries table assumed for grocery_id reference
+
+// Categories
+Category.belongsTo(Category, {
+  as: 'parentCategory',
+  foreignKey: 'parent_id',
+  onDelete: 'SET NULL',
+  onUpdate: 'CASCADE'
+});
+Category.hasMany(Category, {
+  as: 'childCategories',
+  foreignKey: 'parent_id',
+  onDelete: 'SET NULL',
+  onUpdate: 'CASCADE'
+});
+
+// Category ↔ Product
+Category.hasMany(Product, {
+  as: 'categoryProducts',
+  foreignKey: 'category_id',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE'
+});
+Product.belongsTo(Category, {
+  as: 'productCategory',
+  foreignKey: 'category_id',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE'
+});
+
+// Product ↔ ProductVariation
+Product.hasMany(ProductVariation, {
+  as: 'productVariations',
+  foreignKey: 'product_id',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE'
+});
+ProductVariation.belongsTo(Product, {
+  as: 'baseProduct',
+  foreignKey: 'product_id',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE'
+});
+
+// Cart
+User.hasMany(Cart, {
+  foreignKey: 'user_id',
+  as: 'carts',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE'
+});
+Cart.belongsTo(User, {
+  foreignKey: 'user_id',
+  as: 'user',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE'
+});
 Cart.hasMany(CartItem, {
   foreignKey: 'cart_id',
   as: 'items',
   onDelete: 'CASCADE',
   onUpdate: 'CASCADE'
 });
-
 CartItem.belongsTo(Cart, {
   foreignKey: 'cart_id',
   as: 'cart',
   onDelete: 'CASCADE',
   onUpdate: 'CASCADE'
 });
-
 CartItem.belongsTo(Product, {
   foreignKey: 'product_id',
   as: 'product',
   onDelete: 'CASCADE',
   onUpdate: 'CASCADE'
 });
-
 CartItem.belongsTo(ProductVariation, {
   foreignKey: 'variation_id',
   as: 'variation',
@@ -123,42 +134,37 @@ CartItem.belongsTo(ProductVariation, {
   onUpdate: 'CASCADE'
 });
 
-// Define Order associations
+// Order
 User.hasMany(Order, {
   foreignKey: 'user_id',
   as: 'orders',
   onDelete: 'CASCADE',
   onUpdate: 'CASCADE'
 });
-
 Order.belongsTo(User, {
   foreignKey: 'user_id',
   as: 'user',
   onDelete: 'CASCADE',
   onUpdate: 'CASCADE'
 });
-
 Order.hasMany(OrderItem, {
   foreignKey: 'order_id',
   as: 'items',
   onDelete: 'CASCADE',
   onUpdate: 'CASCADE'
 });
-
 OrderItem.belongsTo(Order, {
   foreignKey: 'order_id',
   as: 'order',
   onDelete: 'CASCADE',
   onUpdate: 'CASCADE'
 });
-
 OrderItem.belongsTo(Product, {
   foreignKey: 'product_id',
   as: 'product',
   onDelete: 'NO ACTION',
   onUpdate: 'CASCADE'
 });
-
 OrderItem.belongsTo(ProductVariation, {
   foreignKey: 'variation_id',
   as: 'variation',
@@ -166,11 +172,11 @@ OrderItem.belongsTo(ProductVariation, {
   onUpdate: 'CASCADE'
 });
 
-// Self-referential relationship for categories
+// Self-referencing Categories
 Category.hasMany(Category, { as: 'subcategories', foreignKey: 'parent_id' });
 Category.belongsTo(Category, { as: 'parent', foreignKey: 'parent_id' });
 
-// Register associations for new models
+// Restaurant & others
 if (RestaurantCategory.associate) RestaurantCategory.associate({ Restaurant });
 if (Restaurant.associate) Restaurant.associate({ RestaurantCategory, Dish });
 if (Dish.associate) Dish.associate({ Restaurant });
@@ -178,14 +184,13 @@ if (TaxiDriver.associate) TaxiDriver.associate({ TaxiVehicle, TaxiRide });
 if (TaxiVehicle.associate) TaxiVehicle.associate({ TaxiDriver, TaxiRide });
 if (TaxiRide.associate) TaxiRide.associate({ TaxiDriver, TaxiVehicle, User });
 
-// Add OTP associations
+// OTP
 User.hasMany(OTP, {
   foreignKey: 'user_id',
   as: 'otps',
   onDelete: 'CASCADE',
   onUpdate: 'CASCADE'
 });
-
 OTP.belongsTo(User, {
   foreignKey: 'user_id',
   as: 'user',
@@ -193,6 +198,7 @@ OTP.belongsTo(User, {
   onUpdate: 'CASCADE'
 });
 
+// Export all models
 module.exports = {
   sequelize,
   User,
@@ -213,5 +219,6 @@ module.exports = {
   TaxiRide,
   Hotel,
   Room,
-  Booking
-}; 
+  Booking,
+  GCartItem 
+};

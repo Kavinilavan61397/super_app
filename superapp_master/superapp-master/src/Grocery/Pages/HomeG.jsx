@@ -583,38 +583,48 @@ function Groceries() {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  const addToCart = (item, quantity) => {
-    const currentCart = JSON.parse(localStorage.getItem('GcartItems')) || [];
-    const existingItemIndex = currentCart.findIndex(
-      cartItem => cartItem.id === item.id && cartItem.category === item.category
-    );
-
-    let updatedCart;
-    if (existingItemIndex !== -1) {
-      // Update quantity if item exists
-      updatedCart = currentCart.map((cartItem, index) => 
-        index === existingItemIndex 
-          ? { ...cartItem, quantity: cartItem.quantity + quantity }
-          : cartItem
-      );
-    } else {
-      // Add new item
-      updatedCart = [...currentCart, { ...item, quantity }];
+  const addToCart = async (item, quantity) => {
+    const token = localStorage.getItem('token'); // JWT token after login
+  
+    const cartPayload = {
+      groceryId: item.id,
+      name: item.name,
+      image: item.image,
+      category: item.category,
+      original_price: item.originalPrice,
+      discounted_price: item.discountedPrice,
+      quantity: quantity
+    };
+  
+    try {
+      const response = await fetch('http://localhost:5000/api/gcart', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(cartPayload)
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('❌ Server error:', errorData);
+        throw new Error(errorData.error || 'Failed to add to cart');
+      }
+  
+      const data = await response.json();
+      console.log('✅ Item added to cart:', data);
+  
+      // Optionally update local cartItems state
+      setCartItems(prev => [...prev, { ...item, quantity }]);
+  
+    } catch (error) {
+      console.error('❌ Error adding to cart:', error);
+      alert('Could not add to cart: ' + error.message);
     }
-
-    // Update localStorage and state
-    localStorage.setItem('GcartItems', JSON.stringify(updatedCart));
-    setCartItems(updatedCart);
-
-    // Dispatch storage event for other components
-    window.dispatchEvent(new StorageEvent('storage', {
-      key: 'cartItems',
-      newValue: JSON.stringify(updatedCart)
-    }));
-
-    // Show success message
-    
   };
+  
+  
 
   const addToWishlist = (item) => {
     const currentWishlist = JSON.parse(localStorage.getItem('GwishlistItems')) || [];

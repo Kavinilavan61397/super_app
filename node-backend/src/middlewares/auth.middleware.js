@@ -31,7 +31,14 @@ exports.protect = async (req, res, next) => {
       }
 
       // Attach user to request object
-      req.user = user;
+      // req.user = user;
+      req.user = {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }; // ✅ Plain object
+      
       next();
     } catch (error) {
       return res.status(401).json({

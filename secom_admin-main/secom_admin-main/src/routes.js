@@ -137,13 +137,13 @@ const routes = [
         path: "taxi-rides",
         component: <TaxiTable />,
       },
-      {
-        name: "Add Taxi Ride",
-        layout: "/admin",
-        icon: <MdDirectionsCar className="h-6 w-6" />,
-        path: "taxi-rides/new",
-        component: <TaxiForm />,
-      }
+      // {
+      //   name: "Add Taxi Ride",
+      //   layout: "/admin",
+      //   icon: <MdDirectionsCar className="h-6 w-6" />,
+      //   path: "taxi-rides/new",
+      //   component: <TaxiForm />,
+      // }
     ]
   },
   {

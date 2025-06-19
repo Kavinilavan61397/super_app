@@ -74,7 +74,7 @@ const TaxiTable = () => {
 
   if (loading) return <div className="flex justify-center items-center h-full">Loading...</div>;
   if (error) return <div className="text-red-500 text-center">{error}</div>;
-
+  console.log('taxiRides===========>', JSON.stringify(taxiRides))
   return (
     <div className="p-4">
       <div className="flex justify-between items-center mb-4">
@@ -87,8 +87,8 @@ const TaxiTable = () => {
         <table className="min-w-full bg-white border border-gray-200">
           <thead>
             <tr className="bg-gray-50">
-              <th className="px-4 py-2 border">ID</th>
-              <th className="px-4 py-2 border">User</th>
+              {/* <th className="px-4 py-2 border">ID</th> */}
+              {/* <th className="px-4 py-2 border">User</th> */}
               <th className="px-4 py-2 border">Driver</th>
               <th className="px-4 py-2 border">Vehicle</th>
               <th className="px-4 py-2 border">Pickup Location</th>
@@ -107,10 +107,10 @@ const TaxiTable = () => {
             ) : (
               taxiRides.map((ride) => (
                 <tr key={ride.id} className="border-b hover:bg-gray-50">
-                  <td className="px-4 py-2 border">{ride.id}</td>
-                  <td className="px-4 py-2 border">
+                  {/* <td className="px-4 py-2 border">{ride.id}</td> */}
+                  {/* <td className="px-4 py-2 border">
                     {ride.user ? `${ride.user.first_name} ${ride.user.last_name}` : 'N/A'}
-                  </td>
+                  </td> */}
                   <td className="px-4 py-2 border">
                     {ride.driver ? ride.driver.name : 'N/A'}
                   </td>

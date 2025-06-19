@@ -7,81 +7,180 @@ import Footer from '../SubPages/Footer';
 import { FaTrash } from 'react-icons/fa';
 
 function Cart() {
-  const [cartItems, setCartItems] = useState(() => {
-    const storedCartItems = JSON.parse(localStorage.getItem('GcartItems')) || [];
-    return storedCartItems.map(item => ({
-      ...item,
-      quantity: parseInt(item.quantity) || 1, // Ensure quantity is a number, default to 1 if not a number
-      size: item.size || 'N/A' // Ensure size is stored, default to 'N/A' if not present
-    }));
-  });
-
+  const [cartItems, setCartItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate(); 
 
-  // Listen for storage changes from other components (e.g., when cart is cleared by order placement)
+  // Helper to check auth and redirect
+  const handleAuthError = (err) => {
+    if (err.message === 'Unauthorized' || err.status === 401) {
+      alert('Session expired. Please log in again.');
+      navigate('/login');
+      return true;
+    }
+    return false;
+  };
+
+  // Fetch cart items from backend on mount
   useEffect(() => {
-    const handleStorageChange = (e) => {
-      if (e.key === 'GcartItems') {
-        setCartItems(JSON.parse(e.newValue) || []);
+    const fetchCartItems = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          alert('Please log in to view your cart.');
+          navigate('/login');
+          return;
+        }
+        const response = await fetch('http://localhost:5000/api/gcart', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        if (response.status === 401) throw { message: 'Unauthorized', status: 401 };
+        if (!response.ok) throw new Error('Failed to fetch cart items');
+        const data = await response.json();
+
+        // Map backend fields to frontend expectations
+        const formatted = data.map(item => ({
+          ...item,
+          originalPrice: parseFloat(item.original_price ?? item.originalPrice ?? 0),
+          discountedPrice: parseFloat(item.discounted_price ?? item.discountedPrice ?? 0),
+          image: item.image
+            ? item.image.startsWith('http')
+              ? item.image
+              : `http://localhost:5000${item.image.startsWith('/') ? '' : '/uploads/'}${item.image}`
+            : 'https://via.placeholder.com/300x200?text=Image+Coming+Soon',
+          size: item.size || 'N/A'
+        }));
+
+        setCartItems(formatted);
+        setLoading(false);
+      } catch (err) {
+        if (!handleAuthError(err)) {
+          setError(err.message);
+          setLoading(false);
+        }
       }
     };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    fetchCartItems();
   }, []);
 
-  const handleDelete = (id, category, size) => { // Added size to handleDelete parameters
-    const updatedCartList = cartItems.filter((item) => item.id !== id || item.category !== category || item.size !== size); // Filter by id, category, and size
-    setCartItems(updatedCartList);
-    localStorage.setItem('GcartItems', JSON.stringify(updatedCartList));
+  // Delete item from cart (backend)
+  const handleDelete = async (groceryId) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Please log in to delete items from your cart.');
+        navigate('/login');
+        return;
+      }
+      const response = await fetch(`http://localhost:5000/api/gcart/${groceryId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      if (response.status === 401) throw { message: 'Unauthorized', status: 401 };
+      if (!response.ok) throw new Error('Failed to delete item');
+      setCartItems(prev => prev.filter(item => item.grocery_id !== groceryId));
+    } catch (err) {
+      if (!handleAuthError(err)) {
+        alert('Could not delete item: ' + err.message);
+      }
+    }
   };
-  const handleClearCart = () => {
-    localStorage.removeItem('GcartItems'); // Clear cart from localStorage
-    setCartItems([]); // Clear cart from component state
-    alert('Your cart has been cleared!');
-  }
-  const handleProceedToPay = () => {
+
+  // Update quantity in cart (backend)
+  const handleQuantityChange = async (groceryId, newQuantity) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Please log in to update your cart.');
+        navigate('/login');
+        return;
+      }
+      const response = await fetch(`http://localhost:5000/api/gcart/${groceryId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ quantity: newQuantity })
+      });
+      if (response.status === 401) throw { message: 'Unauthorized', status: 401 };
+      if (!response.ok) throw new Error('Failed to update quantity');
+      setCartItems(prev => prev.map(item =>
+        item.grocery_id === groceryId
+          ? { ...item, quantity: newQuantity }
+          : item
+      ));
+    } catch (err) {
+      if (!handleAuthError(err)) {
+        alert('Could not update quantity: ' + err.message);
+      }
+    }
+  };
+
+  // Clear cart (backend)
+  const handleClearCart = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Please log in to clear your cart.');
+        navigate('/login');
+        return;
+      }
+      const response = await fetch('http://localhost:5000/api/gcart/clear', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      if (response.status === 401) throw { message: 'Unauthorized', status: 401 };
+      if (!response.ok) throw new Error('Failed to clear cart');
+      setCartItems([]);
+      alert('Your cart has been cleared!');
+    } catch (err) {
+      if (!handleAuthError(err)) {
+        alert('Could not clear cart: ' + err.message);
+      }
+    }
+  };
+
+  // Proceed to pay (place order)
+  const handleProceedToPay = async () => {
     if (cartItems.length === 0) {
       alert('Your cart is empty! Please add items before placing an order.'); 
       return;
     }
-
-    const newOrderId = Date.now().toString(); // Simple unique ID
-    const totalOriginalPrice = cartItems.reduce((sum, item) => sum + item.originalPrice * item.quantity, 0);
-    const totalDiscountedPrice = cartItems.reduce((sum, item) => sum + item.discountedPrice * item.quantity, 0);
-
-    const newOrder = {
-      orderId: newOrderId,
-      items: cartItems.map(item => ({ ...item })), // Deep copy of cart items
-      timestamp: new Date().toISOString(),
-      status: 'Process',
-      orderHistory: [
-        { status: 'Process', timestamp: new Date().toISOString() }
-      ],
-      totalOriginalPrice,
-      totalDiscountedPrice,
-    };
-
-    // Retrieve existing orders or initialize an empty array
-    const existingOrders = JSON.parse(localStorage.getItem('Gorders')) || [];
-    const updatedOrders = [newOrder, ...existingOrders]; // Add new order to the beginning
-
-    localStorage.setItem('Gorders', JSON.stringify(updatedOrders));
-    localStorage.removeItem('GcartItems'); // Clear cart after placing order
-    setCartItems([]); // Update state to reflect empty cart
-
-    // Dispatch storage events to notify other components
-    window.dispatchEvent(new StorageEvent('storage', {
-      key: 'Gorders',
-      newValue: JSON.stringify(updatedOrders)
-    }));
-    window.dispatchEvent(new StorageEvent('storage', {
-      key: 'GcartItems',
-      newValue: JSON.stringify([])
-    }));
-
-    alert(`Order ${newOrderId} placed successfully!`);
-    navigate('/home-grocery/order-list'); // Navigate to orders page
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Please log in to place an order.');
+        navigate('/login');
+        return;
+      }
+      const response = await fetch('http://localhost:5000/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ items: cartItems })
+      });
+      if (response.status === 401) throw { message: 'Unauthorized', status: 401 };
+      if (!response.ok) throw new Error('Failed to place order');
+      setCartItems([]);
+      alert('Order placed successfully!');
+      navigate('/home-grocery/order-list');
+    } catch (err) {
+      if (!handleAuthError(err)) {
+        alert('Could not place order: ' + err.message);
+      }
+    }
   };
 
   return (
@@ -91,12 +190,16 @@ function Cart() {
       <div className="flex justify-between items-center mb-4">
         <div className="font-medium text-base">My Carts</div>
         <button
-            onClick={() => handleClearCart()}
+            onClick={handleClearCart}
             className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full text-sm"
           >
             Clear Cart
           </button></div>
-        {cartItems.length === 0 ? (
+        {loading ? (
+          <div className="flex items-center justify-center h-[50vh] text-center text-[#484848] text-lg">Loading cart...</div>
+        ) : error ? (
+          <div className="flex items-center justify-center h-[50vh] text-center text-red-500 text-lg">{error}</div>
+        ) : cartItems.length === 0 ? (
           <div className="flex items-center justify-center h-[50vh] text-center text-[#484848] text-lg">Your cart is empty</div>
         ) : (
           cartItems.map((item) => (
@@ -126,15 +229,7 @@ function Cart() {
                   <select
                     className="py-0 rounded-full border border-[#CCCCCC] px-3"
                     value={item.quantity}
-                    onChange={(e) => {
-                      const updatedItems = cartItems.map((cartItem) =>
-                        cartItem.id === item.id && cartItem.category === item.category && cartItem.size === item.size
-                          ? { ...cartItem, quantity: parseInt(e.target.value) }
-                          : cartItem
-                      );
-                      setCartItems(updatedItems);
-                      localStorage.setItem('GcartItems', JSON.stringify(updatedItems));
-                    }}
+                    onChange={(e) => handleQuantityChange(item.grocery_id, parseInt(e.target.value))}
                   >
                     {[...Array(10).keys()].map((i) => (
                       <option key={i + 1} value={i + 1}>{i + 1}</option>
@@ -142,7 +237,7 @@ function Cart() {
                   </select>
                   <button
                     className="p-1 rounded-full text-purple-600 hover:bg-purple-100 transition-colors"
-                    onClick={() => handleDelete(item.id, item.category, item.size)}
+                    onClick={() => handleDelete(item.grocery_id)}
                     aria-label="Delete item"
                   >
                     <FaTrash className="w-6 h-6" />

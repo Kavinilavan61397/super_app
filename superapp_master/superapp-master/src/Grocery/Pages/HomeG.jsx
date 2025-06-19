@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Footer from '../SubPages/Footer';
 import Header from '../SubPages/Header';
-import { FaFilter, FaSortAmountUp, FaSortAmountDown, FaHeart, FaEye, FaStar, FaSearch, FaChevronUp, FaChevronDown, FaMicrophone, FaMicrophoneSlash } from 'react-icons/fa';
+import { FaFilter, FaHeart, FaEye, FaStar, FaSearch, FaChevronUp, FaChevronDown, FaMicrophone, FaMicrophoneSlash } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import banner1 from '../Images/banner1.png';
 import banner2 from '../Images/baner2.png';
@@ -12,128 +12,22 @@ import catFruits from '../Images/cat_fruits.png';
 import catMasala from '../Images/cat_masala.png';
 import catInstant from '../Images/cat_instant.png';
 import catDairy from '../Images/cat_dairy.png';
+import { useNavigate } from 'react-router-dom';
 
 // -------------------------------------
 // Image Imports for Grocery Categories
-// -------------------------------------
 
-// --- Fruits & Vegetables Images ---
-import broccoliImage from '../Images/broccoli.jpg';
-import carrotImage from '../Images/Carrot.jpg';
-import spinachImage from '../Images/spinach.jpg';
-import tomatoImage from '../Images/tomato.jpg';
-import potatoImage from '../Images/potatoe.jpg';
-import onionImage from '../Images/onion.jpg';
-import cucumberImage from '../Images/cucumber.jpg';
-import bellpepperImage from '../Images/bellpeper.jpg';
-import appleImage from '../Images/apple.jpg';
-import bananaImage from '../Images/Banana.jpg';
-import orangeImage from '../Images/orange.jpg';
-import mangoImage from '../Images/mango.jpg';
-
-
-// --- Dairy & Bakery Images ---
-import milkImage from '../Images/milk.webp';
-import cheeseImage from '../Images/cheese.jpg';
-import yogurtImage from '../Images/yogurt.webp';
-import butterImage from '../Images/butter.webp';
-import paneerImage from '../Images/paneer.webp';
-import curdImage from '../Images/curd.jpeg';
-import creamImage from '../Images/cream.webp';
-import breadImage from '../Images/bread.png';
 import eggImage from '../Images/egg.png';
-import pastryImage from '../Images/pastry.png';
-import cakeImage from '../Images/cake.png';
-import muffinImage from '../Images/muffin.png';
 
-// --- Snacks & Dry Fruits Images ---
 import chipsImage from '../Images/potato_chips.png';
-import cookiesImage from '../Images/cookies.png';
-import namkeenImage from '../Images/namkeen.jpg';
-import biscuitsImage from '../Images/biscuits.png';
-import dryFruitsImage from '../Images/dry_fruits.webp';
-import tortillaChipsImage from '../Images/tortilla_chips.png';
-import chocolateCookiesImage from '../Images/chocolate_cookies.png';
-import karaBoondyImage from '../Images/kara_boondy.png';
-import creamBiscuitsImage from '../Images/cream_biscuits.png';
-import digestiveBiscuitsImage from '../Images/digestive_biscuits.png';
 
-
-// --- Breakfast & More Images ---
-import oatmealImage from '../Images/oatmeal.png';
-import cornflakesImage from '../Images/cornflakes.png';
-import muesliImage from '../Images/muesli.png';
-import granolaImage from '../Images/granola.png';
 import cerealImage from '../Images/cereal.png';
-import pancakesMixImage from '../Images/pancakes_mix.png';
-import honeyImage from '../Images/honey.png';
-import jamImage from '../Images/jam.png';
-import wafflesImage from '../Images/waffles.png';
-import mapleSyrupImage from '../Images/maple_syrup.png';
-import coffeeBeansImage from '../Images/coffee_beans.png';
-import teaBagsImage from '../Images/tea_bags.png';
 
-// --- Eggs, Meat & Fish Images ---
-import chickenBreastImage from '../Images/chicken_breast.png';
-import muttonImage from '../Images/mutton.png';
-import fishFilletImage from '../Images/fish_fillet.png';
-import prawnsImage from '../Images/prawns.png';
-import chickenCurryCutImage from '../Images/chicken_curry_cut.png';
-import chickenMinceImage from '../Images/chicken_mince.png';
-import fishSteakImage from '../Images/fish_steak.png';
-import chickenWingsImage from '../Images/chicken_wings.png';  
-
-// --- Masalas, Oils & Dry Fruits Images ---
-import garamMasalaImage from '../Images/garam_masala.png';
-import oliveOilImage from '../Images/olive_oil.png';
-import turmericPowderImage from '../Images/turmeric_powder.png';
-import coconutOilImage from '../Images/coconut_oil.png';
-import almondImage from '../Images/almond.png';
-import redChilliPowderImage from '../Images/red_chilli_powder.png';
-import cashewImage from '../Images/cashew.png';
-import cuminPowderImage from '../Images/cumin_powder.png';
-import raisinsImage from '../Images/raisins.png';
-
-// --- Atta, Rice, Dals & Sugar Images ---
 import riceImage from '../Images/rice.png';
-import basmatiRiceImage from '../Images/basmati_rice.png';
-import toorDalImage from '../Images/toor_dal.png';
-import sugarImage from '../Images/sugar.png';
-import moongDalImage from '../Images/moong_dal.png';
-import multigrainAttaImage from '../Images/multigrain_atta.png';
-import jaggeryImage from '../Images/jaggery.png';
-import saltImage from '../Images/salt.png';
-import brownSugarImage from '../Images/brown_sugar.png';
 
-// --- Hot & Cold Beverages Images ---
-import greenTeaImage from '../Images/green_tea.png';
 import coffeeImage from '../Images/coffee.png';
-import juiceImage from '../Images/juice.png';
-import energyDrinkImage from '../Images/energy_drink.png';
-import blackTeaImage from '../Images/black_tea.png';
-import lemonadeImage from '../Images/lemonade.png';
-import cappuccinoImage from '../Images/cappuccino.png';
-import smoothieImage from '../Images/smoothie.png';
 
-// --- Instant & Frozen Foods Images ---
-import noodlesImage from '../Images/noodles.png';
-import readyMealsImage from '../Images/ready_meals.png';
-import frozenSnacksImage from '../Images/frozen_snacks.png';
-import pastaImage from '../Images/pasta.png';
-import soupsImage from '../Images/soups.png';
-import frozenParathasImage from '../Images/frozen_parathas.png';
-import frozenMealsImage from '../Images/frozen_meals.png';
-
-// --- Chocolates & Ice Creams Images ---
-import vanillaIceCreamImage from '../Images/vanilla_ice_cream.png';
-import trufflesImage from '../Images/truffles.png';
-import strawberryIceCreamImage from '../Images/strawberry_ice_cream.png';
-import chocolateIceCreamImage from '../Images/chocolate_ice_cream.png';
-import assortedChocolatesImage from '../Images/assorted_chocolates.png';
-import mintIceCreamImage from '../Images/mint_ice_cream.png';
-import whiteChocolateImage from '../Images/white_chocolate.png';
 import chocolateBarsImage from '../Images/chocolate_bars.png';
-import darkChocolateImage from '../Images/dark_chocolate.png';
 
 // Default placeholder image for items without specific images
 const defaultImage = 'https://via.placeholder.com/300x200?text=Image+Coming+Soon';
@@ -166,11 +60,14 @@ const GroceryCard = ({ item, addToCart, addToWishlist, cartItems, wishlistItems 
 
   const discountPercentage = Math.round(((item.originalPrice - item.discountedPrice) / item.originalPrice) * 100);
   
-  // Check if item is in cart
+  // Updated cart matching logic
   const cartItem = cartItems.find(
-    cartItem => cartItem.id === item.id && cartItem.category === item.category
+    cartItem =>
+      ((cartItem.grocery_id === item.id || cartItem.groceryId === item.id)) &&
+      cartItem.category === item.category
   );
   const isInCart = !!cartItem;
+  console.log('cartItems:', cartItems, 'item.id:', item.id, 'isInCart:', isInCart, 'item:', item);
   
   // Check if item is in wishlist
   const wishlistItem = wishlistItems.find(
@@ -406,6 +303,8 @@ function Groceries() {
   const filterBarRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(null);
+  const [forceRerender, setForceRerender] = useState(0); // for debug/test only
+  const navigate = useNavigate();
 
   // Fetch items from backend on mount
   useEffect(() => {
@@ -561,35 +460,86 @@ function Groceries() {
     return 0;
   });
 
-  // Load cart and wishlist from localStorage
-  useEffect(() => {
-    const storedCart = JSON.parse(localStorage.getItem('GcartItems')) || [];
-    const storedWishlist = JSON.parse(localStorage.getItem('GwishlistItems')) || [];
-    setCartItems(storedCart);
-    setWishlistItems(storedWishlist);
-  }, []);
+  // Helper to check auth and redirect
+  const handleAuthError = (err) => {
+    if (err.message === 'Unauthorized' || err.status === 401) {
+      alert('Session expired. Please log in again.');
+      navigate('/login');
+      return true;
+    }
+    return false;
+  };
 
-  // Listen for storage changes from other components
-  useEffect(() => {
-    const handleStorageChange = (e) => {
-      if (e.key === 'cartItems') {
-        setCartItems(JSON.parse(e.newValue) || []);
-      } else if (e.key === 'wishlistItems') {
-        setWishlistItems(JSON.parse(e.newValue) || []);
+  // Fetch cart items from backend
+  const fetchCartItems = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Please log in to view your cart.');
+        navigate('/login');
+        return;
       }
-    };
+      const response = await fetch('http://localhost:5000/api/gcart', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.status === 401) throw { message: 'Unauthorized', status: 401 };
+      if (!response.ok) throw new Error('Failed to fetch cart items');
+      const data = await response.json();
+      const formatted = data.map(item => ({
+        ...item,
+        originalPrice: parseFloat(item.original_price ?? item.originalPrice ?? 0),
+        discountedPrice: parseFloat(item.discounted_price ?? item.discountedPrice ?? 0),
+        image: item.image
+          ? item.image.startsWith('http')
+            ? item.image
+            : `http://localhost:5000${item.image.startsWith('/') ? '' : '/uploads/'}${item.image}`
+          : 'https://via.placeholder.com/300x200?text=Image+Coming+Soon',
+        size: item.size || 'N/A'
+      }));
+      setCartItems(formatted);
+      setForceRerender(f => f + 1); // force re-render for debug
+      console.log('cartItems after fetch:', formatted);
+    } catch (err) {
+      if (!handleAuthError(err)) {
+        setCartItems([]);
+      }
+    }
+  };
 
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+  // Fetch cart items on mount
+  useEffect(() => {
+    fetchCartItems();
   }, []);
 
   const addToCart = async (item, quantity) => {
     const token = localStorage.getItem('token'); // JWT token after login
   
+    // Ensure only the relative path is sent for the image
+    const getRelativeImagePath = (imageUrl) => {
+      if (!imageUrl) return '';
+      try {
+        // If imageUrl starts with http(s)://localhost:5000, strip it
+        const url = new URL(imageUrl, window.location.origin);
+        if (
+          url.origin === 'http://localhost:5000' ||
+          url.origin === 'https://localhost:5000'
+        ) {
+          return url.pathname + url.search + url.hash;
+        }
+        // If already relative, return as is
+        if (imageUrl.startsWith('/')) return imageUrl;
+        // Otherwise, fallback to original
+        return imageUrl;
+      } catch (e) {
+        // If not a valid URL, return as is
+        return imageUrl;
+      }
+    };
+
     const cartPayload = {
       groceryId: item.id,
       name: item.name,
-      image: item.image,
+      image: getRelativeImagePath(item.image),
       category: item.category,
       original_price: item.originalPrice,
       discounted_price: item.discountedPrice,
@@ -605,7 +555,6 @@ function Groceries() {
         },
         body: JSON.stringify(cartPayload)
       });
-  
       if (!response.ok) {
         const errorData = await response.json();
         console.error('❌ Server error:', errorData);
@@ -615,8 +564,7 @@ function Groceries() {
       const data = await response.json();
       console.log('✅ Item added to cart:', data);
   
-      // Optionally update local cartItems state
-      setCartItems(prev => [...prev, { ...item, quantity }]);
+      await fetchCartItems();
   
     } catch (error) {
       console.error('❌ Error adding to cart:', error);

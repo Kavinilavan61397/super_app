@@ -14,6 +14,9 @@ const colorRoutes = require('./routes/color.routes');
 const unitRoutes = require('./routes/unit.routes');
 const gcartRoutes = require('./routes/gcart.routes');
 const groceryRoutes = require('./routes/grocery.routes');
+const taxiRideRoutes = require('./routes/taxiRide.routes');
+const taxiDriverRoutes = require('./routes/taxiDriver.routes');
+const taxiVehicleRoutes = require('./routes/taxiVehicle.routes');
 
 const app = express();
 
@@ -45,6 +48,9 @@ app.use('/api/rooms', roomRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/groceries', groceryRoutes);
 app.use('/api/gcart', gcartRoutes);     // ✅ Grocery cart items
+app.use('/api/taxi-rides', taxiRideRoutes);
+app.use('/api/taxi-drivers', taxiDriverRoutes);
+app.use('/api/taxi-vehicles', taxiVehicleRoutes);
 
 // ✅ Default API welcome route
 app.get('/', (req, res) => {
@@ -60,7 +66,10 @@ app.get('/', (req, res) => {
       rooms: '/api/rooms',
       bookings: '/api/bookings',
       groceries: '/api/groceries',
-      gcart: '/api/gcart'
+      gcart: '/api/gcart',
+      taxiRides: '/api/taxi-rides',
+      taxiDrivers: '/api/taxi-drivers',
+      taxiVehicles: '/api/taxi-vehicles'
     }
   });
 });

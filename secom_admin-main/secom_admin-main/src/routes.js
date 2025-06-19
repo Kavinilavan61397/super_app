@@ -36,7 +36,8 @@ import {
   MdHotel,
   MdLocationCity,
   MdHelpOutline,
-  MdLocalGroceryStore
+  MdLocalGroceryStore,
+  MdDirectionsCar
 } from "react-icons/md";
 import { FaTags, FaPercentage } from "react-icons/fa";
 import { AiOutlineShoppingCart, AiOutlineAppstore } from 'react-icons/ai';
@@ -91,6 +92,8 @@ import ManageRooms from "views/admin/Sidenav_pages/ManageRooms";
 import AvailableRooms from "views/admin/Sidenav_pages/AvailableRooms";
 import GroceryTable from "views/admin/Sidenav_pages/GroceryTable";
 import GroceryForm from "views/admin/Sidenav_pages/GroceryForm";
+import TaxiTable from "views/admin/Sidenav_pages/TaxiTable";
+import TaxiForm from "views/admin/Sidenav_pages/TaxiForm";
 
 const routes = [
   ...authRoutes,
@@ -119,6 +122,27 @@ const routes = [
         icon: <MdLocalGroceryStore className="h-6 w-6" />,
         path: "groceries/new",
         component: <GroceryForm />,
+      }
+    ]
+  },
+  {
+    name: "Taxi",
+    layout: "/admin",
+    icon: <MdDirectionsCar className="h-6 w-6" />,
+    subNav: [
+      {
+        name: "All Taxi Rides",
+        layout: "/admin",
+        icon: <MdDirectionsCar className="h-6 w-6" />,
+        path: "taxi-rides",
+        component: <TaxiTable />,
+      },
+      {
+        name: "Add Taxi Ride",
+        layout: "/admin",
+        icon: <MdDirectionsCar className="h-6 w-6" />,
+        path: "taxi-rides/new",
+        component: <TaxiForm />,
       }
     ]
   },
@@ -566,6 +590,12 @@ const routes = [
       layout: "/admin",
       path: "groceries/edit/:id",
       component: <GroceryForm />,
+    },
+    {
+      name: "",
+      layout: "/admin",
+      path: "taxi-rides/edit/:id",
+      component: <TaxiForm />,
     },
     ]
 

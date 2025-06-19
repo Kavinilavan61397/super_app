@@ -1,5 +1,7 @@
 import GroceryTable from 'views/admin/Sidenav_pages/GroceryTable';
 import GroceryForm from 'views/admin/Sidenav_pages/GroceryForm';
+import TaxiTable from 'views/admin/Sidenav_pages/TaxiTable';
+import TaxiForm from 'views/admin/Sidenav_pages/TaxiForm';
 
 const adminRoutes = [
   {
@@ -13,6 +15,18 @@ const adminRoutes = [
   {
     path: '/admin/groceries/edit/:id',
     element: <GroceryForm />,
+  },
+  {
+    path: '/admin/taxi-rides',
+    element: <TaxiTable />,
+  },
+  {
+    path: '/admin/taxi-rides/new',
+    element: <TaxiForm />,
+  },
+  {
+    path: '/admin/taxi-rides/edit/:id',
+    element: <TaxiForm />,
   },
 ];
 

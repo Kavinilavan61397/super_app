@@ -14,11 +14,12 @@ module.exports = {
           { model: TaxiDriver, as: 'driver' },
           { model: TaxiVehicle, as: 'vehicle' },
           { model: User, as: 'user' }
-        ]
+        ],
+        order: [['createdAt', 'DESC']]
       });
-      res.json(rides);
+      res.json({ success: true, data: rides });
     } catch (err) {
-      res.status(500).json({ error: 'Failed to fetch rides', details: err.message });
+      res.status(500).json({ success: false, message: 'Error fetching taxi rides', error: err.message });
     }
   },
 
@@ -32,10 +33,10 @@ module.exports = {
           { model: User, as: 'user' }
         ]
       });
-      if (!ride) return res.status(404).json({ error: 'Ride not found' });
-      res.json(ride);
+      if (!ride) return res.status(404).json({ success: false, message: 'Taxi ride not found' });
+      res.json({ success: true, data: ride });
     } catch (err) {
-      res.status(500).json({ error: 'Failed to fetch ride', details: err.message });
+      res.status(500).json({ success: false, message: 'Error fetching taxi ride', error: err.message });
     }
   },
 
@@ -43,10 +44,21 @@ module.exports = {
   async create(req, res) {
     try {
       const { user_id, driver_id, vehicle_id, pickup_location, dropoff_location, fare, status, requested_at, started_at, completed_at } = req.body;
-      const ride = await TaxiRide.create({ user_id, driver_id, vehicle_id, pickup_location, dropoff_location, fare, status, requested_at, started_at, completed_at });
-      res.status(201).json(ride);
+      const ride = await TaxiRide.create({ 
+        user_id, 
+        driver_id, 
+        vehicle_id, 
+        pickup_location, 
+        dropoff_location, 
+        fare, 
+        status, 
+        requested_at, 
+        started_at, 
+        completed_at 
+      });
+      res.status(201).json({ success: true, message: 'Taxi ride created successfully', data: ride });
     } catch (err) {
-      res.status(400).json({ error: 'Failed to create ride', details: err.message });
+      res.status(400).json({ success: false, message: 'Error creating taxi ride', error: err.message });
     }
   },
 
@@ -55,11 +67,22 @@ module.exports = {
     try {
       const { user_id, driver_id, vehicle_id, pickup_location, dropoff_location, fare, status, requested_at, started_at, completed_at } = req.body;
       const ride = await TaxiRide.findByPk(req.params.id);
-      if (!ride) return res.status(404).json({ error: 'Ride not found' });
-      await ride.update({ user_id, driver_id, vehicle_id, pickup_location, dropoff_location, fare, status, requested_at, started_at, completed_at });
-      res.json(ride);
+      if (!ride) return res.status(404).json({ success: false, message: 'Taxi ride not found' });
+      await ride.update({ 
+        user_id, 
+        driver_id, 
+        vehicle_id, 
+        pickup_location, 
+        dropoff_location, 
+        fare, 
+        status, 
+        requested_at, 
+        started_at, 
+        completed_at 
+      });
+      res.json({ success: true, message: 'Taxi ride updated successfully', data: ride });
     } catch (err) {
-      res.status(400).json({ error: 'Failed to update ride', details: err.message });
+      res.status(400).json({ success: false, message: 'Error updating taxi ride', error: err.message });
     }
   },
 
@@ -67,11 +90,11 @@ module.exports = {
   async delete(req, res) {
     try {
       const ride = await TaxiRide.findByPk(req.params.id);
-      if (!ride) return res.status(404).json({ error: 'Ride not found' });
+      if (!ride) return res.status(404).json({ success: false, message: 'Taxi ride not found' });
       await ride.destroy();
-      res.json({ message: 'Ride deleted' });
+      res.json({ success: true, message: 'Taxi ride deleted successfully' });
     } catch (err) {
-      res.status(500).json({ error: 'Failed to delete ride', details: err.message });
+      res.status(500).json({ success: false, message: 'Error deleting taxi ride', error: err.message });
     }
   }
 }; 

@@ -11,12 +11,16 @@ module.exports = {
       user_id: {
         type: Sequelize.BIGINT.UNSIGNED,
         allowNull: false,
-        references: { model: 'users', key: 'id' }
+        references: { model: 'users', key: 'id' },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE'
       },
       grocery_id: {
         type: Sequelize.BIGINT.UNSIGNED,
         allowNull: false,
-        references: { model: 'groceries', key: 'id' }
+        references: { model: 'groceries', key: 'id' },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE'
       },
       name: Sequelize.STRING,
       image: Sequelize.STRING,

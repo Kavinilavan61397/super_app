@@ -25,7 +25,7 @@ router.get('/:id', getBrandById);
 
 // Protected routes (admin only)
 router.post('/save_brand', protect, authorize('admin'), upload.single('brand_image'), validateImage, createBrand);
-router.put('/update_brand_by_id/:id', protect, authorize('admin'), upload.single('brand_image'), validateImage, updateBrand);
+router.put('/update_brand_by_id/:id', protect, authorize('admin'), upload.single('brand_image'), updateBrand);
 router.delete('/delete_brand_by_id/:id', protect, authorize('admin'), deleteBrand);
 router.delete('/delete_brands', protect, authorize('admin'), bulkDeleteBrands);
 

@@ -9,6 +9,9 @@ const Sidebar = ({ isCollapsed, open, onClose, onSidenavToggle }) => {
   const location = useLocation();
   const [dropdowns, setDropdowns] = useState({});
 
+  // Filter out authentication routes
+  const sidebarRoutes = routes.filter(route => route.layout === '/admin');
+
   const toggleDropdown = (key) => {
     setDropdowns((prev) => ({ ...prev, [key]: !prev[key] }));
   };
@@ -22,7 +25,7 @@ const Sidebar = ({ isCollapsed, open, onClose, onSidenavToggle }) => {
       ></div>
 
       <div
-        className={`fixed z-30 flex min-h-full flex-col bg-white font-bold transition-all duration-300 ease-in-out
+        className={`fixed z-30 flex h-screen flex-col bg-white font-bold transition-all duration-300 ease-in-out
           ${isCollapsed ? "w-20" : "w-64"}
           ${open ? "translate-x-0" : "-translate-x-full"}
           xl:translate-x-0`}
@@ -42,8 +45,8 @@ const Sidebar = ({ isCollapsed, open, onClose, onSidenavToggle }) => {
             <FiMenu className="h-5 w-5" />
           </span>
         </div>
-        <nav className="overflow-y-auto overflow-x-hidden h-full">
-          {routes.map((item, index) => (
+        <nav className="flex-grow overflow-y-auto overflow-x-hidden pr-2">
+          {sidebarRoutes.map((item, index) => (
             <div key={index}>
               {item.subNav ? (
                 <div 

@@ -6,6 +6,8 @@ import TaxiDriverTable from 'views/admin/Sidenav_pages/TaxiDriverTable';
 import TaxiDriverForm from 'views/admin/Sidenav_pages/TaxiDriverForm';
 import TaxiVehicleTable from 'views/admin/Sidenav_pages/TaxiVehicleTable';
 import TaxiVehicleForm from 'views/admin/Sidenav_pages/TaxiVehicleForm';
+import BrandTable from 'views/admin/Sidenav_pages/BrandTable';
+import BrandForm from 'views/admin/Sidenav_pages/BrandForm';
 
 const adminRoutes = [
   {
@@ -55,6 +57,18 @@ const adminRoutes = [
   {
     path: 'taxi-vehicles/edit/:id',
     element: <TaxiVehicleForm />,
+  },
+  {
+    path: 'brands',
+    element: <BrandTable />,
+  },
+  {
+    path: 'brands/new',
+    element: <BrandForm />,
+  },
+  {
+    path: 'brands/edit/:id',
+    element: <BrandForm />,
   },
 ];
 

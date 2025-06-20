@@ -216,23 +216,23 @@ const TaxiForm = () => {
           </div>
 
           <div>
-            <label className="block font-medium">Started At (Optional)</label>
+            <label className="block font-medium">Started At </label>
             <input 
               type="datetime-local" 
               {...register('started_at')} 
               className="input input-bordered w-full" 
             />
-            {errors.started_at && <p className="text-red-500 text-sm">{errors.started_at.message}</p>}
+            {errors.started_at && <p className="text-red-500 text-sm">{"Select a valid starting date & time"}</p>}
           </div>
 
           <div>
-            <label className="block font-medium">Completed At (Optional)</label>
+            <label className="block font-medium">Completed At </label>
             <input 
               type="datetime-local" 
               {...register('completed_at')} 
               className="input input-bordered w-full" 
             />
-            {errors.completed_at && <p className="text-red-500 text-sm">{errors.completed_at.message}</p>}
+            {errors.completed_at && <p className="text-red-500 text-sm">{"Select a valid ending date & time"}</p>}
           </div>
         </div>
 

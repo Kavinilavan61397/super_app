@@ -61,16 +61,20 @@ exports.getBrandById = async (req, res) => {
 // Create brand
 exports.createBrand = async (req, res) => {
   try {
-    const { brand_name } = req.body;
+    const { brand_name, status } = req.body;
     let processedImagePath = null;
 
     // Process image if uploaded
     if (req.file) {
-      processedImagePath = await processImage(req.file, 'brands');
+      const processedImageObject = await processImage(req.file);
+      // Construct the URL path
+      const relativePath = path.relative(path.join(__dirname, '../../uploads'), processedImageObject.path);
+      processedImagePath = `/uploads/${relativePath.replace(/\\/g, '/')}`;
     }
 
     const brand = await Brand.create({
       brand_name,
+      status,
       photo: processedImagePath
     });
 
@@ -100,25 +104,30 @@ exports.updateBrand = async (req, res) => {
       });
     }
 
-    const { brand_name } = req.body;
+    const { brand_name, status } = req.body;
     let processedImagePath = brand.photo;
 
     // Process new image if uploaded
     if (req.file) {
-      // Delete old image if exists
+      // Delete old image if it exists
       if (brand.photo) {
-        const oldImagePath = path.join(__dirname, '../../uploads/brands', path.basename(brand.photo));
+        const oldImageSystemPath = path.join(__dirname, '../../', brand.photo);
         try {
-          await fs.unlink(oldImagePath);
-        } catch (error) {
-          console.error('Error deleting old image:', error);
+          if (fs.existsSync(oldImageSystemPath)) {
+            await fs.unlink(oldImageSystemPath);
+          }
+        } catch (err) {
+          console.error('Error deleting old image:', err);
         }
       }
-      processedImagePath = await processImage(req.file, 'brands');
+      const processedImageObject = await processImage(req.file);
+      const relativePath = path.relative(path.join(__dirname, '../../uploads'), processedImageObject.path);
+      processedImagePath = `/uploads/${relativePath.replace(/\\/g, '/')}`;
     }
 
     await brand.update({
       brand_name: brand_name || brand.brand_name,
+      status: status !== undefined ? status : brand.status,
       photo: processedImagePath
     });
 

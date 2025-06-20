@@ -1,473 +1,293 @@
-import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaEdit, FaTrashAlt, FaPlus, FaEllipsisV } from 'react-icons/fa';
-import * as Yup from 'yup';
-import { useForm, Controller } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import { FaSpinner } from 'react-icons/fa';
-import { FiSearch } from 'react-icons/fi';
-import { TokenExpiration } from 'views/auth/TokenExpiration ';
-import 'react-toastify/dist/ReactToastify.css';
+import { FaEdit, FaTrashAlt, FaPlus, FaSearch } from 'react-icons/fa';
 import { toast, ToastContainer } from 'react-toastify';
-import Navbar from 'components/navbar';
-import API_CONFIG from '../../../config/api.config';
-import { authService } from '../../../services/authService';
+import 'react-toastify/dist/ReactToastify.css';
 import brandService from '../../../services/brandService';
+import API_CONFIG from '../../../config/api.config';
 
-function BrandTable() {
-    const navigate = useNavigate();
-    const [tableData, setTableData] = useState([]);
-    const [openAddModal, setOpenAddModal] = useState(false);
-    const [openEditModal, setOpenEditModal] = useState(false);
-    const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-    const [imagePreview, setImagePreview] = useState(null);
-    const [selectedBrand, setSelectedBrand] = useState(null);
-    const [brandName, setBrandName] = useState('');
-    const [brandImage, setBrandImage] = useState(null);
-    const [selectedRows, setSelectedRows] = useState([]);
-    const [openDropdown, setOpenDropdown] = useState(null);
-    const [rowIdToDelete, setRowIdToDelete] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(10);
-    const [totalItems, setTotalItems] = useState(0);
-    const [isDeleting, setIsDeleting] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [filteredData, setFilteredData] = useState([]);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [brandToDelete, setBrandToDelete] = useState(null);
+const BrandTable = () => {
+  const navigate = useNavigate();
+  const [brands, setBrands] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedBrands, setSelectedBrands] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
 
-    // Create an axios instance with auth token
-    const api = axios.create({
-        baseURL: API_CONFIG.BASE_URL,
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        }
-    });
+  // Fetch brands on component mount
+  useEffect(() => {
+    fetchBrands();
+  }, []);
 
-    // Add request interceptor to add auth token
-    api.interceptors.request.use((config) => {
-        const token = localStorage.getItem(API_CONFIG.STORAGE_KEYS.AUTH_TOKEN);
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-    });
+  const fetchBrands = async () => {
+    try {
+      setLoading(true);
+      const response = await brandService.getAllBrands();
+      console.log('Fetched brands:', response);
+      setBrands(response || []);
+    } catch (error) {
+      console.error('Error fetching brands:', error);
+      toast.error('Failed to fetch brands');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    // Add response interceptor to handle auth errors
-    api.interceptors.response.use(
-        (response) => response,
-        (error) => {
-            if (error.response?.status === 401) {
-                // Clear auth data and redirect to login
-                authService.logout();
-                navigate(API_CONFIG.ROUTES.LOGIN);
-            }
-            return Promise.reject(error);
-        }
+  // Filter brands based on search query
+  const filteredBrands = brands.filter(brand =>
+    brand.brand_name?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Pagination
+  const totalPages = Math.ceil(filteredBrands.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentBrands = filteredBrands.slice(startIndex, endIndex);
+
+  // Handle search
+  const handleSearch = (e) => {
+    setSearchQuery(e.target.value);
+    setCurrentPage(1);
+  };
+
+  // Handle row selection
+  const handleRowSelection = (brandId) => {
+    setSelectedBrands(prev => 
+      prev.includes(brandId) 
+        ? prev.filter(id => id !== brandId)
+        : [...prev, brandId]
     );
+  };
 
-    const handleSearch = (event) => {
-        setSearchQuery(event.target.value);
-    };
+  // Handle select all
+  const handleSelectAll = () => {
+    if (selectedBrands.length === currentBrands.length) {
+      setSelectedBrands([]);
+    } else {
+      setSelectedBrands(currentBrands.map(brand => brand.id));
+    }
+  };
 
-    const validationSchemaAdd = Yup.object({
-        brandName: Yup.string().required('Brand Name is required'),
-        brandImage: Yup.mixed()
-            .required('Brand Image is required')
-            .test('fileType', 'Only image files are allowed', (value) => {
-                return value && value instanceof File && value.type.startsWith('image/');
-            }),
-    });
+  // Handle delete
+  const handleDelete = async (brandId) => {
+    if (window.confirm('Are you sure you want to delete this brand?')) {
+      try {
+        await brandService.deleteBrand(brandId);
+        toast.success('Brand deleted successfully');
+        fetchBrands();
+      } catch (error) {
+        console.error('Error deleting brand:', error);
+        toast.error('Failed to delete brand');
+      }
+    }
+  };
 
-    const validationSchemaEdit = Yup.object({
-        brandName: Yup.string().required('Brand Name is required'),
-        // No image validation in edit modal
-    });
+  // Handle bulk delete
+  const handleBulkDelete = async () => {
+    if (selectedBrands.length === 0) {
+      toast.warning('Please select brands to delete');
+      return;
+    }
 
-    const { reset, control, handleSubmit, setValue, getValues, formState: { errors } } = useForm({
-        resolver: yupResolver(openAddModal ? validationSchemaAdd : validationSchemaEdit),
-        defaultValues: {
-            brandName: selectedBrand?.brand_name || '',
-            brandImage: selectedBrand?.photo || null,
-        },
-    });
+    if (window.confirm(`Are you sure you want to delete ${selectedBrands.length} brands?`)) {
+      try {
+        await brandService.bulkDeleteBrands(selectedBrands);
+        toast.success('Brands deleted successfully');
+        setSelectedBrands([]);
+        fetchBrands();
+      } catch (error) {
+        console.error('Error bulk deleting brands:', error);
+        toast.error('Failed to delete brands');
+      }
+    }
+  };
 
-    const fetchBrandsData = async () => {
-        try {
-            setLoading(true);
-            const token = localStorage.getItem(API_CONFIG.STORAGE_KEYS.AUTH_TOKEN);
-            console.log("Auth token for brand fetch:", token);
-            
-            const brands = await brandService.getAllBrands();
-            console.log("Brands data:", brands);
-            
-            if (Array.isArray(brands)) {
-                setTableData(brands);
-                setTotalItems(brands.length);
-                setFilteredData(brands); // Initialize filtered data with all data
-            } else {
-                console.error("Unexpected response format:", brands);
-                toast.error('Unexpected response format from server');
-            }
-        } catch (error) {
-            console.error('Error fetching brands:', error);
-            toast.error(error.response?.data?.message || 'Error fetching brands');
-            if (error.response?.status === 401) {
-                navigate('/login');
-            }
-        } finally {
-            setLoading(false);
-        }
-    };
+  // Handle edit
+  const handleEdit = (brandId) => {
+    navigate(`/admin/brands/edit/${brandId}`);
+  };
 
-    useEffect(() => {
-        fetchBrandsData();
-    }, []);
+  // Handle add new
+  const handleAddNew = () => {
+    navigate('/admin/brands/new');
+  };
 
-    useEffect(() => {
-        if (searchQuery.trim() === '') {
-            setFilteredData(tableData); // Reset to full data if no search query
-            setTotalItems(tableData.length); // Reset total items
-        } else {
-            const filtered = tableData.filter(brand =>
-                brand.brand_name.toLowerCase().includes(searchQuery.toLowerCase())
-            );
-            setFilteredData(filtered); // Apply filtering
-            setTotalItems(filtered.length); // Update the number of filtered items
-            setCurrentPage(1); // Reset to page 1 when the search query changes
-        }
-    }, [searchQuery, tableData]);
-
-    const handlePageChange = (page) => {
-        if (page >= 1 && page <= totalPages) {
-            setCurrentPage(page);
-        }
-    };
-
-    const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [itemsPerPage, searchQuery]);
-
-    const getPaginatedData = () => {
-        console.log("filteredData================================>",filteredData);
-        const start = (currentPage - 1) * itemsPerPage;
-        const end = start + itemsPerPage;
-        return filteredData.slice(start, end);  // Paginate after filtering
-    };
-
-    const handleImageSaveChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => setImagePreview(reader.result);
-            reader.readAsDataURL(file);
-            setValue('brandImage', file);
-        }
-    };
-
-    const handleImageChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => setImagePreview(reader.result);
-            reader.readAsDataURL(file);
-            setValue('brandImage', file);
-        } else {
-            setImagePreview(selectedBrand?.photo || null);
-            setValue('brandImage', null);
-        }
-    };
-
-    const [error, setError] = useState(null);
-
-    const handleAddBrand = () => {
-        // Get brand name from the form value (or any other logic you use to get the input data)
-        const brandName = getValues('brandName');  // Assuming you're using react-hook-form
-
-        // Dismiss any active toasts before showing a new one
-        toast.dismiss();
-
-        // Proceed with opening the modal if the brand doesn't exist
-        setSelectedBrand(null);
-        setImagePreview(null);
-        setValue('brandName', '');
-        reset({
-            brandName: '',
-            brandImage: null,
-        });
-        setOpenAddModal(true);
-    };
-
-    const handleCreateBrand = async (e) => {
-        e.preventDefault();
-        setIsSubmitting(true);
-
-        try {
-            const formData = new FormData();
-            formData.append('brand_name', brandName);
-            if (brandImage) {
-                formData.append('brand_image', brandImage);
-            }
-
-            const url = `${API_CONFIG.BASE_URL}/api/admin/save_brand`;
-            const response = await axios.post(url, formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-
-            if (response.data.success) {
-                toast.success('Brand created successfully');
-                setOpenAddModal(false);
-                fetchBrandsData();
-                reset();
-            }
-        } catch (error) {
-            console.error('Error creating brand:', error);
-            toast.error(error.response?.data?.message || 'Error creating brand');
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-
-    const handleEditRow = (brand) => {
-        setSelectedBrand(brand);
-        setValue('brandName', brand.brand_name);
-        setImagePreview(brand.photo || null);
-        setOpenEditModal(true);
-    };
-
-    const handleUpdateBrand = async (e) => {
-        e.preventDefault();
-        setIsSubmitting(true);
-
-        try {
-            const formData = new FormData();
-            formData.append('brand_name', brandName);
-            if (brandImage) {
-                formData.append('brand_image', brandImage);
-            }
-
-            const url = `${API_CONFIG.BASE_URL}/api/admin/update_brand_by_id/${selectedBrand.id}`;
-            const response = await axios.put(url, formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-
-            if (response.data.success) {
-                toast.success('Brand updated successfully');
-                setOpenEditModal(false);
-                fetchBrandsData();
-                reset();
-            }
-        } catch (error) {
-            console.error('Error updating brand:', error);
-            toast.error(error.response?.data?.message || 'Error updating brand');
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-
-    const handleDeleteRow = (brand) => {
-        setBrandToDelete(brand);
-        setOpenDeleteDialog(true);
-    };
-
-    const handleDeleteConfirmation = async () => {
-        setIsDeleting(true);
-        try {
-            const response = await axios.delete(`${API_CONFIG.BASE_URL}/api/admin/delete_brand_by_id/${brandToDelete.id}`);
-            if (response.data.success) {
-                toast.success('Brand deleted successfully');
-                fetchBrandsData();
-                setOpenDeleteDialog(false);
-            }
-        } catch (error) {
-            console.error('Error deleting brand:', error);
-            toast.error(error.response?.data?.message || 'Error deleting brand');
-        } finally {
-            setIsDeleting(false);
-        }
-    };
-
-    const handleCancelDelete = () => {
-        setOpenDeleteDialog(false);
-    };
-
-    const handleBulkDelete = async () => {
-        try {
-            const response = await axios.delete(`${API_CONFIG.BASE_URL}/api/admin/delete_brands`, {
-                data: { ids: selectedRows }
-            });
-            if (response.data.success) {
-                toast.success('Selected brands deleted successfully');
-                setSelectedRows([]);
-                fetchBrandsData();
-            }
-        } catch (error) {
-            console.error('Error deleting brands:', error);
-            toast.error(error.response?.data?.message || 'Error deleting brands');
-        }
-    };
-
-    const handleRowSelection = (id) => {
-        setSelectedRows((prevSelectedRows) =>
-            prevSelectedRows.includes(id)
-                ? prevSelectedRows.filter((rowId) => rowId !== id)
-                : [...prevSelectedRows, id]
-        );
-    };
-
-    const dropdownRef = useRef(null);
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-                setOpenDropdown(null);
-            }
-        };
-
-        document.addEventListener('mousedown', handleClickOutside);
-
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, []);
-
-    // When closing or opening the modal, reset the form errors
-    // Functions to open and close modals
-    const closeCreateModal = () => {
-        setOpenAddModal(false);
-        reset(); // Reset the form data and errors
-    };
-
-    const handleOpenEditModal = () => {
-        setOpenEditModal(true);
-        reset(); // Reset the form data and errors
-    };
-
-    const closeEditModal = () => {
-        setOpenEditModal(false);
-        reset(); // Reset the form data and errors
-    };
-    
+  if (loading) {
     return (
-        <div className="min-h-screen pt-6">
-          <Navbar brandText={"Brand"} />
-          <ToastContainer />
-          <div className="w-full mx-auto">
-            <span className="flex items-center mt-4 w-full gap-6">
-              {/* Search bar */}
-              <div className="relative flex flex-grow items-center justify-around gap-2 rounded-full bg-white px-2 py-3 shadow-xl shadow-shadow-500">
-                <div className="flex h-full w-full items-center rounded-full text-navy-700">
-                  <p className="pl-3 pr-2 text-xl">
-                    <FiSearch className="h-4 w-4 text-gray-400" />
-                  </p>
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search by Brand Name.."
-                    className="block w-full rounded-full font-medium text-navy-700 outline-none placeholder:text-gray-400"
-                  />
-                </div>
-              </div>
-              <button
-                onClick={handleAddBrand}
-                className="bg-[#4318ff] text-white px-6 py-2 rounded-full text-lg font-medium flex items-center ml-auto"
-              >
-                <FaPlus className="mr-2" /> Add Brand
-              </button>
-            </span>
-      
-            {/* Table */}
-            <div className="mt-8 bg-white shadow-lg rounded-lg p-6">
-              <table className="w-full table-auto">
-                <thead>
-                  <tr className="text-gray-600">
-                    <th className="px-6 py-4 text-left">Image</th>
-                    <th className="px-6 py-4 text-left">Brand Name</th>
-                    <th className="px-6 py-4 text-left">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {getPaginatedData().length === 0 ? (
-                    <tr>
-                      <td colSpan="3" className="text-center py-4">No Brand data found</td>
-                    </tr>
-                  ) : (
-                    getPaginatedData().map((brand) => (
-                      <tr key={brand.id} className="border-t group">
-                        <td className="px-6 py-4">
-                          <img
-                            src={brand.photo || '/default-image.png'}
-                            alt={brand.brand_name}
-                            className="w-12 h-12 object-cover rounded-full"
-                          />
-                        </td>
-                        <td className="px-6 py-4">{brand.brand_name}</td>
-                        <td className="text-right px-6 py-4">
-                          <div className="flex items-center space-x-2">
-                            <button
-                              onClick={() => handleEditRow(brand)}
-                              className="text-navy-700 hover:bg-gray-200"
-                            >
-                              <FaEdit className="mr-2 text-black" />
-                            </button>
-                            <button
-                              onClick={() => handleDeleteRow(brand)}
-                              className="text-red-600 hover:bg-gray-200"
-                            >
-                              <FaTrashAlt className="mr-2" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-      
-          {/* Pagination */}
-          <div className="flex justify-between items-center mt-4">
-            <div className="flex items-center">
-              <span className="mr-2">Show</span>
-              <select
-                className="border border-gray-300 rounded px-2 py-1"
-                value={itemsPerPage}
-                onChange={e => setItemsPerPage(Number(e.target.value))}
-              >
-                {[10, 20, 50].map(num => (
-                  <option key={num} value={num}>{num}</option>
-                ))}
-              </select>
-              <span className="ml-2">entries</span>
-            </div>
-            <div>
-              <button
-                onClick={() => setCurrentPage(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="px-3 py-1 rounded bg-gray-200 text-gray-700 mr-2 disabled:opacity-50"
-              >Back</button>
-              <span>{currentPage} of {totalPages}</span>
-              <button
-                onClick={() => setCurrentPage(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="px-3 py-1 rounded bg-gray-200 text-gray-700 ml-2 disabled:opacity-50"
-              >Next</button>
-            </div>
-          </div>
-      
-          {/* Add/Edit/Delete modals go here (reuse your existing modal logic, but ensure styling matches Category) */}
-        </div>
-      );
-}
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
-export default BrandTable;
+  return (
+    <div className="p-6">
+      <ToastContainer />
+      
+      {/* Header */}
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-gray-800">Brand Management</h1>
+        <button
+          onClick={handleAddNew}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+        >
+          <FaPlus className="text-sm" />
+          Add New Brand
+        </button>
+      </div>
+
+      {/* Search and Actions */}
+      <div className="flex justify-between items-center mb-4">
+        <div className="relative">
+          <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search brands..."
+            value={searchQuery}
+            onChange={handleSearch}
+            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+        
+        {selectedBrands.length > 0 && (
+          <button
+            onClick={handleBulkDelete}
+            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+          >
+            <FaTrashAlt className="text-sm" />
+            Delete Selected ({selectedBrands.length})
+          </button>
+        )}
+      </div>
+
+      {/* Table */}
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left">
+                <input
+                  type="checkbox"
+                  checked={selectedBrands.length === currentBrands.length && currentBrands.length > 0}
+                  onChange={handleSelectAll}
+                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Brand Image
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Brand Name
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Status
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Created At
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {currentBrands.map((brand) => (
+              <tr key={brand.id} className="hover:bg-gray-50">
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <input
+                    type="checkbox"
+                    checked={selectedBrands.includes(brand.id)}
+                    onChange={() => handleRowSelection(brand.id)}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {brand.photo ? (
+                    <img
+                      src={`${API_CONFIG.BASE_URL}${brand.photo}`}
+                      alt={brand.brand_name}
+                      className="h-10 w-10 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                      <span className="text-gray-500 text-xs">No Image</span>
+                    </div>
+                  )}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  {brand.brand_name}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                    brand.status === 1 || brand.status === '1'
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-red-100 text-red-800'
+                  }`}>
+                    {brand.status === 1 || brand.status === '1' ? 'Active' : 'Inactive'}
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {new Date(brand.createdAt).toLocaleDateString()}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => handleEdit(brand.id)}
+                      className="text-blue-600 hover:text-blue-900"
+                    >
+                      <FaEdit className="text-sm" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(brand.id)}
+                      className="text-red-600 hover:text-red-900"
+                    >
+                      <FaTrashAlt className="text-sm" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        {/* Empty State */}
+        {currentBrands.length === 0 && (
+          <div className="text-center py-8">
+            <p className="text-gray-500">No brands found</p>
+          </div>
+        )}
+      </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex justify-between items-center mt-4">
+          <div className="text-sm text-gray-700">
+            Showing {startIndex + 1} to {Math.min(endIndex, filteredBrands.length)} of {filteredBrands.length} results
+          </div>
+          <div className="flex space-x-2">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-1 border border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+            <span className="px-3 py-1 text-sm">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1 border border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default BrandTable; 

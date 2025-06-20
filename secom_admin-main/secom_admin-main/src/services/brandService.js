@@ -1,9 +1,9 @@
 import API_CONFIG from '../config/api.config';
 import axios from 'axios';
 
+// Create axios instance with base configuration
 const api = axios.create({
   baseURL: API_CONFIG.BASE_URL,
-  withCredentials: true,
   headers: {
     'Accept': 'application/json',
     'Content-Type': 'application/json',
@@ -21,7 +21,10 @@ api.interceptors.request.use((config) => {
 
 // Add response interceptor for error handling
 api.interceptors.response.use(
-  (response) => response.data,
+  (response) => {
+    // Return the whole response object if it's successful
+    return response;
+  },
   (error) => {
     console.error('API Error:', error);
     if (error.response?.status === 401) {
@@ -51,26 +54,68 @@ const brandService = {
 
   // Create brand
   createBrand: async (brandData) => {
-    const response = await api.post('/api/admin/save_brand', brandData);
-    return response.data;
+    try {
+      console.log('Creating brand with data in brandService.js:');
+      for (let [key, value] of brandData.entries()) {
+        console.log(`${key}:`, value);
+      }
+      const response = await api.post('/api/admin/save_brand', brandData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      console.log('Create brand response:', response);
+      return response.data;
+    } catch (error) {
+      console.error('Error creating brand:', error);
+      throw error;
+    }
   },
 
   // Update brand
   updateBrand: async (id, brandData) => {
-    const response = await api.put(`/api/admin/update_brand_by_id/${id}`, brandData);
-    return response.data;
+    try {
+      console.log('Updating brand with id in brandService.js:', id, 'data:');
+      for (let [key, value] of brandData.entries()) {
+        console.log(`${key}:`, value);
+      }
+      const response = await api.put(`/api/admin/update_brand_by_id/${id}`, brandData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      console.log('Update brand response:', response);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating brand:', error);
+      throw error;
+    }
   },
 
   // Delete brand
   deleteBrand: async (id) => {
-    const response = await api.delete(`/api/admin/delete_brand_by_id/${id}`);
-    return response.data;
+    try {
+      console.log('Deleting brand with id:', id);
+      const response = await api.delete(`/api/admin/delete_brand_by_id/${id}`);
+      console.log('Delete brand response:', response);
+      return response.data;
+    } catch (error) {
+      console.error('Error deleting brand:', error);
+      throw error;
+    }
   },
 
   // Bulk delete brands
   bulkDeleteBrands: async (ids) => {
-    const response = await api.delete('/api/admin/delete_brands', { data: { ids } });
-    return response.data;
+    try {
+      console.log('Bulk deleting brands with ids:', ids);
+      const response = await api.delete('/api/admin/delete_brands', { data: { ids } });
+      console.log('Bulk delete brands response:', response);
+      return response.data;
+    } catch (error) {
+      console.error('Error bulk deleting brands:', error);
+      throw error;
+    }
   }
 };
 

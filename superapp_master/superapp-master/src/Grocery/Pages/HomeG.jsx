@@ -71,7 +71,7 @@ const GroceryCard = ({ item, addToCart, addToWishlist, cartItems, wishlistItems 
   
   // Check if item is in wishlist
   const wishlistItem = wishlistItems.find(
-    wishlistItem => wishlistItem.id === item.id && wishlistItem.category === item.category
+    wishlistItem => wishlistItem.grocery_id === item.id && wishlistItem.category === item.category
   );
   const isInWishlist = !!wishlistItem;
 
@@ -118,7 +118,7 @@ const GroceryCard = ({ item, addToCart, addToWishlist, cartItems, wishlistItems 
                 ? 'bg-purple-600 text-white' 
                 : 'bg-white text-gray-500 hover:text-gray-700'
             }`}
-            onClick={() => addToWishlist(item)}
+            onClick={() => addToWishlist(item, quantity)}
             title={isInWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'}
           >
             <FaHeart className="w-5 h-5" />
@@ -615,7 +615,21 @@ function Groceries() {
   //     newValue: JSON.stringify(updatedWishlist)
   //   }));
   // };
-  const addToWishlist = async (item) => {
+  const fetchWishlist = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    try {
+      const res = await fetch('http://localhost:5000/api/gwishlist', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error('Failed to fetch wishlist');
+      const data = await res.json();
+      setWishlistItems(data);
+    } catch (err) {
+      setWishlistItems([]);
+    }
+  };
+  const addToWishlist = async (item, quantity = 1) => {
     const token = localStorage.getItem('token');
     if (!token) {
       alert('Please log in to use the wishlist');
@@ -636,9 +650,7 @@ function Groceries() {
         });
   
         if (!res.ok) throw new Error('Failed to remove from wishlist');
-  
-        // Update frontend state
-        setWishlistItems(prev => prev.filter(w => w.id !== existingItem.id));
+        await fetchWishlist(); // Always fetch latest
       } else {
         // ➕ Add to wishlist (POST)
         const payload = {
@@ -648,7 +660,7 @@ function Groceries() {
           category: item.category,
           original_price: item.originalPrice,
           discounted_price: item.discountedPrice,
-          quantity: 1
+          quantity // use the selected quantity
         };
   
         const res = await fetch('http://localhost:5000/api/gwishlist', {
@@ -661,20 +673,7 @@ function Groceries() {
         });
   
         if (!res.ok) throw new Error('Failed to add to wishlist');
-  
-        const newItem = await res.json();
-  
-        // Append new item to local state if available
-        if (newItem && newItem.id) {
-          setWishlistItems(prev => [...prev, newItem]);
-        } else {
-          // fallback: re-fetch whole wishlist if backend only returns message
-          const fetchRes = await fetch('http://localhost:5000/api/gwishlist', {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          const updated = await fetchRes.json();
-          setWishlistItems(updated);
-        }
+        await fetchWishlist(); // Always fetch latest
       }
     } catch (err) {
       console.error('Wishlist error:', err);
@@ -710,6 +709,10 @@ function Groceries() {
     { name: 'Instant & Frozen Foods', image: catInstant, label: 'Instant & Frozen Foods' },
     { name: 'Chocolates & Ice Creams', image: chocolateBarsImage, label: 'Chocolates & Ice Creams' },
   ];
+
+  useEffect(() => {
+    fetchWishlist();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">

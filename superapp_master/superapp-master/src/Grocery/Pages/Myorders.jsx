@@ -1,209 +1,137 @@
 import React, { useState, useEffect } from 'react';
 import Header from "../SubPages/Header";
-import shirt from "../Images/shirt.svg";
 import Footer from '../SubPages/Footer';
-import filter from "../Images/filterbutton.svg";
 import { useNavigate } from 'react-router-dom';
-import filterColor from "../Images/filtertcolorButton.svg";
 
 function Myorders() {
     const navigate = useNavigate();
-    const steps = ["Process", "Packaged", "Out of delivered", "Received"];
-    const [orders, setOrders] = useState([]); // State to hold orders
-    const [isOpen, setIsOpen] = useState({}); // Use object to manage multiple open states
-    const [isOpenFilter, setIsOpenFilter] = useState(false);
+    const [orders, setOrders] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [expandedOrder, setExpandedOrder] = useState(null);
 
-    // Load orders from localStorage on component mount
+    // Fetch orders from localStorage on mount
     useEffect(() => {
-        const storedOrders = JSON.parse(localStorage.getItem('Gorders')) || [];
-        setOrders(storedOrders);
+        setLoading(true);
+        setError(null);
+        try {
+            const storedOrders = JSON.parse(localStorage.getItem('Gorders')) || [];
+            setOrders(storedOrders);
+        } catch (err) {
+            setError('Failed to load orders.');
+        } finally {
+            setLoading(false);
+        }
     }, []);
 
-    // Listen for storage changes from other components (e.g., when an order is placed)
-    useEffect(() => {
-        const handleStorageChange = (e) => {
-            if (e.key === 'Gorders') {
-                setOrders(JSON.parse(e.newValue) || []);
+    // Buy Again handler (localStorage)
+    const handleBuyAgain = async (item) => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Please log in to add items to your cart.');
+                navigate('/login');
+                return;
             }
-        };
-
-        window.addEventListener('storage', handleStorageChange);
-        return () => window.removeEventListener('storage', handleStorageChange);
-    }, []);
-
-    const toggleOrderDetails = (orderId) => {
-        setIsOpen(prev => ({
-            ...prev,
-            [orderId]: !prev[orderId]
-        }));
+            const cartPayload = {
+                groceryId: item.id || item.product_id,
+                name: item.name,
+                image: item.image,
+                category: item.category,
+                original_price: item.originalPrice || item.price,
+                discounted_price: item.discountedPrice || item.price,
+                quantity: item.quantity || 1
+            };
+            const response = await fetch('http://localhost:5000/api/gcart', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify(cartPayload)
+            });
+            if (!response.ok) throw new Error('Failed to add to cart');
+            alert('Item added to cart!');
+        } catch (err) {
+            alert('Could not add to cart: ' + err.message);
+        }
     };
 
     return (
-        <div>
-            <div className='bg-[#F8F8F8] min-h-screen'>
-                <Header />
-                <div className='px-4 pt-24 pb-28 bg-[#F8F8F8]'>
-                    <div className="flex justify-between items-center w-full bg-[#F8F8F8]">
-                        <p className='font-medium text-base text-[#484848]'>Your Orders</p>
-                        <img src={filter} alt="filter" className="w-[60px] h-[30px]" onClick={() => setIsOpenFilter(true)} />
-                    </div>
-                    {orders.length > 0 ? ( // Conditionally render if there are orders
-                        orders.map(order => (
-                            <div key={order.orderId} className="bg-white border border-[#E1E1E1] rounded-[20px] mt-4 p-4 cursor-pointer"
-                                 onClick={() => toggleOrderDetails(order.orderId)}>
-                                <div className="flex row gap-4">
-                                    <div className="w-[120px] h-[140px]">
-                                        {/* Display the first item's image as a preview */}
-                                        {order.items.length > 0 && (
-                                            <img src={order.items[0].image} alt="product" className="w-full h-full p-4" />
-                                        )}
+        <div className='bg-[#F8F8F8] min-h-screen'>
+            <Header />
+            <div className='px-4 pt-24 pb-28 bg-[#F8F8F8]'>
+                <h2 className='font-bold text-2xl mb-4'>Your Orders</h2>
+                {loading ? (
+                    <div className="text-center py-8 text-gray-500">Loading orders...</div>
+                ) : error ? (
+                    <div className="text-center py-8 text-red-500">{error}</div>
+                ) : orders.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">No orders placed yet.</div>
+                ) : (
+                    orders.slice().reverse().map(order => (
+                        <div key={order.orderId || order.id} className="bg-white border border-[#E1E1E1] rounded-[20px] mt-4 p-4">
+                            <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+                                <div>
+                                    <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
+                                        <span>Order Placed:</span>
+                                        <span className="font-medium">{order.date ? new Date(order.date).toLocaleDateString() : ''}</span>
                                     </div>
-                                    <div className="flex-1">
-                                        <div className="flex justify-between items-center w-full">
-                                            <p className="text-[#5C3FFF] font-medium text-base">OD-{order.orderId}</p>
-                                            <p className="font-medium text-base text-[#5C3FFF] text-right">Invoice</p>
-                                        </div>
-                                        <div className="font-semibold text-base text-[#242424] pt-2">{order.items.map(item => item.name).join(', ')}</div>
-                                        <p className="font-medium text-sm text-[#242424] mb-2">
-                                            ₹ {order.totalDiscountedPrice.toFixed(2)} <span className="line-through text-[#C1C1C1]">₹ {order.totalOriginalPrice.toFixed(2)}</span>
-                                        </p>
-                                        <div className="text-[#F3A91F] font-medium font-base">{order.status}</div>
+                                    <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
+                                        <span>Order ID:</span>
+                                        <span className="font-mono">OD-{order.orderId || order.id}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
+                                        <span>Status:</span>
+                                        <span className="font-medium capitalize">{order.status || 'Delivered'}</span>
                                     </div>
                                 </div>
-                                {isOpen[order.orderId] && ( // Show details if expanded
-                                    <div className="mt-4 flex flex-col relative gap-2">
-                                        {/* Iterate through actual steps instead of static steps */}
-                                        {order.orderHistory.map((historyItem, index) => (
-                                            <div key={index} className="flex items-start gap-3 relative">
-                                                {/* Vertical Line (Behind Dots) */}
-                                                {index !== order.orderHistory.length - 1 && (
-                                                    <div
-                                                        className={`absolute left-[5px] top-3 w-0.5 h-full 
-                                                         ${historyItem.status === order.status ? "bg-[#5C3FFF]" : "bg-gray-300"}`}
-                                                    ></div>
-                                                )}
-
-                                                {/* Step Icon */}
-                                                <div className="relative z-10">
-                                                    <div
-                                                        className={`w-3 h-3 rounded-full border-2 
-                                                         ${historyItem.status === order.status
-                                                                ? "bg-[#5C3FFF] border-[#5C3FFF]"
-                                                                : "bg-gray-300 border-gray-300"
-                                                            }`}
-                                                    ></div>
+                                <div className="text-right mt-2 md:mt-0">
+                                    <div className="text-lg font-bold text-[#5C3FFF]">₹ {order.totalDiscountedPrice || order.total_amount}</div>
+                                </div>
+                            </div>
+                            <div className="flex justify-end mt-2">
+                                <button
+                                    className="text-xs text-[#5C3FFF] underline"
+                                    onClick={() => setExpandedOrder(expandedOrder === (order.orderId || order.id) ? null : (order.orderId || order.id))}
+                                >
+                                    {expandedOrder === (order.orderId || order.id) ? 'Hide Details' : 'View Details'}
+                                </button>
+                            </div>
+                            {expandedOrder === (order.orderId || order.id) && (
+                                <>
+                                    <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {order.items.map(item => (
+                                            <div key={item.id || item.product_id} className="flex items-center gap-4 border rounded-lg p-2 bg-gray-50">
+                                                <img src={item.image || item.product_data?.image || 'https://via.placeholder.com/80'} alt={item.name || item.product_data?.name} className="w-20 h-20 object-cover rounded" />
+                                                <div className="flex-1">
+                                                    <div className="font-semibold text-base text-[#242424]">{item.name || item.product_data?.name}</div>
+                                                    <div className="text-sm text-gray-600">Qty: {item.quantity}</div>
+                                                    <div className="text-sm text-gray-600">Price: ₹ {item.discountedPrice || item.price}</div>
+                                                    <button
+                                                        className="mt-2 px-3 py-1 bg-[#5C3FFF] text-white rounded-full text-xs hover:bg-[#4a32cc]"
+                                                        onClick={() => handleBuyAgain(item)}
+                                                    >
+                                                        Buy Again
+                                                    </button>
                                                 </div>
-
-                                                {/* Step Text */}
-                                                <span
-                                                    className={`text-sm ${historyItem.status === order.status ? "text-black font-medium" : "text-gray-500"}
-                                                        `}
-                                                >
-                                                    {historyItem.status} - {new Date(historyItem.timestamp).toLocaleDateString()}
-                                                </span>
                                             </div>
                                         ))}
-                                        {/* Display all items in the order */}
-                                        <div className="mt-4 border-t pt-4">
-                                            <p className="font-semibold text-base mb-2">Items in this Order:</p>
-                                            {order.items.map(item => (
-                                                <div key={`${item.category}-${item.id}`} className="flex items-center gap-2 mb-2">
-                                                    <img src={item.image} alt={item.name} className="w-12 h-12 object-cover rounded" />
-                                                    <p className="text-sm text-gray-800">{item.name} (Qty: {item.quantity})</p>
-                                                </div>
-                                            ))}
-                                        </div>
                                     </div>
-                                )}
-                            </div>
-                        ))
-                    ) : (
-                        <div className="text-center py-8 text-gray-500">
-                            No orders placed yet.
+                                    <div className="mt-4 border-t pt-4">
+                                        <div className="font-semibold mb-2">Order Details</div>
+                                        <div className="text-sm text-gray-700 mb-1">Order placed on: {order.date ? new Date(order.date).toLocaleString() : ''}</div>
+                                        <div className="text-sm text-gray-700 mb-1">Order ID: OD-{order.orderId || order.id}</div>
+                                        <div className="text-sm text-gray-700 mb-1">Status: {order.status || 'Delivered'}</div>
+                                        <div className="text-sm text-gray-700 mb-1">Total: ₹ {order.totalDiscountedPrice || order.total_amount}</div>
+                                    </div>
+                                </>
+                            )}
                         </div>
-                    )}
-                </div>
-                <Footer />
+                    ))
+                )}
             </div>
-            {isOpenFilter && (
-                <div
-                    className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-75 flex justify-center items-center z-50"
-                    onClick={() => setIsOpenFilter(false)} // Close when clicking outside
-                >
-                    <div
-                        className="bg-[#F8F8F8] w-[80%] h-full flex flex-col p-5 shadow-xl ml-auto"
-                        onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
-                    >
-                        <div className="flex">
-                            <img src={filterColor} alt="" style={{ width: "70px", height: "40px" }} className='ml-auto' />
-                        </div>
-
-                        <div className="flex-1 pt-8 px-2 overflow-auto">
-                            {/* Filters */}
-                            <div className="flex items-center gap-2">
-                                <input
-                                    type="checkbox"
-                                    className="w-4 h-4 border-2 border-[#5C3FFF] rounded-full appearance-none checked:bg-[#5C3FFF] checked:border-[#5C3FFF]"
-                                />
-                                <div className="text-sm font-semibold">Delivered</div>
-                            </div>
-                            <div className="pt-2 flex items-center gap-2">
-                                <input
-                                    type="checkbox"
-                                    className="w-4 h-4 border-2 border-[#5C3FFF] rounded-full appearance-none checked:bg-[#5C3FFF] checked:border-[#5C3FFF]"
-                                />
-                                <div className="text-sm font-semibold">Not yet shipped</div>
-                            </div>
-                            <div className="pt-2 flex items-center gap-2">
-                                <input
-                                    type="checkbox"
-                                    className="w-4 h-4 border-2 border-[#5C3FFF] rounded-full appearance-none checked:bg-[#5C3FFF] checked:border-[#5C3FFF]"
-                                />
-                                <div className="text-sm font-semibold">Cancelled</div>
-                            </div>
-
-                            <div className="text-[#797979] text-sm font-medium mt-8">
-                                Filtered by date
-                            </div>
-                            <div className="mt-4 flex items-center gap-2">
-                                <input
-                                    type="checkbox"
-                                    className="w-4 h-4 border-2 border-[#5C3FFF] rounded-full appearance-none checked:bg-[#5C3FFF] checked:border-[#5C3FFF]"
-                                />
-                                <div className="text-sm font-semibold">Last 30 days</div>
-                            </div>
-                            <div className="pt-2 flex items-center gap-2">
-                                <input
-                                    type="checkbox"
-                                    className="w-4 h-4 border-2 border-[#5C3FFF] rounded-full appearance-none checked:bg-[#5C3FFF] checked:border-[#5C3FFF]"
-                                />
-                                <div className="text-sm font-semibold">Last 3 months</div>
-                            </div>
-                            <div className="pt-2 flex items-center gap-2">
-                                <input
-                                    type="checkbox"
-                                    className="w-4 h-4 border-2 border-[#5C3FFF] rounded-full appearance-none checked:bg-[#5C3FFF] checked:border-[#5C3FFF]"
-                                />
-                                <div className="text-sm font-semibold">2023</div>
-                            </div>
-                            <div className="pt-2 flex items-center gap-2">
-                                <input
-                                    type="checkbox"
-                                    className="w-4 h-4 border-2 border-[#5C3FFF] rounded-full appearance-none checked:bg-[#5C3FFF] checked:border-[#5C3FFF]"
-                                />
-                                <div className="text-sm font-semibold">2022</div>
-                            </div>
-                        </div>
-
-                        {/* Buttons aligned at bottom */}
-                        <div className="px-2 py-4">
-                            <button className="w-full px-4 py-2 bg-[#5C3FFF] text-white rounded-[50px]" onClick={() => setIsOpenFilter(false)}>Apply</button>
-                            <button className="text-[#242424] w-full px-4 py-2 border rounded-[50px] bg-[#EEEAFF] mt-2" onClick={() => setIsOpenFilter(false)}>Cancel</button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
+            <Footer />
         </div>
     );
 }

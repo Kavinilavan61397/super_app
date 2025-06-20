@@ -198,6 +198,9 @@ OTP.belongsTo(User, {
   onUpdate: 'CASCADE'
 });
 
+// ✅ Gwhishlist model
+const Gwhishlist = require('./gwhishlist')(sequelize, Sequelize.DataTypes);
+
 // Export all models
 module.exports = {
   sequelize,
@@ -220,5 +223,6 @@ module.exports = {
   Hotel,
   Room,
   Booking,
-  GCartItem 
+  GCartItem,
+  Gwhishlist 
 };

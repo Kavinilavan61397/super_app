@@ -150,36 +150,42 @@ function Cart() {
     }
   };
 
-  // Proceed to pay (place order)
-  const handleProceedToPay = async () => {
+  // Proceed to buy (place order)
+  const handleProceedToBuy = async () => {
     if (cartItems.length === 0) {
-      alert('Your cart is empty! Please add items before placing an order.'); 
+      alert('Your cart is empty! Please add items before placing an order.');
       return;
     }
     try {
+      // Read existing orders from localStorage
+      const existingOrders = JSON.parse(localStorage.getItem('Gorders')) || [];
+      // Create new order object
+      const newOrder = {
+        orderId: Date.now(),
+        date: new Date().toISOString(),
+        status: 'Delivered',
+        items: cartItems,
+        totalDiscountedPrice: cartItems.reduce((sum, item) => sum + (item.discountedPrice * item.quantity), 0),
+        totalOriginalPrice: cartItems.reduce((sum, item) => sum + (item.originalPrice * item.quantity), 0)
+      };
+      // Add new order to orders array
+      const updatedOrders = [...existingOrders, newOrder];
+      localStorage.setItem('Gorders', JSON.stringify(updatedOrders));
+      // Clear cart in backend
       const token = localStorage.getItem('token');
-      if (!token) {
-        alert('Please log in to place an order.');
-        navigate('/login');
-        return;
+      if (token) {
+        const response = await fetch('http://localhost:5000/api/gcart/clear', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Failed to clear cart in backend');
       }
-      const response = await fetch('http://localhost:5000/api/orders', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ items: cartItems })
-      });
-      if (response.status === 401) throw { message: 'Unauthorized', status: 401 };
-      if (!response.ok) throw new Error('Failed to place order');
+      // Update UI state
       setCartItems([]);
       alert('Order placed successfully!');
       navigate('/home-grocery/order-list');
     } catch (err) {
-      if (!handleAuthError(err)) {
-        alert('Could not place order: ' + err.message);
-      }
+      alert('Could not place order: ' + err.message);
     }
   };
 
@@ -202,7 +208,7 @@ function Cart() {
         ) : cartItems.length === 0 ? (
           <div className="flex items-center justify-center h-[50vh] text-center text-[#484848] text-lg">Your cart is empty</div>
         ) : (
-          cartItems.map((item) => (
+          cartItems.slice().reverse().map((item) => (
             <div
               key={`${item.id}-${item.category}-${item.size}`}
               className="bg-white border border-[#E1E1E1] rounded-[20px] mt-4 flex row gap-4 p-4"
@@ -215,7 +221,6 @@ function Cart() {
                   <p className="font-medium text-base text-[#484848]">{item.category}</p>
                   <p className="text-[#5C3FFF] font-medium text-base">{item.discount}</p>
                 </div>
-            
                 <div className="font-semibold text-base text-[#242424] pt-2">{item.name}</div>
                 {item.size !== 'N/A' && (
                   <p className="font-medium text-sm text-[#484848] mb-2">
@@ -247,19 +252,17 @@ function Cart() {
             </div>
           ))
         )}
-
-        
-        <div className="fixed bottom-24 left-0 w-full px-4 py-4">
-          <button
-            onClick={handleProceedToPay} // Add click handler
-            className={`w-full px-4 py-2 rounded-[50px] text-white ${
-              cartItems.length === 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#5C3FFF]'
-            }`}
-            disabled={cartItems.length === 0} // Disable button if cart is empty
-          >
-            Proceed to Pay
-          </button>
-          </div>
+      </div>
+      <div className="fixed bottom-24 left-0 w-full px-4 py-4">
+        <button
+          onClick={handleProceedToBuy}
+          className={`w-full px-4 py-2 rounded-[50px] text-white ${
+            cartItems.length === 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#5C3FFF]'
+          }`}
+          disabled={cartItems.length === 0}
+        >
+          Proceed to Buy
+        </button>
       </div>
       <Footer />
     </div>

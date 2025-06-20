@@ -17,6 +17,7 @@ const groceryRoutes = require('./routes/grocery.routes');
 const taxiRideRoutes = require('./routes/taxiRide.routes');
 const taxiDriverRoutes = require('./routes/taxiDriver.routes');
 const taxiVehicleRoutes = require('./routes/taxiVehicle.routes');
+const gwishlistRoutes = require('./routes/gwishlist.routes');
 
 const app = express();
 
@@ -48,6 +49,7 @@ app.use('/api/rooms', roomRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/groceries', groceryRoutes);
 app.use('/api/gcart', gcartRoutes);     // ✅ Grocery cart items
+app.use('/api/gwishlist', gwishlistRoutes); // ✅ Grocery wishlist
 app.use('/api/taxi-rides', taxiRideRoutes);
 app.use('/api/taxi-drivers', taxiDriverRoutes);
 app.use('/api/taxi-vehicles', taxiVehicleRoutes);
@@ -67,6 +69,7 @@ app.get('/', (req, res) => {
       bookings: '/api/bookings',
       groceries: '/api/groceries',
       gcart: '/api/gcart',
+      gwishlist: '/api/gwishlist',
       taxiRides: '/api/taxi-rides',
       taxiDrivers: '/api/taxi-drivers',
       taxiVehicles: '/api/taxi-vehicles'

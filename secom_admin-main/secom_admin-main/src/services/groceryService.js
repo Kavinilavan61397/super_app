@@ -47,7 +47,11 @@ const groceryService = {
   
   createGrocery: async (data) => {
     try {
-      const response = await api.post('/api/groceries', data);
+      const response = await api.post('/api/groceries', data, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
       return response.data;
     } catch (error) {
       console.error('Error creating grocery:', error);
@@ -57,7 +61,11 @@ const groceryService = {
   
   updateGrocery: async (id, data) => {
     try {
-      const response = await api.put(`/api/groceries/${id}`, data);
+      const response = await api.put(`/api/groceries/${id}`, data, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
       return response.data;
     } catch (error) {
       console.error('Error updating grocery:', error);

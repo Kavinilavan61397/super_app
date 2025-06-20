@@ -2,31 +2,59 @@ import GroceryTable from 'views/admin/Sidenav_pages/GroceryTable';
 import GroceryForm from 'views/admin/Sidenav_pages/GroceryForm';
 import TaxiTable from 'views/admin/Sidenav_pages/TaxiTable';
 import TaxiForm from 'views/admin/Sidenav_pages/TaxiForm';
+import TaxiDriverTable from 'views/admin/Sidenav_pages/TaxiDriverTable';
+import TaxiDriverForm from 'views/admin/Sidenav_pages/TaxiDriverForm';
+import TaxiVehicleTable from 'views/admin/Sidenav_pages/TaxiVehicleTable';
+import TaxiVehicleForm from 'views/admin/Sidenav_pages/TaxiVehicleForm';
 
 const adminRoutes = [
   {
-    path: '/admin/groceries',
+    path: 'groceries',
     element: <GroceryTable />,
   },
   {
-    path: '/admin/groceries/new',
+    path: 'groceries/new',
     element: <GroceryForm />,
   },
   {
-    path: '/admin/groceries/edit/:id',
+    path: 'groceries/edit/:id',
     element: <GroceryForm />,
   },
   {
-    path: '/admin/taxi-rides',
+    path: 'taxi-rides',
     element: <TaxiTable />,
   },
   {
-    path: '/admin/taxi-rides/new',
+    path: 'taxi-rides/new',
     element: <TaxiForm />,
   },
   {
-    path: '/admin/taxi-rides/edit/:id',
+    path: 'taxi-rides/edit/:id',
     element: <TaxiForm />,
+  },
+  {
+    path: 'taxi-drivers',
+    element: <TaxiDriverTable />,
+  },
+  {
+    path: 'taxi-drivers/new',
+    element: <TaxiDriverForm />,
+  },
+  {
+    path: 'taxi-drivers/edit/:id',
+    element: <TaxiDriverForm />,
+  },
+  {
+    path: 'taxi-vehicles',
+    element: <TaxiVehicleTable />,
+  },
+  {
+    path: 'taxi-vehicles/new',
+    element: <TaxiVehicleForm />,
+  },
+  {
+    path: 'taxi-vehicles/edit/:id',
+    element: <TaxiVehicleForm />,
   },
 ];
 

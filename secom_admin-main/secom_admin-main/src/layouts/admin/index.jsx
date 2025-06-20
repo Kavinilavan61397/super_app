@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, useLocation, Link } from "react-router-dom";
 import Navbar from "components/navbar";
 import Footer from "components/footer/Footer";
 import routes from "routes.js";
+import adminRoutes from "routes/admin.routes.js";
 import { MdKeyboardArrowDown, MdKeyboardArrowUp } from "react-icons/md";
 import axios from "axios";
 
@@ -34,6 +35,7 @@ export default function Admin(props) {
   };
 
   const getRoutes = (routes) => {
+    console.log("Generating routes from routes.js:", routes);
     return routes.flatMap((prop, key) => {
       let routeComponents = [];
       if (prop.layout === "/admin") {
@@ -59,7 +61,14 @@ export default function Admin(props) {
     });
   };
 
-
+  const getAdminRoutes = (routes) => {
+    console.log("Generating admin routes from admin.routes.js:", routes);
+    return routes.map((prop, key) => {
+      return (
+        <Route path={prop.path} element={prop.element} key={key} />
+      );
+    });
+  };
 
   const [adminName, setAdminName] = useState("");
 
@@ -82,75 +91,6 @@ export default function Admin(props) {
   }, []);
 
   return (
-    // <div className="flex h-full w-full">
-    //   <div className={`w-64 bg-white text-gray-600 font-bold ${open ? "block" : "hidden"} h-screen overflow-y-auto fixed`}>
-    //     {/* <div className="p-4 font-bold text-xl">Admin Panel</div> */}
-    //     <div className="p-4 font-bold text-xl">{adminName} Panel</div>
-    //     <nav>
-    //       {routes.map((item, index) => (
-    //         <div key={index}>
-    //           {item.subNav ? (
-    //             <div className="flex items-center justify-between p-3 cursor-pointer hover:text-[#4318ff]" onClick={() => toggleDropdown(index)}>
-    //               <div className="flex items-center">{item.icon}<span className="ml-2">{item.name}</span></div>
-    //               {dropdowns[index] ? <MdKeyboardArrowUp /> : <MdKeyboardArrowDown />}
-    //             </div>
-    //           ) : (
-    //             <Link to={`/admin/${item.path}`} className={`flex items-center p-3 ${location.pathname === `/admin/${item.path}` ? "text-[#4318ff] font-bold" : "hover:text-[#4318ff]"}`}>
-    //               {item.icon}<span className="ml-2">{item.name}</span>
-    //             </Link>
-    //           )}
-
-    //           {dropdowns[index] && item.subNav && (
-    //             <div className="ml-4">
-    //               {item.subNav.map((subItem, subIndex) => (
-    //                 <div key={subIndex}>
-    //                   {subItem.subNav ? (
-    //                     <div className="flex items-center justify-between p-2 cursor-pointer hover:text-[#4318ff]" onClick={() => toggleDropdown(`${index}-${subIndex}`)}>
-    //                       <div className="flex items-center">{subItem.icon}<span className="ml-2">{subItem.name}</span></div>
-    //                       {dropdowns[`${index}-${subIndex}`] ? <MdKeyboardArrowUp /> : <MdKeyboardArrowDown />}
-    //                     </div>
-    //                   ) : (
-    //                     <Link to={`/admin/${subItem.path}`} className={`ml-4 flex items-center p-2 ${location.pathname === `/admin/${subItem.path}` ? "text-[#4318ff] font-bold" : "hover:text-[#4318ff]"}`}>
-    //                       {subItem.icon}<span className="ml-2">{subItem.name}</span>
-    //                     </Link>
-    //                   )}
-
-    //                   {dropdowns[`${index}-${subIndex}`] && subItem.subNav && (
-    //                     <div className="ml-6">
-    //                       {subItem.subNav.map((nestedItem, nestedIndex) => (
-    //                         <div key={nestedIndex}>
-    //                           {nestedItem.subNav ? (
-    //                             <div className="flex items-center justify-between p-2 cursor-pointer hover:text-[#4318ff]" onClick={() => toggleDropdown(`${index}-${subIndex}-${nestedIndex}`)}>
-    //                               <div className="flex items-center">{nestedItem.icon}<span className="ml-2">{nestedItem.name}</span></div>
-    //                               {dropdowns[`${index}-${subIndex}-${nestedIndex}`] ? <MdKeyboardArrowUp /> : <MdKeyboardArrowDown />}
-    //                             </div>
-    //                           ) : (
-    //                             <Link to={`/admin/${nestedItem.path}`} className={`ml-4 flex items-center p-2 ${location.pathname === `/admin/${nestedItem.path}` ? "text-[#4318ff] font-bold" : "hover:text-[#4318ff]"}`}>
-    //                               {nestedItem.icon}<span className="ml-2">{nestedItem.name}</span>
-    //                             </Link>
-    //                           )}
-    //                         </div>
-    //                       ))}
-    //                     </div>
-    //                   )}
-                      
-    //                 </div>
-    //               ))}
-    //             </div>
-    //           )}
-    //         </div>
-    //       ))}
-    //     </nav>
-    //   </div>
-    //   <div className="h-full w-full bg-lightPrimary dark:!bg-navy-900">
-    //     <main className="mx-[2px] h-full flex-none transition-all md:pr-2 xl:ml-[300px]">
-    //       <div className="pt-5 mx-auto mb-auto h-full min-h-[84vh] p-2 md:pr-2">
-    //         <Routes>{getRoutes(routes)}<Route path="/" element={<Navigate to="/admin/default" replace />} /></Routes>
-    //       </div>
-    //       <div className="p-3"><Footer /></div>
-    //     </main>
-    //   </div>
-    // </div>
     <div className="flex h-full w-full">
     <div className={`w-64 bg-white font-bold ${open ? "block" : "hidden"} h-screen overflow-y-auto fixed`}>
       {/* <div className="p-4 font-bold text-xl">Admin Panel</div> */}
@@ -214,7 +154,11 @@ export default function Admin(props) {
     <div className="h-full w-full bg-lightPrimary dark:!bg-navy-900">
       <main className="mx-[2px] h-full flex-none transition-all md:pr-2 xl:ml-[300px]">
         <div className="pt-5 mx-auto mb-auto h-full min-h-[84vh] p-2 md:pr-2">
-          <Routes>{getRoutes(routes)}<Route path="/" element={<Navigate to="/admin/default" replace />} /></Routes>
+          <Routes>
+            {getRoutes(routes)}
+            {getAdminRoutes(adminRoutes)} 
+            <Route path="/" element={<Navigate to="/admin/default" replace />} />
+          </Routes>
         </div>
         <div className="p-3"><Footer /></div>
       </main>

@@ -94,6 +94,10 @@ import GroceryTable from "views/admin/Sidenav_pages/GroceryTable";
 import GroceryForm from "views/admin/Sidenav_pages/GroceryForm";
 import TaxiTable from "views/admin/Sidenav_pages/TaxiTable";
 import TaxiForm from "views/admin/Sidenav_pages/TaxiForm";
+import TaxiDriverTable from "views/admin/Sidenav_pages/TaxiDriverTable";
+import TaxiDriverForm from "views/admin/Sidenav_pages/TaxiDriverForm";
+import TaxiVehicleTable from "views/admin/Sidenav_pages/TaxiVehicleTable";
+import TaxiVehicleForm from "views/admin/Sidenav_pages/TaxiVehicleForm";
 
 const routes = [
   ...authRoutes,
@@ -136,6 +140,20 @@ const routes = [
         icon: <MdDirectionsCar className="h-6 w-6" />,
         path: "taxi-rides",
         component: <TaxiTable />,
+      },
+      {
+        name: "Taxi Drivers",
+        layout: "/admin",
+        icon: <MdPerson className="h-6 w-6" />,
+        path: "taxi-drivers",
+        component: <TaxiDriverTable />,
+      },
+      {
+        name: "Taxi Vehicles",
+        layout: "/admin",
+        icon: <MdDirectionsCar className="h-6 w-6" />,
+        path: "taxi-vehicles",
+        component: <TaxiVehicleTable />,
       },
       // {
       //   name: "Add Taxi Ride",

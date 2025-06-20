@@ -229,6 +229,22 @@ CREATE TABLE IF NOT EXISTS gcart_items (
   FOREIGN KEY (user_id) REFERENCES users(id),
   FOREIGN KEY (grocery_id) REFERENCES groceries(id)
 );
+CREATE TABLE IF NOT EXISTS gwhishlist (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id BIGINT UNSIGNED NOT NULL,
+  grocery_id BIGINT UNSIGNED NOT NULL,
+  name VARCHAR(255),
+  image VARCHAR(255),
+  category VARCHAR(255),
+  original_price DECIMAL(10, 2),
+  discounted_price DECIMAL(10, 2),
+  quantity INT NOT NULL DEFAULT 1,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  FOREIGN KEY (user_id) REFERENCES users(id),
+  FOREIGN KEY (grocery_id) REFERENCES groceries(id)
+);
 
 
 

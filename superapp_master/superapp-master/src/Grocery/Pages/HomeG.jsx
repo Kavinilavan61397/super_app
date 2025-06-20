@@ -574,46 +574,112 @@ function Groceries() {
   
   
 
-  const addToWishlist = (item) => {
-    const currentWishlist = JSON.parse(localStorage.getItem('GwishlistItems')) || [];
-    const currentCart = JSON.parse(localStorage.getItem('GcartItems')) || [];
+  // const addToWishlist = (item) => {
+  //   const currentWishlist = JSON.parse(localStorage.getItem('GwishlistItems')) || [];
+  //   const currentCart = JSON.parse(localStorage.getItem('GcartItems')) || [];
     
-    // Check if item is in cart
-    const cartItem = currentCart.find(
-      cartItem => cartItem.id === item.id && cartItem.category === item.category
-    );
+  //   // Check if item is in cart
+  //   const cartItem = currentCart.find(
+  //     cartItem => cartItem.id === item.id && cartItem.category === item.category
+  //   );
     
-    const isInWishlist = currentWishlist.some(
-      wishlistItem => wishlistItem.id === item.id && wishlistItem.category === item.category
-    );
+  //   const isInWishlist = currentWishlist.some(
+  //     wishlistItem => wishlistItem.id === item.id && wishlistItem.category === item.category
+  //   );
 
-    let updatedWishlist;
-    if (isInWishlist) {
-      // Remove from wishlist
-      updatedWishlist = currentWishlist.filter(
-        wishlistItem => !(wishlistItem.id === item.id && wishlistItem.category === item.category)
-      );
+  //   let updatedWishlist;
+  //   if (isInWishlist) {
+  //     // Remove from wishlist
+  //     updatedWishlist = currentWishlist.filter(
+  //       wishlistItem => !(wishlistItem.id === item.id && wishlistItem.category === item.category)
+  //     );
       
-    } else {
-      // Add to wishlist with cart quantity if it exists in cart
-      const wishlistItem = {
-        ...item,
-        quantity: cartItem ? cartItem.quantity : 1,
-        inCart: !!cartItem // Add flag to indicate if item is in cart
-      };
-      updatedWishlist = [...currentWishlist, wishlistItem];
+  //   } else {
+  //     // Add to wishlist with cart quantity if it exists in cart
+  //     const wishlistItem = {
+  //       ...item,
+  //       quantity: cartItem ? cartItem.quantity : 1,
+  //       inCart: !!cartItem // Add flag to indicate if item is in cart
+  //     };
+  //     updatedWishlist = [...currentWishlist, wishlistItem];
      
+  //   }
+
+  //   // Update localStorage and state
+  //   localStorage.setItem('GwishlistItems', JSON.stringify(updatedWishlist));
+  //   setWishlistItems(updatedWishlist);
+
+  //   // Dispatch storage event for other components
+  //   window.dispatchEvent(new StorageEvent('storage', {
+  //     key: 'wishlistItems',
+  //     newValue: JSON.stringify(updatedWishlist)
+  //   }));
+  // };
+  const addToWishlist = async (item) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('Please log in to use the wishlist');
+      return;
     }
-
-    // Update localStorage and state
-    localStorage.setItem('GwishlistItems', JSON.stringify(updatedWishlist));
-    setWishlistItems(updatedWishlist);
-
-    // Dispatch storage event for other components
-    window.dispatchEvent(new StorageEvent('storage', {
-      key: 'wishlistItems',
-      newValue: JSON.stringify(updatedWishlist)
-    }));
+  
+    // Check if item already exists in backend wishlist (grocery_id matches item.id)
+    const existingItem = wishlistItems.find(w => w.grocery_id === item.id);
+  
+    try {
+      if (existingItem) {
+        // ❌ Remove from wishlist (DELETE)
+        const res = await fetch(`http://localhost:5000/api/gwishlist/${existingItem.id}`, {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+  
+        if (!res.ok) throw new Error('Failed to remove from wishlist');
+  
+        // Update frontend state
+        setWishlistItems(prev => prev.filter(w => w.id !== existingItem.id));
+      } else {
+        // ➕ Add to wishlist (POST)
+        const payload = {
+          grocery_id: item.id,
+          name: item.name,
+          image: item.image,
+          category: item.category,
+          original_price: item.originalPrice,
+          discounted_price: item.discountedPrice,
+          quantity: 1
+        };
+  
+        const res = await fetch('http://localhost:5000/api/gwishlist', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+  
+        if (!res.ok) throw new Error('Failed to add to wishlist');
+  
+        const newItem = await res.json();
+  
+        // Append new item to local state if available
+        if (newItem && newItem.id) {
+          setWishlistItems(prev => [...prev, newItem]);
+        } else {
+          // fallback: re-fetch whole wishlist if backend only returns message
+          const fetchRes = await fetch('http://localhost:5000/api/gwishlist', {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          const updated = await fetchRes.json();
+          setWishlistItems(updated);
+        }
+      }
+    } catch (err) {
+      console.error('Wishlist error:', err);
+      alert(err.message || 'Something went wrong with the wishlist');
+    }
   };
 
   // Banner carousel state

@@ -231,15 +231,21 @@ function Cart() {
                   ₹ {parseFloat(item.discountedPrice) * item.quantity} <span className="line-through text-[#C1C1C1]">₹ {parseFloat(item.originalPrice) * item.quantity}</span>
                 </p>
                 <div className="flex justify-between items-center w-full">
-                  <select
-                    className="py-0 rounded-full border border-[#CCCCCC] px-3"
-                    value={item.quantity}
-                    onChange={(e) => handleQuantityChange(item.grocery_id, parseInt(e.target.value))}
-                  >
-                    {[...Array(10).keys()].map((i) => (
-                      <option key={i + 1} value={i + 1}>{i + 1}</option>
-                    ))}
-                  </select>
+                  <div className="flex items-center border rounded px-1 py-0.5 bg-white">
+                    <button
+                      type="button"
+                      className="px-2 text-lg font-bold text-gray-700 disabled:text-gray-300"
+                      onClick={() => handleQuantityChange(item.grocery_id, Math.max(1, item.quantity - 1))}
+                      disabled={item.quantity <= 1}
+                    >-</button>
+                    <span className="mx-2 w-5 text-center select-none">{item.quantity}</span>
+                    <button
+                      type="button"
+                      className="px-2 text-lg font-bold text-gray-700 disabled:text-gray-300"
+                      onClick={() => handleQuantityChange(item.grocery_id, Math.min(10, item.quantity + 1))}
+                      disabled={item.quantity >= 10}
+                    >+</button>
+                  </div>
                   <button
                     className="p-1 rounded-full text-purple-600 hover:bg-purple-100 transition-colors"
                     onClick={() => handleDelete(item.grocery_id)}

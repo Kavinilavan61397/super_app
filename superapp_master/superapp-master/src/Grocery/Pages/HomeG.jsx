@@ -94,13 +94,13 @@ const GroceryCard = ({ item, addToCart, addToWishlist, cartItems, wishlistItems 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300"
+      className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 w-full max-w-[200px] mx-auto"
     >
       <div className="relative">
         <img
           src={item.image}
           alt={`${item.name} - ${item.description}`}
-          className="w-full aspect-square object-cover"
+          className="w-full h-[120px] object-contain p-2 bg-white"
           onError={(e) => {
             console.error('Failed to load image:', item.image);
             e.target.onerror = null;
@@ -166,28 +166,35 @@ const GroceryCard = ({ item, addToCart, addToWishlist, cartItems, wishlistItems 
           )}
         </div>
         
-        <div className="flex justify-between items-center">
-          <button 
-            className={`text-white text-sm font-medium py-0.5 px-2 rounded-md whitespace-nowrap w-24 ${
-              isInCart ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#00BB1C] hover:bg-[#009B16]'
-            }`}
-            onClick={() => addToCart(item, quantity)}
-            disabled={isInCart}
-          >
-            {isInCart ? 'Added to Cart' : 'Add to Cart'}
-          </button>
-          <div className="flex items-center space-x-2 flex-shrink-0">
-            <span className="text-xs font-medium text-gray-700">Qty:</span>
-            <select
-              className="w-16 px-2 py-1 border rounded"
-              value={quantity}
-              onChange={(e) => setQuantity(Number(e.target.value))}
+        <div className="flex justify-between items-center flex-wrap gap-y-1">
+          <div className="flex flex-row items-center w-full gap-1">
+            <button 
+              className={`text-white text-xs font-medium py-0.5 px-1 rounded-md whitespace-nowrap w-20 flex-shrink-0 ${
+                isInCart ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#00BB1C] hover:bg-[#009B16]'
+              }`}
+              onClick={() => addToCart(item, quantity)}
               disabled={isInCart}
             >
-              {[1, 2, 3, 4, 5].map(num => (
-                <option key={num} value={num}>{num}</option>
-              ))}
-            </select>
+              {isInCart ? 'Added' : 'Add to Cart'}
+            </button>
+            <div className="flex items-center space-x-0.5 flex-shrink-0 justify-end">
+              <span className="text-xs font-medium text-gray-700">Qty:</span>
+              <div className="flex items-center border rounded px-0.5 py-0.5 bg-white">
+                <button
+                  type="button"
+                  className="px-1 text-xs font-bold text-gray-700 disabled:text-gray-300"
+                  onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                  disabled={quantity <= 1 || isInCart}
+                >-</button>
+                <span className="mx-0.5 w-4 text-center select-none text-xs">{quantity}</span>
+                <button
+                  type="button"
+                  className="px-1 text-xs font-bold text-gray-700 disabled:text-gray-300"
+                  onClick={() => setQuantity(q => Math.min(5, q + 1))}
+                  disabled={quantity >= 5 || isInCart}
+                >+</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -203,14 +210,20 @@ const GroceryCard = ({ item, addToCart, addToWishlist, cartItems, wishlistItems 
 // Quick View Modal Component
 const QuickViewModal = ({ item, onClose, addToCart, cartItems }) => {
   const [quantity, setQuantity] = useState(1);
+  const [localInCart, setLocalInCart] = useState(false);
 
-  const isInCart = cartItems.some(cartItem => cartItem.id === item.id && cartItem.category === item.category);
+  const isInCart = cartItems.some(
+    cartItem =>
+      (cartItem.grocery_id === item.id || cartItem.groceryId === item.id || cartItem.id === item.id) &&
+      cartItem.category === item.category
+  );
 
   // Sync quantity with cart if item is already in cart
   useEffect(() => {
     const cartItem = cartItems.find(ci => ci.id === item.id && ci.category === item.category);
     if (cartItem) {
       setQuantity(cartItem.quantity);
+      setLocalInCart(false); // Ensure localInCart is false if already in cart
     } else {
       setQuantity(1);
     }
@@ -218,6 +231,7 @@ const QuickViewModal = ({ item, onClose, addToCart, cartItems }) => {
 
   const handleAddToCart = () => {
     addToCart(item, quantity);
+    setLocalInCart(true);
     // Optionally close modal or give feedback
   };
 
@@ -250,26 +264,33 @@ const QuickViewModal = ({ item, onClose, addToCart, cartItems }) => {
                 <p className="text-sm text-gray-400 line-through">₹{item.originalPrice.toFixed(2)}</p>
                 <span className="text-sm text-green-600">{Math.round(((item.originalPrice - item.discountedPrice) / item.originalPrice) * 100)}% off</span>
               </div>
-              <div className="flex items-center gap-3 flex-wrap justify-end">
-                <button
-                  className={`text-white font-medium py-1 px-3 rounded-md text-sm w-24 flex-shrink-0 ${isInCart ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#00BB1C] hover:bg-[#009B16]'}`}
-                  onClick={handleAddToCart}
-                  disabled={isInCart}
-                >
-                  {isInCart ? 'Added to Cart' : 'Add to Cart'}
-                </button>
-                <div className="flex items-center border rounded-full px-2 py-1 flex-shrink-0">
-                  <span className="text-xs font-medium text-gray-700 mr-1">Qty:</span>
-                  <select
-                    className="bg-transparent outline-none text-xs w-full"
-                    value={quantity}
-                    onChange={(e) => setQuantity(Number(e.target.value))}
-                    disabled={isInCart}
+              <div className="w-full">
+                <div className="flex flex-row items-center gap-1 w-full justify-between">
+                  <button
+                    className={`text-white font-medium py-0.5 px-1 rounded-md text-xs w-20 flex-shrink-0 ${localInCart || isInCart ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#00BB1C] hover:bg-[#009B16]'}`}
+                    onClick={handleAddToCart}
+                    disabled={localInCart || isInCart}
                   >
-                    {[1, 2, 3, 4, 5].map(num => (
-                      <option key={num} value={num}>{num}</option>
-                    ))}
-                  </select>
+                    {localInCart || isInCart ? 'Added' : 'Add to Cart'}
+                  </button>
+                  <div className="flex items-center space-x-0.5 flex-shrink-0 justify-end">
+                    <span className="text-xs font-medium text-gray-700">Qty:</span>
+                    <div className="flex items-center border rounded px-0.5 py-0.5 bg-white">
+                      <button
+                        type="button"
+                        className="px-1 text-xs font-bold text-gray-700 disabled:text-gray-300"
+                        onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                        disabled={quantity <= 1 || isInCart}
+                      >-</button>
+                      <span className="mx-0.5 w-4 text-center select-none text-xs">{quantity}</span>
+                      <button
+                        type="button"
+                        className="px-1 text-xs font-bold text-gray-700 disabled:text-gray-300"
+                        onClick={() => setQuantity(q => Math.min(5, q + 1))}
+                        disabled={quantity >= 5 || isInCart}
+                      >+</button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1073,7 +1094,7 @@ function Groceries() {
           ) : fetchError ? (
             <div className="text-center py-12 text-red-500">{fetchError}</div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 justify-items-center">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 justify-items-center">
               {sortedItems.map((item) => (
                 <GroceryCard
                   key={`${item.category}-${item.id}`}

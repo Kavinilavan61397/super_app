@@ -190,7 +190,22 @@ function WishList() {
                   </p>
                 )}
                 <p className="font-medium text-sm text-[#484848] mb-2">
-                  Quantity: {item.quantity || 1}
+                  <span className="mr-2">Quantity:</span>
+                  <div className="flex items-center border rounded px-1 py-0.5 bg-white inline-flex">
+                    <button
+                      type="button"
+                      className="px-2 text-lg font-bold text-gray-700 disabled:text-gray-300"
+                      onClick={() => setWishlistItems(prev => prev.map(w => w.id === item.id ? { ...w, quantity: Math.max(1, (w.quantity || 1) - 1) } : w))}
+                      disabled={(item.quantity || 1) <= 1}
+                    >-</button>
+                    <span className="mx-2 w-5 text-center select-none">{item.quantity || 1}</span>
+                    <button
+                      type="button"
+                      className="px-2 text-lg font-bold text-gray-700 disabled:text-gray-300"
+                      onClick={() => setWishlistItems(prev => prev.map(w => w.id === item.id ? { ...w, quantity: Math.min(5, (w.quantity || 1) + 1) } : w))}
+                      disabled={(item.quantity || 1) >= 5}
+                    >+</button>
+                  </div>
                 </p>
                 <p className="font-medium text-sm text-[#242424] mb-2">
                   ₹ {parseFloat(item.discountedPrice)} <span className="line-through text-[#C1C1C1]">₹ {parseFloat(item.originalPrice)}</span>
@@ -199,13 +214,13 @@ function WishList() {
                   <button
                     onClick={() => handleAddToCart(item)}
                     disabled={item.inCart || cartItems.some(c => c.grocery_id === item.grocery_id)}
-                    className={`px-4 py-2 rounded-full text-sm ${
+                    className={`w-20 py-0.5 px-1 rounded-md text-xs font-medium whitespace-nowrap flex-shrink-0 ${
                       item.inCart || cartItems.some(c => c.grocery_id === item.grocery_id)
                         ? 'bg-gray-400 cursor-not-allowed text-white'
-                        : 'bg-[#5C3FFF] text-white hover:bg-[#4a32cc]'
+                        : 'bg-[#00BB1C] text-white hover:bg-[#009B16]'
                     }`}
                   >
-                    {item.inCart || cartItems.some(c => c.grocery_id === item.grocery_id) ? 'Added to Cart' : 'Add to Cart'}
+                    {item.inCart || cartItems.some(c => c.grocery_id === item.grocery_id) ? 'Added' : 'Add to Cart'}
                   </button>
                   <button
                     className="p-1 rounded-full text-purple-600 hover:bg-purple-100 transition-colors"

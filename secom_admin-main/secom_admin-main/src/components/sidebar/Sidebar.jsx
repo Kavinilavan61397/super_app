@@ -1,0 +1,92 @@
+import React, { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { MdKeyboardArrowDown, MdKeyboardArrowUp } from "react-icons/md";
+import { HiX } from "react-icons/hi";
+import routes from "routes.js";
+import { FiMenu } from "react-icons/fi";
+
+const Sidebar = ({ isCollapsed, open, onClose, onSidenavToggle }) => {
+  const location = useLocation();
+  const [dropdowns, setDropdowns] = useState({});
+
+  const toggleDropdown = (key) => {
+    setDropdowns((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  return (
+    <>
+      {/* Overlay for mobile */}
+      <div 
+        className={`fixed inset-0 z-40 bg-black bg-opacity-50 transition-opacity xl:hidden ${open ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+        onClick={onClose}
+      ></div>
+
+      <div
+        className={`fixed z-30 flex min-h-full flex-col bg-white font-bold transition-all duration-300 ease-in-out
+          ${isCollapsed ? "w-20" : "w-64"}
+          ${open ? "translate-x-0" : "-translate-x-full"}
+          xl:translate-x-0`}
+      >
+        <span
+          className="absolute top-4 right-4 block cursor-pointer xl:hidden"
+          onClick={onClose}
+        >
+          <HiX />
+        </span>
+        <div className="p-4 font-bold text-xl flex items-center justify-between">
+          <span className={`transition-opacity duration-200 ${isCollapsed ? 'opacity-0 delay-0' : 'opacity-100 delay-200'}`}>Admin Panel</span>
+          <span
+            className="flex cursor-pointer text-xl text-gray-600 dark:text-white"
+            onClick={onSidenavToggle}
+          >
+            <FiMenu className="h-5 w-5" />
+          </span>
+        </div>
+        <nav className="overflow-y-auto overflow-x-hidden h-full">
+          {routes.map((item, index) => (
+            <div key={index}>
+              {item.subNav ? (
+                <div 
+                  className="flex items-center justify-between p-3 cursor-pointer text-black hover:text-[#4318ff]" 
+                  onClick={() => !isCollapsed && toggleDropdown(index)}
+                >
+                  <div className="flex items-center">
+                    {item.icon}
+                    <span className={`ml-2 whitespace-nowrap transition-opacity duration-200 ${isCollapsed ? 'opacity-0' : 'opacity-100'}`}>{item.name}</span>
+                  </div>
+                  {!isCollapsed && (dropdowns[index] ? <MdKeyboardArrowUp /> : <MdKeyboardArrowDown />)}
+                </div>
+              ) : (
+                <Link 
+                  to={`/admin/${item.path}`} 
+                  className={`flex items-center p-3 text-black ${location.pathname === `/admin/${item.path}` ? "text-[#4318ff] font-bold" : "hover:text-[#4318ff]"}`}
+                >
+                  {item.icon}
+                  <span className={`ml-2 whitespace-nowrap transition-opacity duration-200 ${isCollapsed ? 'opacity-0' : 'opacity-100'}`}>{item.name}</span>
+                </Link>
+              )}
+              {/* Dropdown should not be visible when collapsed */}
+              {!isCollapsed && dropdowns[index] && item.subNav && (
+                <div className="ml-4">
+                  {item.subNav.map((subItem, subIndex) => (
+                    <div key={subIndex}>
+                      <Link 
+                        to={`/admin/${subItem.path}`} 
+                        className={`ml-4 flex items-center text-gray-600 p-2 ${location.pathname === `/admin/${subItem.path}` ? "text-[#4318ff] font-bold" : "hover:text-[#4318ff]"}`}
+                      >
+                        {subItem.icon}
+                        <span className="ml-2 whitespace-nowrap">{subItem.name}</span>
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </nav>
+      </div>
+    </>
+  );
+};
+
+export default Sidebar; 

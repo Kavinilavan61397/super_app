@@ -102,7 +102,7 @@ import TaxiVehicleForm from "views/admin/Sidenav_pages/TaxiVehicleForm";
 const routes = [
   ...authRoutes,
   {
-    name: "Main Dashboard",
+    name: "Dashboard",
     layout: "/admin",
     path: "default",
     icon: <MdHome className="h-6 w-6" />,
@@ -120,13 +120,13 @@ const routes = [
         path: "groceries",
         component: <GroceryTable />,
       },
-      {
-        name: "Add Grocery",
-        layout: "/admin",
-        icon: <MdLocalGroceryStore className="h-6 w-6" />,
-        path: "groceries/new",
-        component: <GroceryForm />,
-      }
+      // {
+      //   name: "Add Grocery",
+      //   layout: "/admin",
+      //   icon: <MdLocalGroceryStore className="h-6 w-6" />,
+      //   path: "groceries/new",
+      //   component: <GroceryForm />,
+      // }
     ]
   },
   {

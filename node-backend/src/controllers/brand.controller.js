@@ -74,7 +74,7 @@ exports.createBrand = async (req, res) => {
 
     const brand = await Brand.create({
       brand_name,
-      status,
+      status: status === 'true' || status === true,
       photo: processedImagePath
     });
 
@@ -127,7 +127,7 @@ exports.updateBrand = async (req, res) => {
 
     await brand.update({
       brand_name: brand_name || brand.brand_name,
-      status: status !== undefined ? status : brand.status,
+      status: status !== undefined ? (status === 'true' || status === true) : brand.status,
       photo: processedImagePath
     });
 

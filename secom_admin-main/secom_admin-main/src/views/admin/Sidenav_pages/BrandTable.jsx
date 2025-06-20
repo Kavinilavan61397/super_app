@@ -220,11 +220,11 @@ const BrandTable = () => {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                    brand.status === 1 || brand.status === '1'
+                    brand.status === true
                       ? 'bg-green-100 text-green-800' 
                       : 'bg-red-100 text-red-800'
                   }`}>
-                    {brand.status === 1 || brand.status === '1' ? 'Active' : 'Inactive'}
+                    {brand.status === true ? 'Active' : 'Inactive'}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

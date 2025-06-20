@@ -32,7 +32,7 @@ const BrandForm = () => {
         if (!value) return true; // Allow empty for edit mode
         return value instanceof File && value.size <= 5 * 1024 * 1024;
       }),
-    status: Yup.number().required('Status is required'),
+    status: Yup.boolean().required('Status is required'),
   });
 
   const {
@@ -46,7 +46,7 @@ const BrandForm = () => {
     resolver: yupResolver(validationSchema),
     defaultValues: {
       brand_name: '',
-      status: 1,
+      status: true,
     },
   });
 
@@ -248,13 +248,14 @@ const BrandForm = () => {
             </label>
             <select
               {...register('status')}
-              defaultValue={isEditMode ? '' : '1'}
+              value={watch('status')}
+              onChange={(e) => setValue('status', e.target.value === 'true')}
               className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                 errors.status ? 'border-red-500' : 'border-gray-300'
               }`}
             >
-              <option value="1">Active</option>
-              <option value="0">Inactive</option>
+              <option value={true}>Active</option>
+              <option value={false}>Inactive</option>
             </select>
             {errors.status && (
               <p className="mt-1 text-sm text-red-600">{errors.status.message}</p>

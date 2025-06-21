@@ -33,11 +33,24 @@ function WishList() {
       }
     };
 
-    // still initialise cart from localStorage
-    const storedCart = JSON.parse(localStorage.getItem('GcartItems')) || [];
-    setCartItems(storedCart);
+    const fetchCartItems = async () => {
+      if (!token) return;
+      try {
+        const response = await fetch('http://localhost:5000/api/gcart', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setCartItems(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch cart:', err);
+        setCartItems([]);
+      }
+    };
 
     fetchWishlist();
+    fetchCartItems();
   }, [token]);
 
   // 🔁 DELETE a single item both backend + state

@@ -593,49 +593,7 @@ function Groceries() {
     }
   };
   
-  
-
-  // const addToWishlist = (item) => {
-  //   const currentWishlist = JSON.parse(localStorage.getItem('GwishlistItems')) || [];
-  //   const currentCart = JSON.parse(localStorage.getItem('GcartItems')) || [];
-    
-  //   // Check if item is in cart
-  //   const cartItem = currentCart.find(
-  //     cartItem => cartItem.id === item.id && cartItem.category === item.category
-  //   );
-    
-  //   const isInWishlist = currentWishlist.some(
-  //     wishlistItem => wishlistItem.id === item.id && wishlistItem.category === item.category
-  //   );
-
-  //   let updatedWishlist;
-  //   if (isInWishlist) {
-  //     // Remove from wishlist
-  //     updatedWishlist = currentWishlist.filter(
-  //       wishlistItem => !(wishlistItem.id === item.id && wishlistItem.category === item.category)
-  //     );
-      
-  //   } else {
-  //     // Add to wishlist with cart quantity if it exists in cart
-  //     const wishlistItem = {
-  //       ...item,
-  //       quantity: cartItem ? cartItem.quantity : 1,
-  //       inCart: !!cartItem // Add flag to indicate if item is in cart
-  //     };
-  //     updatedWishlist = [...currentWishlist, wishlistItem];
-     
-  //   }
-
-  //   // Update localStorage and state
-  //   localStorage.setItem('GwishlistItems', JSON.stringify(updatedWishlist));
-  //   setWishlistItems(updatedWishlist);
-
-  //   // Dispatch storage event for other components
-  //   window.dispatchEvent(new StorageEvent('storage', {
-  //     key: 'wishlistItems',
-  //     newValue: JSON.stringify(updatedWishlist)
-  //   }));
-  // };
+ 
   const fetchWishlist = async () => {
     const token = localStorage.getItem('token');
     if (!token) return;

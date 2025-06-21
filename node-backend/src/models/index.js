@@ -21,6 +21,11 @@ const Hotel = require('./hotel')(sequelize, Sequelize.DataTypes);
 const Room = require('./room')(sequelize, Sequelize.DataTypes);
 const Booking = require('./booking')(sequelize, Sequelize.DataTypes);
 
+// ✅ Grocery models
+const Grocery = require('./Grocery')(sequelize, Sequelize.DataTypes);
+const GroceryOrder = require('./grocery_order')(sequelize, Sequelize.DataTypes);
+const GroceryOrderItem = require('./grocery_order_item')(sequelize, Sequelize.DataTypes);
+
 // ✅ GCartItem model
 const GCartItem = require('./gcart_items')(sequelize, Sequelize.DataTypes);
 
@@ -198,6 +203,12 @@ OTP.belongsTo(User, {
   onUpdate: 'CASCADE'
 });
 
+// ✅ Grocery associations
+GroceryOrder.belongsTo(User, { foreignKey: 'user_id' });
+GroceryOrder.hasMany(GroceryOrderItem, { foreignKey: 'order_id' });
+GroceryOrderItem.belongsTo(GroceryOrder, { foreignKey: 'order_id' });
+GroceryOrderItem.belongsTo(Grocery, { foreignKey: 'grocery_id' });
+
 // ✅ Gwhishlist model
 const Gwhishlist = require('./gwhishlist')(sequelize, Sequelize.DataTypes);
 
@@ -223,6 +234,9 @@ module.exports = {
   Hotel,
   Room,
   Booking,
+  Grocery,
+  GroceryOrder,
+  GroceryOrderItem,
   GCartItem,
   Gwhishlist 
 };

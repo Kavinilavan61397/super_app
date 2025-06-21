@@ -82,6 +82,7 @@ import AddressG from '../Grocery/Pages/Address';
 import PaymentG from '../Grocery/Pages/Payment';
 import OrderPlacedG from '../Grocery/Pages/OrderPlaced';
 import MyordersG from '../Grocery/Pages/Myorders';
+import InvoiceG from "../Grocery/Pages/Invoice"; // Import the new component
 import MyordersFilterG from '../Grocery/Pages/MyOrdersFilter';
 import CartG from '../Grocery/Pages/Cart';
 import AccountG from '../Grocery/Pages/Account';
@@ -146,6 +147,7 @@ function Navbar() {
                 <Route path='/home-grocery/payment' element={<PaymentG />} />
                 <Route path='/home-grocery/order' element={<OrderPlacedG />} />
                 <Route path='/home-grocery/order-list' element={<MyordersG />} />
+                <Route path='/home-grocery/invoice/:orderId' element={<InvoiceG />} />
                 <Route path='/home-grocery/order-list-filter' element={<MyordersFilterG />} />
                 <Route path='/home-grocery/cart' element={<CartG />} />
                 <Route path='/home-grocery/account' element={<AccountG />} />

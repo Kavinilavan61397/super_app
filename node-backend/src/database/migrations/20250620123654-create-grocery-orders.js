@@ -20,11 +20,12 @@ module.exports = {
         allowNull: false
       },
       status: {
-        type: Sequelize.ENUM('pending', 'processing', 'completed', 'cancelled'),
-        defaultValue: 'pending'
+        type: Sequelize.ENUM('pending', 'processing', 'out_for_delivery', 'delivered', 'cancelled'),
+        defaultValue: 'processing',
+        allowNull: false
       },
       payment_status: {
-        type: Sequelize.ENUM('pending', 'paid', 'failed'),
+        type: Sequelize.STRING,
         defaultValue: 'pending'
       },
       shipping_address: {

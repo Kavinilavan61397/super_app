@@ -1,10 +1,11 @@
-const { GroceryOrder, GroceryOrderItem } = require('../models');
+const { GroceryOrder, GroceryOrderItem, User } = require('../models');
 
 module.exports = {
   // Create Order
   async create(req, res) {
     try {
-      const { user_id, total_amount, shipping_address, items } = req.body;
+      const { total_amount, shipping_address, items } = req.body;
+      const user_id = req.user.id; // Get user ID from authenticated token
 
       const order = await GroceryOrder.create({
         user_id,
@@ -26,6 +27,22 @@ module.exports = {
     }
   },
 
+  // Get Orders by User ID (for authenticated user)
+  async getMyOrders(req, res) {
+    try {
+      const user_id = req.user.id; // Get user ID from authenticated token
+      const orders = await GroceryOrder.findAll({ 
+        where: { user_id },
+        include: GroceryOrderItem,
+        order: [['created_at', 'DESC']]
+      });
+      res.status(200).json(orders);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Internal Server Error' });
+    }
+  },
+
   // Get All Orders
   async getAll(req, res) {
     try {
@@ -40,7 +57,12 @@ module.exports = {
   async getOne(req, res) {
     try {
       const { id } = req.params;
-      const order = await GroceryOrder.findByPk(id, { include: GroceryOrderItem });
+      const order = await GroceryOrder.findByPk(id, { 
+        include: [
+          { model: GroceryOrderItem },
+          { model: User, attributes: ['name', 'email'] }
+        ]
+      });
 
       if (!order) return res.status(404).json({ message: 'Order not found' });
       res.status(200).json(order);
@@ -64,6 +86,38 @@ module.exports = {
 
       res.status(200).json({ message: 'Order updated', order });
     } catch (error) {
+      res.status(500).json({ message: 'Internal Server Error' });
+    }
+  },
+
+  // Update Order Status
+  async updateStatus(req, res) {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+
+      const order = await GroceryOrder.findByPk(id);
+      if (!order) return res.status(404).json({ message: 'Order not found' });
+
+      // Validate status
+      const validStatuses = ['pending', 'processing', 'out_for_delivery', 'delivered', 'cancelled'];
+      if (!validStatuses.includes(status)) {
+        return res.status(400).json({ message: 'Invalid status' });
+      }
+
+      order.status = status;
+      await order.save();
+
+      res.status(200).json({ 
+        message: 'Order status updated successfully', 
+        order: {
+          id: order.id,
+          status: order.status,
+          updated_at: order.updated_at
+        }
+      });
+    } catch (error) {
+      console.error(error);
       res.status(500).json({ message: 'Internal Server Error' });
     }
   },

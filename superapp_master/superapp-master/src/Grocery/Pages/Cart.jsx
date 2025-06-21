@@ -157,35 +157,63 @@ function Cart() {
       return;
     }
     try {
-      // Read existing orders from localStorage
-      const existingOrders = JSON.parse(localStorage.getItem('Gorders')) || [];
-      // Create new order object
-      const newOrder = {
-        orderId: Date.now(),
-        date: new Date().toISOString(),
-        status: 'Delivered',
-        items: cartItems,
-        totalDiscountedPrice: cartItems.reduce((sum, item) => sum + (item.discountedPrice * item.quantity), 0),
-        totalOriginalPrice: cartItems.reduce((sum, item) => sum + (item.originalPrice * item.quantity), 0)
-      };
-      // Add new order to orders array
-      const updatedOrders = [...existingOrders, newOrder];
-      localStorage.setItem('Gorders', JSON.stringify(updatedOrders));
-      // Clear cart in backend
       const token = localStorage.getItem('token');
-      if (token) {
-        const response = await fetch('http://localhost:5000/api/gcart/clear', {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (!response.ok) throw new Error('Failed to clear cart in backend');
+      if (!token) {
+        alert('Please log in to place an order.');
+        navigate('/login');
+        return;
       }
+
+      // Calculate totals
+      const totalDiscountedPrice = cartItems.reduce((sum, item) => sum + (item.discountedPrice * item.quantity), 0);
+      const totalOriginalPrice = cartItems.reduce((sum, item) => sum + (item.originalPrice * item.quantity), 0);
+
+      // Prepare order data for backend
+      const orderData = {
+        total_amount: totalDiscountedPrice,
+        shipping_address: 'Default Address', // You can add a form to collect this
+        items: cartItems.map(item => ({
+          grocery_id: item.grocery_id,
+          quantity: item.quantity,
+          original_price: item.originalPrice,
+          discounted_price: item.discountedPrice,
+          name: item.name,
+          image: item.image,
+          category: item.category
+        }))
+      };
+
+      // Create order in backend
+      const orderResponse = await fetch('http://localhost:5000/api/gorders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(orderData)
+      });
+
+      if (orderResponse.status === 401) throw { message: 'Unauthorized', status: 401 };
+      if (!orderResponse.ok) throw new Error('Failed to create order');
+
+      // Clear cart in backend
+      const clearResponse = await fetch('http://localhost:5000/api/gcart/clear', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!clearResponse.ok) throw new Error('Failed to clear cart in backend');
+
       // Update UI state
       setCartItems([]);
       alert('Order placed successfully!');
       navigate('/home-grocery/order-list');
     } catch (err) {
-      alert('Could not place order: ' + err.message);
+      if (err.message === 'Unauthorized' || err.status === 401) {
+        alert('Session expired. Please log in again.');
+        navigate('/login');
+      } else {
+        alert('Could not place order: ' + err.message);
+      }
     }
   };
 

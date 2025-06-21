@@ -38,7 +38,7 @@
 // module.exports = router;
 const express = require('express');
 const router = express.Router();
-const Grocery = require('../models/Grocery');
+const { Grocery } = require('../models');
 
 // GET all
 router.get('/', async (req, res) => {

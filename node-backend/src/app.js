@@ -36,7 +36,7 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ✅ Serve uploaded files from the 'public' directory
+// ✅ Serve uploaded files from the 'uploads' directory (not 'public/uploads')
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
 // ✅ API Routes

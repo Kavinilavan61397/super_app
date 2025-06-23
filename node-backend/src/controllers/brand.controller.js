@@ -110,7 +110,7 @@ exports.updateBrand = async (req, res) => {
     if (req.file) {
       // Delete old image if it exists
       if (brand.photo) {
-        const oldImageSystemPath = path.join(__dirname, '..', '..', 'public', brand.photo);
+        const oldImageSystemPath = path.join(__dirname, '..', '..', 'uploads', brand.photo.replace('/uploads/', ''));
         try {
           if (require('fs').existsSync(oldImageSystemPath)) {
             await fs.unlink(oldImageSystemPath);
@@ -158,9 +158,11 @@ exports.deleteBrand = async (req, res) => {
 
     // Delete brand image if exists
     if (brand.photo) {
-      const imagePath = path.join(__dirname, '../../uploads/brands', path.basename(brand.photo));
+      const imagePath = path.join(__dirname, '..', '..', 'uploads', brand.photo.replace('/uploads/', ''));
       try {
-        await fs.unlink(imagePath);
+        if (require('fs').existsSync(imagePath)) {
+          await fs.unlink(imagePath);
+        }
       } catch (error) {
         console.error('Error deleting brand image:', error);
       }
@@ -203,9 +205,11 @@ exports.bulkDeleteBrands = async (req, res) => {
     // Delete brand images
     for (const brand of brands) {
       if (brand.photo) {
-        const imagePath = path.join(__dirname, '../../uploads/brands', path.basename(brand.photo));
+        const imagePath = path.join(__dirname, '..', '..', 'uploads', brand.photo.replace('/uploads/', ''));
         try {
-          await fs.unlink(imagePath);
+          if (require('fs').existsSync(imagePath)) {
+            await fs.unlink(imagePath);
+          }
         } catch (error) {
           console.error(`Error deleting image for brand ${brand.id}:`, error);
         }

@@ -17,8 +17,8 @@ const processImage = async (file, options = {}, subfolder = 'others') => {
   const extension = path.extname(file.originalname) || `.${format}`;
   const filename = `${path.basename(file.originalname, extension)}-${uniqueSuffix}${extension}`;
   
-  // Define the public-facing output directory
-  const outputDir = path.join(__dirname, '..', '..', 'public', 'uploads', subfolder);
+  // Define the output directory (uploads, not public/uploads)
+  const outputDir = path.join(__dirname, '..', '..', 'uploads', subfolder);
   const processedPath = path.join(outputDir, filename);
 
   try {

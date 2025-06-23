@@ -79,7 +79,7 @@ exports.updateGrocery = async (req, res) => {
     if (req.file) {
       // Delete the old image if it exists
       if (grocery.image) {
-        const oldImagePath = path.join(__dirname, '..', '..', 'public', grocery.image);
+        const oldImagePath = path.join(__dirname, '..', '..', 'uploads', grocery.image.replace('/uploads/', ''));
         try {
           if (require('fs').existsSync(oldImagePath)) {
             await fs.unlink(oldImagePath);
@@ -119,8 +119,7 @@ exports.deleteGrocery = async (req, res) => {
     const grocery = await Grocery.findByPk(req.params.id);
     if (!grocery) return res.status(404).json({ success: false, message: 'Grocery not found' });
     if (grocery.image) {
-      // Correct the path for deletion to include the 'public' directory
-      const imagePath = path.join(__dirname, '..', '..', 'public', grocery.image);
+      const imagePath = path.join(__dirname, '..', '..', 'uploads', grocery.image.replace('/uploads/', ''));
       try { 
         if (require('fs').existsSync(imagePath)) {
           await fs.unlink(imagePath); 

@@ -62,20 +62,19 @@ exports.getBrandById = async (req, res) => {
 exports.createBrand = async (req, res) => {
   try {
     const { brand_name, status } = req.body;
-    let processedImagePath = null;
+    let imagePath = null;
 
     // Process image if uploaded
     if (req.file) {
-      const processedImageObject = await processImage(req.file);
-      // Construct the URL path
-      const relativePath = path.relative(path.join(__dirname, '../../uploads'), processedImageObject.path);
-      processedImagePath = `/uploads/${relativePath.replace(/\\/g, '/')}`;
+      // Correctly call the image processor and construct the web-accessible URL
+      const processedImage = await processImage(req.file, {}, 'brands');
+      imagePath = `/uploads/brands/${processedImage.filename}`;
     }
 
     const brand = await Brand.create({
       brand_name,
       status: status === 'true' || status === true,
-      photo: processedImagePath
+      photo: imagePath
     });
 
     res.status(201).json({
@@ -105,30 +104,30 @@ exports.updateBrand = async (req, res) => {
     }
 
     const { brand_name, status } = req.body;
-    let processedImagePath = brand.photo;
+    let imagePath = brand.photo;
 
     // Process new image if uploaded
     if (req.file) {
       // Delete old image if it exists
       if (brand.photo) {
-        const oldImageSystemPath = path.join(__dirname, '../../', brand.photo);
+        const oldImageSystemPath = path.join(__dirname, '..', '..', 'public', brand.photo);
         try {
-          if (fs.existsSync(oldImageSystemPath)) {
+          if (require('fs').existsSync(oldImageSystemPath)) {
             await fs.unlink(oldImageSystemPath);
           }
         } catch (err) {
           console.error('Error deleting old image:', err);
         }
       }
-      const processedImageObject = await processImage(req.file);
-      const relativePath = path.relative(path.join(__dirname, '../../uploads'), processedImageObject.path);
-      processedImagePath = `/uploads/${relativePath.replace(/\\/g, '/')}`;
+      // Correctly call the image processor and construct the web-accessible URL
+      const processedImage = await processImage(req.file, {}, 'brands');
+      imagePath = `/uploads/brands/${processedImage.filename}`;
     }
 
     await brand.update({
       brand_name: brand_name || brand.brand_name,
       status: status !== undefined ? (status === 'true' || status === true) : brand.status,
-      photo: processedImagePath
+      photo: imagePath
     });
 
     res.json({

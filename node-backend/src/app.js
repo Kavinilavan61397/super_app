@@ -18,6 +18,9 @@ const taxiRideRoutes = require('./routes/taxiRide.routes');
 const taxiDriverRoutes = require('./routes/taxiDriver.routes');
 const taxiVehicleRoutes = require('./routes/taxiVehicle.routes');
 const gwishlistRoutes = require('./routes/gwishlist.routes');
+const userRoutes = require('./routes/user.routes');
+const roleRoutes = require('./routes/role.routes');
+const staffRoutes = require('./routes/staff.routes');
 
 const app = express();
 
@@ -54,6 +57,9 @@ app.use('/api/gorders', groceryOrderRoutes); // ✅ Grocery wishlist
 app.use('/api/taxi-rides', taxiRideRoutes);
 app.use('/api/taxi-drivers', taxiDriverRoutes);
 app.use('/api/taxi-vehicles', taxiVehicleRoutes);
+app.use('/api/users', userRoutes);      // ✅ User management
+app.use('/api/roles', roleRoutes);      // ✅ Role management
+app.use('/api/staff', staffRoutes);     // ✅ Staff management
 
 // ✅ Default API welcome route
 app.get('/', (req, res) => {
@@ -74,7 +80,10 @@ app.get('/', (req, res) => {
       taxiRides: '/api/taxi-rides',
       taxiDrivers: '/api/taxi-drivers',
       taxiVehicles: '/api/taxi-vehicles',
-      gorders: '/api/gorders'
+      gorders: '/api/gorders',
+      users: '/api/users',
+      roles: '/api/roles',
+      staff: '/api/staff'
     }
   });
 });

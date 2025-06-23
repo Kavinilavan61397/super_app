@@ -36,6 +36,16 @@ const OrderItem = sequelize.define('OrderItem', {
     type: DataTypes.JSON,
     allowNull: false,
     comment: 'Snapshot of product data at time of order'
+  },
+  createdAt: {
+    type: DataTypes.DATE,
+    field: 'created_at',
+    allowNull: false
+  },
+  updatedAt: {
+    type: DataTypes.DATE,
+    field: 'updated_at',
+    allowNull: false
   }
 }, {
   timestamps: true,

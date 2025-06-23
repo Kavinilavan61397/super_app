@@ -75,6 +75,16 @@ const Product = sequelize.define('Product', {
       model: 'brands',
       key: 'id'
     }
+  },
+  createdAt: {
+    type: DataTypes.DATE,
+    field: 'created_at',
+    allowNull: false
+  },
+  updatedAt: {
+    type: DataTypes.DATE,
+    field: 'updated_at',
+    allowNull: false
   }
 }, {
   tableName: 'products',

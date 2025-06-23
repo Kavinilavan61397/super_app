@@ -23,10 +23,10 @@ router.get('/get_all_brand', (req, res, next) => {
 
 router.get('/:id', getBrandById);
 
-// Protected routes (admin only)
-router.post('/save_brand', protect, authorize('admin'), upload.single('brand_image'), validateImage, createBrand);
-router.put('/update_brand_by_id/:id', protect, authorize('admin'), upload.single('brand_image'), updateBrand);
-router.delete('/delete_brand_by_id/:id', protect, authorize('admin'), deleteBrand);
-router.delete('/delete_brands', protect, authorize('admin'), bulkDeleteBrands);
+// Protected routes (admin and ecommerce_admin)
+router.post('/save_brand', protect, authorize('admin', 'ecommerce_admin'), upload.single('brand_image'), validateImage, createBrand);
+router.put('/update_brand_by_id/:id', protect, authorize('admin', 'ecommerce_admin'), upload.single('brand_image'), updateBrand);
+router.delete('/delete_brand_by_id/:id', protect, authorize('admin', 'ecommerce_admin'), deleteBrand);
+router.delete('/delete_brands', protect, authorize('admin', 'ecommerce_admin'), bulkDeleteBrands);
 
 module.exports = router; 

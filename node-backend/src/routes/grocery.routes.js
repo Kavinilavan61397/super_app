@@ -10,15 +10,15 @@ const validateImage = require('../middlewares/imageValidation.middleware');
 router.get('/', groceryController.getAllGroceries);
 
 // GET grocery by ID (protected)
-router.get('/:id', protect, authorize('admin'), groceryController.getGroceryById);
+router.get('/:id', protect, authorize('admin', 'grocery_admin'), groceryController.getGroceryById);
 
 // POST create grocery (with image upload, protected)
-router.post('/', protect, authorize('admin'), upload.single('image'), validateImage, groceryController.createGrocery);
+router.post('/', protect, authorize('admin', 'grocery_admin'), upload.single('image'), validateImage, groceryController.createGrocery);
 
 // PUT update grocery (with image upload, protected)
-router.put('/:id', protect, authorize('admin'), upload.single('image'), groceryController.updateGrocery);
+router.put('/:id', protect, authorize('admin', 'grocery_admin'), upload.single('image'), groceryController.updateGrocery);
 
 // DELETE grocery (protected)
-router.delete('/:id', protect, authorize('admin'), groceryController.deleteGrocery);
+router.delete('/:id', protect, authorize('admin', 'grocery_admin'), groceryController.deleteGrocery);
 
 module.exports = router;

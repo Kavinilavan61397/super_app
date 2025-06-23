@@ -6,14 +6,16 @@ module.exports = {
     const hashedPassword = await bcrypt.hash('admin123', salt);
 
     return queryInterface.bulkInsert('users', [{
-      id: 3,
       name: 'Admin User',
       email: 'admin@example.com',
       password: hashedPassword,
       role: 'admin',
+      status: true,
       created_at: new Date(),
       updated_at: new Date()
-    }]);
+    }], {
+      ignoreDuplicates: true
+    });
   },
 
   down: async (queryInterface, Sequelize) => {

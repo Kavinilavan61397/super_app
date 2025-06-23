@@ -10,6 +10,16 @@ const Size = sequelize.define('Size', {
   status: {
     type: DataTypes.BOOLEAN,
     defaultValue: true
+  },
+  createdAt: {
+    type: DataTypes.DATE,
+    field: 'created_at',
+    allowNull: false
+  },
+  updatedAt: {
+    type: DataTypes.DATE,
+    field: 'updated_at',
+    allowNull: false
   }
 }, {
   timestamps: true,

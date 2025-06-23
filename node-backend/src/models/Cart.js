@@ -22,6 +22,16 @@ const Cart = sequelize.define('Cart', {
   total_amount: {
     type: DataTypes.DECIMAL(10, 2),
     defaultValue: 0.00
+  },
+  createdAt: {
+    type: DataTypes.DATE,
+    field: 'created_at',
+    allowNull: false
+  },
+  updatedAt: {
+    type: DataTypes.DATE,
+    field: 'updated_at',
+    allowNull: false
   }
 }, {
   tableName: 'carts',

@@ -39,6 +39,16 @@ module.exports = (sequelize, DataTypes) => {
     status: {
       type: DataTypes.INTEGER,
       defaultValue: 1
+    },
+    createdAt: {
+      type: DataTypes.DATE,
+      field: 'created_at',
+      allowNull: false
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      field: 'updated_at',
+      allowNull: false
     }
   }, {
     sequelize,

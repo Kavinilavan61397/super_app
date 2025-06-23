@@ -4,14 +4,14 @@ const { protect, authorize } = require('../middlewares/auth.middleware');
 const taxiDriverController = require('../controllers/taxiDriver.controller');
 
 // List all drivers
-router.get('/', protect, authorize('admin'), taxiDriverController.getAll);
+router.get('/', protect, authorize('admin', 'taxi_admin'), taxiDriverController.getAll);
 // Get driver by ID
-router.get('/:id', protect, authorize('admin'), taxiDriverController.getById);
+router.get('/:id', protect, authorize('admin', 'taxi_admin'), taxiDriverController.getById);
 // Create driver
-router.post('/', protect, authorize('admin'), taxiDriverController.create);
+router.post('/', protect, authorize('admin', 'taxi_admin'), taxiDriverController.create);
 // Update driver
-router.put('/:id', protect, authorize('admin'), taxiDriverController.update);
+router.put('/:id', protect, authorize('admin', 'taxi_admin'), taxiDriverController.update);
 // Delete driver
-router.delete('/:id', protect, authorize('admin'), taxiDriverController.delete);
+router.delete('/:id', protect, authorize('admin', 'taxi_admin'), taxiDriverController.delete);
 
 module.exports = router; 

@@ -1,6 +1,10 @@
 # demo admin user credentials
-username: admin@example.com
-password: admin123
+
+# Main Admin	    admin@example.com	    password123
+# Ecommerce Admin	ecommerce@example.com	password123
+# Grocery Admin	    grocery@example.com	    password123
+# Taxi Admin	    taxi@example.com	    password123
+# Hotel Admin	    hotel@example.com	    password123
 
 # To install dependencies
 npm install

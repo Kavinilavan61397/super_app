@@ -1,19 +1,34 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
-const Brand = sequelize.define('Brand', {
+const Staff = sequelize.define('Staff', {
   id: {
     type: DataTypes.BIGINT.UNSIGNED,
     primaryKey: true,
     autoIncrement: true
   },
-  brand_name: {
-    type: DataTypes.STRING,
+  user_id: {
+    type: DataTypes.BIGINT.UNSIGNED,
     allowNull: false,
-    unique: true
+    references: {
+      model: 'users',
+      key: 'id'
+    }
   },
-  photo: {
+  department: {
     type: DataTypes.STRING,
+    allowNull: true
+  },
+  position: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  hire_date: {
+    type: DataTypes.DATE,
+    allowNull: true
+  },
+  salary: {
+    type: DataTypes.DECIMAL(10, 2),
     allowNull: true
   },
   status: {
@@ -32,16 +47,8 @@ const Brand = sequelize.define('Brand', {
   }
 }, {
   timestamps: true,
-  tableName: 'brands',
+  tableName: 'staff',
   underscored: true
 });
 
-// Define associations
-Brand.associate = (models) => {
-  Brand.hasMany(models.Product, {
-    foreignKey: 'brand_id',
-    as: 'products'
-  });
-};
-
-module.exports = Brand; 
+module.exports = Staff; 

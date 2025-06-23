@@ -38,6 +38,16 @@ const UserProfile = sequelize.define('UserProfile', {
   profile_picture: {
     type: DataTypes.STRING,
     allowNull: true
+  },
+  createdAt: {
+    type: DataTypes.DATE,
+    field: 'created_at',
+    allowNull: false
+  },
+  updatedAt: {
+    type: DataTypes.DATE,
+    field: 'updated_at',
+    allowNull: false
   }
 }, {
   tableName: 'user_profiles',

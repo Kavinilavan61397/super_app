@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Navbar from "components/navbar";
 import Sidebar from "components/sidebar/Sidebar";
 import Footer from "components/footer/Footer";
 import routes from "routes.js";
 import adminRoutes from "routes/admin.routes.js";
-import axios from "axios";
+import { getUserRole, filterRoutesByRole } from "utils/roleAccess";
 
 export default function Admin(props) {
   const { ...rest } = props;
@@ -13,6 +13,10 @@ export default function Admin(props) {
   const [open, setOpen] = useState(true);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [currentRoute, setCurrentRoute] = useState("Main Dashboard");
+  
+  // Get user role and memoize the filtered routes
+  const userRole = getUserRole();
+  const accessibleRoutes = useMemo(() => filterRoutesByRole(routes, userRole), [userRole]);
   
   const handleSidenavToggle = () => {
     if (window.innerWidth < 1200) {
@@ -37,13 +41,22 @@ export default function Admin(props) {
   }, []);
 
   useEffect(() => {
-    getActiveRoute(routes);
-  }, [location.pathname]);
+    getActiveRoute(accessibleRoutes);
+  }, [location.pathname, accessibleRoutes]);
 
   const getActiveRoute = (routes) => {
     for (let route of routes) {
       if (window.location.href.includes(route.layout + "/" + route.path)) {
         setCurrentRoute(route.name);
+        return;
+      }
+      if (route.subNav) {
+        for (let subRoute of route.subNav) {
+          if (window.location.href.includes(subRoute.layout + "/" + subRoute.path)) {
+            setCurrentRoute(subRoute.name);
+            return;
+          }
+        }
       }
     }
   };
@@ -89,6 +102,7 @@ export default function Admin(props) {
         open={open} 
         onClose={() => setOpen(false)}
         onSidenavToggle={handleSidenavToggle}
+        routes={accessibleRoutes}
       /> 
       <div className={`relative h-full w-full transition-all duration-300 ease-in-out
           ${isCollapsed ? "xl:ml-20" : "xl:ml-64"}`}>
@@ -101,7 +115,7 @@ export default function Admin(props) {
           />
           <div className="pt-5 mx-auto mb-auto h-full min-h-[84vh]">
             <Routes>
-              {getRoutes(routes)}
+              {getRoutes(accessibleRoutes)}
               {getAdminRoutes(adminRoutes)}
               <Route
                 path="/"

@@ -2,14 +2,13 @@ import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { MdKeyboardArrowDown, MdKeyboardArrowUp } from "react-icons/md";
 import { HiX } from "react-icons/hi";
-import routes from "routes.js";
 import { FiMenu } from "react-icons/fi";
 
-const Sidebar = ({ isCollapsed, open, onClose, onSidenavToggle }) => {
+const Sidebar = ({ isCollapsed, open, onClose, onSidenavToggle, routes }) => {
   const location = useLocation();
   const [dropdowns, setDropdowns] = useState({});
 
-  // Filter out authentication routes
+  // Filter out authentication routes from the passed `routes` prop
   const sidebarRoutes = routes.filter(route => route.layout === '/admin');
 
   const toggleDropdown = (key) => {

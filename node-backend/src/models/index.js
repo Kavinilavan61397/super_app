@@ -212,6 +212,25 @@ GroceryOrderItem.belongsTo(Grocery, { foreignKey: 'grocery_id' });
 // ✅ Gwhishlist model
 const Gwhishlist = require('./gwhishlist')(sequelize, Sequelize.DataTypes);
 
+// Import new models
+const Role = require('./Role');
+const Staff = require('./Staff');
+
+// User associations
+User.hasMany(Staff, {
+  foreignKey: 'user_id',
+  as: 'staff',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE'
+});
+
+Staff.belongsTo(User, {
+  foreignKey: 'user_id',
+  as: 'user',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE'
+});
+
 // Export all models
 module.exports = {
   sequelize,
@@ -238,5 +257,7 @@ module.exports = {
   GroceryOrder,
   GroceryOrderItem,
   GCartItem,
-  Gwhishlist 
+  Gwhishlist,
+  Role,
+  Staff
 };

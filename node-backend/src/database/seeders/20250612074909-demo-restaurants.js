@@ -58,10 +58,19 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    // Only delete the demo restaurants
+    const restaurantIds = [1, 2, 3];
+
+    // First, delete all dishes associated with these restaurants
+    await queryInterface.bulkDelete('dishes', {
+      restaurant_id: {
+        [Sequelize.Op.in]: restaurantIds
+      }
+    });
+
+    // Then, delete the restaurants themselves
     await queryInterface.bulkDelete('restaurants', {
       id: {
-        [Sequelize.Op.in]: [1, 2, 3] // Only delete the demo restaurants
+        [Sequelize.Op.in]: restaurantIds
       }
     });
   }

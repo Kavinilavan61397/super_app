@@ -29,11 +29,13 @@ exports.createGrocery = async (req, res) => {
   try {
     const { name, description, original_price, discounted_price, rating, is_best_seller, quantity, category, status } = req.body;
     let imagePath = null;
+    
     if (req.file) {
-      const processedImage = await processImage(req.file, { dir: 'groceries' });
-      const relativePath = path.relative(path.join(__dirname, '../../uploads'), processedImage.path);
-      imagePath = `/uploads/${relativePath.replace(/\\/g, '/')}`;
+      // Correctly call the image processor and construct the web-accessible URL
+      const processedImage = await processImage(req.file, {}, 'groceries');
+      imagePath = `/uploads/groceries/${processedImage.filename}`;
     }
+
     const grocery = await Grocery.create({
       name,
       description,
@@ -60,14 +62,24 @@ exports.updateGrocery = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Grocery not found' });
     }
 
-    const { status, ...otherData } = req.body;
+    const { 
+      name, 
+      description, 
+      original_price, 
+      discounted_price, 
+      rating, 
+      is_best_seller, 
+      quantity, 
+      category, 
+      status 
+    } = req.body;
+    
     let imagePath = grocery.image;
 
-    // Case 1: A new image file is uploaded
     if (req.file) {
       // Delete the old image if it exists
       if (grocery.image) {
-        const oldImagePath = path.join(__dirname, '../../', grocery.image);
+        const oldImagePath = path.join(__dirname, '..', '..', 'public', grocery.image);
         try {
           if (require('fs').existsSync(oldImagePath)) {
             await fs.unlink(oldImagePath);
@@ -76,32 +88,23 @@ exports.updateGrocery = async (req, res) => {
           console.error("Error deleting old image:", e);
         }
       }
-      // Process and set path for the new image
-      const processedImage = await processImage(req.file, { dir: 'groceries' });
-      const relativePath = path.relative(path.join(__dirname, '../../uploads'), processedImage.path);
-      imagePath = `/uploads/${relativePath.replace(/\\/g, '/')}`;
+      
+      const processedImage = await processImage(req.file, {}, 'groceries');
+      imagePath = `/uploads/groceries/${processedImage.filename}`;
     }
-    // Case 2: No new file is uploaded, so we keep the existing image path.
-    // The value of imagePath remains grocery.image.
 
     const updatedData = {
-      ...otherData,
+      name,
+      description,
+      original_price: (original_price === '' || original_price === null) ? null : original_price,
+      discounted_price: (discounted_price === '' || discounted_price === null) ? null : discounted_price,
+      rating: (rating === '' || rating === null) ? null : rating,
+      is_best_seller: is_best_seller === 'true' || is_best_seller === true,
+      quantity: (quantity === '' || quantity === null) ? null : quantity,
+      category,
+      status: status === 'true' || status === true,
       image: imagePath,
     };
-
-    // Handle numeric fields that might be empty strings
-    ['original_price', 'discounted_price', 'rating', 'quantity'].forEach(field => {
-      if (updatedData[field] === '' || updatedData[field] === null || updatedData[field] === 'null') {
-        updatedData[field] = null;
-      }
-    });
-
-    if (status !== undefined) {
-      updatedData.status = status === 'true' || status === true;
-    }
-
-    // Handle is_best_seller boolean
-    updatedData.is_best_seller = otherData.is_best_seller === 'true' || otherData.is_best_seller === true;
 
     await grocery.update(updatedData);
     res.json({ success: true, message: 'Grocery updated successfully', data: grocery });
@@ -116,8 +119,15 @@ exports.deleteGrocery = async (req, res) => {
     const grocery = await Grocery.findByPk(req.params.id);
     if (!grocery) return res.status(404).json({ success: false, message: 'Grocery not found' });
     if (grocery.image) {
-      const imagePath = path.join(__dirname, '../../', grocery.image);
-      try { await fs.unlink(imagePath); } catch (e) {}
+      // Correct the path for deletion to include the 'public' directory
+      const imagePath = path.join(__dirname, '..', '..', 'public', grocery.image);
+      try { 
+        if (require('fs').existsSync(imagePath)) {
+          await fs.unlink(imagePath); 
+        }
+      } catch (e) {
+        console.error("Error deleting image on grocery deletion:", e)
+      }
     }
     await grocery.destroy();
     res.json({ success: true, message: 'Grocery deleted successfully' });

@@ -14,7 +14,6 @@ const colorRoutes = require('./routes/color.routes');
 const unitRoutes = require('./routes/unit.routes');
 const gcartRoutes = require('./routes/gcart.routes');
 const groceryRoutes = require('./routes/grocery.routes');
-const groceryOrderRoutes = require('./routes/groceryOrder.routes');
 const taxiRideRoutes = require('./routes/taxiRide.routes');
 const taxiDriverRoutes = require('./routes/taxiDriver.routes');
 const taxiVehicleRoutes = require('./routes/taxiVehicle.routes');
@@ -26,7 +25,7 @@ const app = express();
 app.use(cors({
   origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:5000'],
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
@@ -34,8 +33,8 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ✅ Serve uploaded files
-app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
+// ✅ Serve uploaded files from the 'public' directory
+app.use('/uploads', express.static(path.join(__dirname, '..', 'public', 'uploads')));
 
 // ✅ API Routes
 app.use('/api/auth', authRoutes);
@@ -51,7 +50,6 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/groceries', groceryRoutes);
 app.use('/api/gcart', gcartRoutes);     // ✅ Grocery cart items
 app.use('/api/gwishlist', gwishlistRoutes); // ✅ Grocery wishlist
-app.use('/api/gorders', groceryOrderRoutes); // ✅ Grocery orders
 app.use('/api/taxi-rides', taxiRideRoutes);
 app.use('/api/taxi-drivers', taxiDriverRoutes);
 app.use('/api/taxi-vehicles', taxiVehicleRoutes);
@@ -72,7 +70,6 @@ app.get('/', (req, res) => {
       groceries: '/api/groceries',
       gcart: '/api/gcart',
       gwishlist: '/api/gwishlist',
-      gorders: '/api/gorders',
       taxiRides: '/api/taxi-rides',
       taxiDrivers: '/api/taxi-drivers',
       taxiVehicles: '/api/taxi-vehicles'

@@ -75,10 +75,13 @@ const GroceryForm = () => {
 
   const onSubmit = async (data) => {
     const formData = new FormData();
+
+    if (data.image instanceof File) {
+      formData.append('image', data.image);
+    }
+
     Object.keys(data).forEach(key => {
-      if (key === 'image' && data.image instanceof File) {
-        formData.append('image', data.image);
-      } else if (key !== 'image') {
+      if (key !== 'image') {
         formData.append(key, data[key]);
       }
     });

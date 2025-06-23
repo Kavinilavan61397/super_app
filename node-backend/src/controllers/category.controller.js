@@ -60,8 +60,8 @@ exports.getCategoryById = async (req, res) => {
 // Create new category
 exports.createCategory = async (req, res) => {
   try {
-    const { name, description, parent_id, status } = req.body;
-    let image = null;
+    const { name, description, parent_id, status, meta_title, meta_description } = req.body;
+    let imagePath = null;
 
     if (req.file) {
       const processedImage = await processImage(req.file, {
@@ -69,37 +69,34 @@ exports.createCategory = async (req, res) => {
         height: 800,
         quality: 85,
         format: 'jpeg'
-      });
-      image = path.join('uploads', 'categories', processedImage.filename);
+      }, 'categories');
+      // Use the web-accessible URL path
+      imagePath = `/uploads/categories/${processedImage.filename}`;
     }
 
     const category = await Category.create({
       name,
       description,
       slug: slugify(name, { lower: true }),
-      image,
-      status: typeof status === 'undefined' ? true : status === 'true' || status === true,
-      parent_id: parent_id || null
+      image: imagePath,
+      status: typeof status !== 'undefined' ? (String(status) === 'true') : true,
+      parent_id: parent_id || null,
+      meta_title,
+      meta_description
     });
 
     res.status(201).json(category);
   } catch (error) {
     console.error('Category creation error:', error);
-    if (error && typeof error === 'object') {
-      Object.getOwnPropertyNames(error).forEach(key => {
-        console.error(`${key}:`, error[key]);
-      });
-    }
     if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
       return res.status(400).json({
         message: 'Validation error',
-        errors: error.errors ? error.errors.map(e => e.message) : error.message
+        errors: error.errors ? error.errors.map(e => e.message) : [error.message]
       });
     }
     return res.status(500).json({
-      message: error.message,
-      stack: error.stack,
-      fullError: error
+      message: 'An unexpected error occurred while creating the category.',
+      error: error.message
     });
   }
 };
@@ -112,31 +109,49 @@ exports.updateCategory = async (req, res) => {
       return res.status(404).json({ message: 'Category not found' });
     }
 
-    const { name, description, parent_id, status } = req.body;
-    let image = category.image;
+    const { name, description, parent_id, status, meta_title, meta_description } = req.body;
+    let imagePath = category.image;
 
     if (req.file) {
+      // Delete old image if it exists
+      if (category.image) {
+        const oldImagePath = path.join(__dirname, '..', '..', 'public', category.image);
+        if (fs.existsSync(oldImagePath)) {
+          fs.unlinkSync(oldImagePath);
+        }
+      }
+      
       const processedImage = await processImage(req.file, {
         width: 800,
         height: 800,
         quality: 85,
         format: 'jpeg'
-      });
-      image = path.join('uploads', 'categories', processedImage.filename);
+      }, 'categories');
+      // Use the web-accessible URL path
+      imagePath = `/uploads/categories/${processedImage.filename}`;
     }
 
+    // Explicitly handle boolean conversion for status
+    const newStatus = typeof status !== 'undefined' ? (String(status) === 'true') : category.status;
+
     await category.update({
-      name,
-      description,
-      slug: slugify(name, { lower: true }),
-      image,
-      status: status || category.status,
-      parent_id: parent_id || category.parent_id
+      name: name || category.name,
+      description: description || category.description,
+      slug: name ? slugify(name, { lower: true }) : category.slug,
+      image: imagePath,
+      status: newStatus,
+      parent_id: parent_id || category.parent_id,
+      meta_title: meta_title || category.meta_title,
+      meta_description: meta_description || category.meta_description
     });
 
     res.json(category);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Category update error:', error);
+    res.status(500).json({ 
+        message: 'An unexpected error occurred while updating the category.',
+        error: error.message 
+    });
   }
 };
 
@@ -191,7 +206,7 @@ exports.deleteCategory = async (req, res) => {
 
     // Delete category image if exists
     if (category.image) {
-      const imagePath = path.join(__dirname, '..', '..', category.image);
+      const imagePath = path.join(__dirname, '..', '..', 'public', category.image);
       if (fs.existsSync(imagePath)) {
         try {
           fs.unlinkSync(imagePath);

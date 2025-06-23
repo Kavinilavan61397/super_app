@@ -42,7 +42,7 @@ import {
 import { FaTags, FaPercentage } from "react-icons/fa";
 import { AiOutlineShoppingCart, AiOutlineAppstore } from 'react-icons/ai';
 import BrandTable from "views/admin/Sidenav_pages/BrandTable";
-import Category from "views/admin/Sidenav_pages/Category";
+import CategoryTable from "views/admin/Sidenav_pages/CategoryTable";
 import SubCategory from "views/admin/Sidenav_pages/Sub_Category";
 import Products from "views/admin/Sidenav_pages/Products";
 import ProductVariation from "views/admin/Sidenav_pages/ProductVariation";
@@ -124,8 +124,8 @@ const routes = [
         name: "Category",
         layout: "/admin",
         icon: <MdCategory className="h-6 w-6" />,
-        path: "category",
-        component: <Category />,
+        path: "categories",
+        component: <CategoryTable />,
       },
       {
         name: "Sub-Category",

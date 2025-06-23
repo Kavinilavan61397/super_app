@@ -22,7 +22,7 @@ const Room = require('./room')(sequelize, Sequelize.DataTypes);
 const Booking = require('./booking')(sequelize, Sequelize.DataTypes);
 
 // ✅ Grocery models
-const Grocery = require('./Grocery')(sequelize, Sequelize.DataTypes);
+const Grocery = require('./Grocery');
 const GroceryOrder = require('./grocery_order')(sequelize, Sequelize.DataTypes);
 const GroceryOrderItem = require('./grocery_order_item')(sequelize, Sequelize.DataTypes);
 

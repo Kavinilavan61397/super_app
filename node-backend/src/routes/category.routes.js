@@ -18,7 +18,7 @@ router.get('/:id', getCategoryById);
 
 // Protected routes (admin only)
 router.post('/', protect, authorize('admin'), upload.single('category_image'), validateImage, createCategory);
-router.put('/:id', protect, authorize('admin'), upload.single('category_image'), validateImage, updateCategory);
+router.put('/:id', protect, authorize('admin'), upload.single('category_image'), updateCategory);
 router.delete('/:id', protect, authorize('admin'), deleteCategory);
 router.patch('/:id/toggle-status', protect, authorize('admin'), toggleStatus);
 

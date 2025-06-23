@@ -8,8 +8,22 @@ import TaxiVehicleTable from 'views/admin/Sidenav_pages/TaxiVehicleTable';
 import TaxiVehicleForm from 'views/admin/Sidenav_pages/TaxiVehicleForm';
 import BrandTable from 'views/admin/Sidenav_pages/BrandTable';
 import BrandForm from 'views/admin/Sidenav_pages/BrandForm';
+import CategoryTable from 'views/admin/Sidenav_pages/CategoryTable';
+import CategoryForm from 'views/admin/Sidenav_pages/CategoryForm';
 
 const adminRoutes = [
+  {
+    path: 'categories',
+    element: <CategoryTable />,
+  },
+  {
+    path: 'categories/new',
+    element: <CategoryForm />,
+  },
+  {
+    path: 'categories/edit/:id',
+    element: <CategoryForm />,
+  },
   {
     path: 'groceries',
     element: <GroceryTable />,

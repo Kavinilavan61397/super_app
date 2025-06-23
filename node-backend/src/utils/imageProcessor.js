@@ -2,7 +2,7 @@ const sharp = require('sharp');
 const path = require('path');
 const fs = require('fs');
 
-const processImage = async (file, options = {}) => {
+const processImage = async (file, options = {}, subfolder = 'others') => {
   const {
     width = 800,
     height = 800,
@@ -12,11 +12,21 @@ const processImage = async (file, options = {}) => {
     position = 'center'
   } = options;
 
-  const filename = path.basename(file.path);
-  const processedFilename = `processed-${filename}`;
-  const processedPath = path.join(path.dirname(file.path), processedFilename);
+  // Generate a unique filename to prevent conflicts
+  const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
+  const extension = path.extname(file.originalname) || `.${format}`;
+  const filename = `${path.basename(file.originalname, extension)}-${uniqueSuffix}${extension}`;
+  
+  // Define the public-facing output directory
+  const outputDir = path.join(__dirname, '..', '..', 'public', 'uploads', subfolder);
+  const processedPath = path.join(outputDir, filename);
 
   try {
+    // Ensure the output directory exists
+    if (!fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir, { recursive: true });
+    }
+
     // Get image metadata
     const metadata = await sharp(file.path).metadata();
 
@@ -37,10 +47,10 @@ const processImage = async (file, options = {}) => {
       processedImage.gif();
     }
 
-    // Save processed image
+    // Save processed image to the public directory
     await processedImage.toFile(processedPath);
 
-    // Delete original file only if processing was successful
+    // Delete the original temporary file
     if (fs.existsSync(file.path)) {
       fs.unlinkSync(file.path);
     }
@@ -49,7 +59,7 @@ const processImage = async (file, options = {}) => {
     return {
       ...file,
       path: processedPath,
-      filename: processedFilename,
+      filename: filename, // The new permanent filename
       metadata: {
         width: metadata.width,
         height: metadata.height,
@@ -60,9 +70,14 @@ const processImage = async (file, options = {}) => {
   } catch (error) {
     console.error('Error processing image:', error);
     
-    // If processing fails, keep the original file
+    // If processing fails, clean up any failed attempts
     if (fs.existsSync(processedPath)) {
       fs.unlinkSync(processedPath);
+    }
+    
+    // Also clean up the original temp file
+    if (fs.existsSync(file.path)) {
+        fs.unlinkSync(file.path);
     }
     
     throw new Error(`Image processing failed: ${error.message}`);

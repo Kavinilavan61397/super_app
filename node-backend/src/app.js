@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-
+const groceryOrderRoutes = require('./routes/groceryOrder.routes');
 const hotelRoutes = require('./routes/hotelRoutes');
 const roomRoutes = require('./routes/roomRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
@@ -34,7 +34,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ✅ Serve uploaded files from the 'public' directory
-app.use('/uploads', express.static(path.join(__dirname, '..', 'public', 'uploads')));
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
 // ✅ API Routes
 app.use('/api/auth', authRoutes);
@@ -49,7 +49,8 @@ app.use('/api/rooms', roomRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/groceries', groceryRoutes);
 app.use('/api/gcart', gcartRoutes);     // ✅ Grocery cart items
-app.use('/api/gwishlist', gwishlistRoutes); // ✅ Grocery wishlist
+app.use('/api/gwishlist', gwishlistRoutes);
+app.use('/api/gorders', groceryOrderRoutes); // ✅ Grocery wishlist
 app.use('/api/taxi-rides', taxiRideRoutes);
 app.use('/api/taxi-drivers', taxiDriverRoutes);
 app.use('/api/taxi-vehicles', taxiVehicleRoutes);
@@ -72,7 +73,8 @@ app.get('/', (req, res) => {
       gwishlist: '/api/gwishlist',
       taxiRides: '/api/taxi-rides',
       taxiDrivers: '/api/taxi-drivers',
-      taxiVehicles: '/api/taxi-vehicles'
+      taxiVehicles: '/api/taxi-vehicles',
+      gorders: '/api/gorders'
     }
   });
 });

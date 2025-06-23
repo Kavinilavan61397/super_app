@@ -341,7 +341,7 @@ function Groceries() {
         console.log('Raw data from API:', data);
         
         // Format backend fields to match frontend expectations
-        const formattedData = data.map(item => {
+        const formattedData = data.data.map(item => {
           // Convert string prices to numbers
           const originalPrice = typeof item.original_price === 'string' 
             ? parseFloat(item.original_price) 

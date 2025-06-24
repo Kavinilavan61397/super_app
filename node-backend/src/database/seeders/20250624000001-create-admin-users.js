@@ -3,79 +3,104 @@ const bcrypt = require('bcryptjs');
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    const password = 'password123';
-    // The User model's beforeCreate hook will handle hashing,
-    // but it's best practice to hash in the seeder if the model logic changes.
+    const password = 'admin123';
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const users = [
+    const adminUsers = [
       {
-        name: 'Main Admin',
+        name: 'Super Admin',
         email: 'admin@example.com',
         password: hashedPassword,
         role: 'admin',
-        status: 'active',
+        status: true,
+        phone: '+1234567890',
         last_login: new Date(),
         created_at: new Date(),
         updated_at: new Date()
       },
       {
-        name: 'Ecommerce Admin',
+        name: 'Ecommerce Manager',
         email: 'ecommerce@example.com',
         password: hashedPassword,
         role: 'ecommerce_admin',
-        status: 'active',
+        status: true,
+        phone: '+1234567891',
         last_login: new Date(),
         created_at: new Date(),
         updated_at: new Date()
       },
       {
-        name: 'Grocery Admin',
+        name: 'Grocery Manager',
         email: 'grocery@example.com',
         password: hashedPassword,
         role: 'grocery_admin',
-        status: 'active',
+        status: true,
+        phone: '+1234567892',
         last_login: new Date(),
         created_at: new Date(),
         updated_at: new Date()
       },
       {
-        name: 'Taxi Admin',
+        name: 'Taxi Manager',
         email: 'taxi@example.com',
         password: hashedPassword,
         role: 'taxi_admin',
-        status: 'active',
+        status: true,
+        phone: '+1234567893',
         last_login: new Date(),
         created_at: new Date(),
         updated_at: new Date()
       },
       {
-        name: 'Hotel Admin',
+        name: 'Hotel Manager',
         email: 'hotel@example.com',
         password: hashedPassword,
         role: 'hotel_admin',
-        status: 'active',
+        status: true,
+        phone: '+1234567894',
+        last_login: new Date(),
+        created_at: new Date(),
+        updated_at: new Date()
+      },
+      {
+        name: 'Regular User',
+        email: 'user@example.com',
+        password: hashedPassword,
+        role: 'user',
+        status: true,
+        phone: '+1234567895',
         last_login: new Date(),
         created_at: new Date(),
         updated_at: new Date()
       }
     ];
 
-    // Insert users, ignoring duplicates based on the 'email' field
-    await queryInterface.bulkInsert('users', users, {
-       ignoreDuplicates: true
-    });
-  },
-
-  down: async (queryInterface, Sequelize) => {
-    // This will remove all users created by this seeder
+    // First, remove any existing admin users to avoid conflicts
     await queryInterface.bulkDelete('users', {
       email: [
         'admin@example.com',
         'ecommerce@example.com',
         'grocery@example.com',
         'taxi@example.com',
-        'hotel@example.com'
+        'hotel@example.com',
+        'user@example.com'
+      ]
+    });
+
+    // Insert new admin users
+    await queryInterface.bulkInsert('users', adminUsers);
+  },
+
+  down: async (queryInterface, Sequelize) => {
+    // Remove all users created by this seeder
+    await queryInterface.bulkDelete('users', {
+      email: [
+        'admin@example.com',
+        'ecommerce@example.com',
+        'grocery@example.com',
+        'taxi@example.com',
+        'hotel@example.com',
+        'user@example.com'
       ]
     });
   }

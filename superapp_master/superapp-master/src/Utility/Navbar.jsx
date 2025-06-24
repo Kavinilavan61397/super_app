@@ -76,6 +76,12 @@ import Rooms from '../HotelModule/PagesHotel/Rooms';
 import Favourites from '../HotelModule/PagesHotel/Favoutires';
 import RestaurentPageCategory from '../FoodDilvery/PagesF/RestaurentPageCategory';
 import DishesListBasedOnCategory from '../FoodDilvery/PagesF/DishesListBasedOnCategory';
+import Refrigerators from '../Clothes/Categories/HomeAppliances/Refrigerators';
+import WashingMachines from '../Clothes/Categories/HomeAppliances/WashingMachines';
+import AirConditionersCoolers from '../Clothes/Categories/HomeAppliances/AirConditionersCoolers';
+import KitchenAppliances from '../Clothes/Categories/HomeAppliances/KitchenAppliances';
+import Televisions from '../Clothes/Categories/HomeAppliances/Televisions';
+import FansOther from '../Clothes/Categories/HomeAppliances/FansOther';
 
 import HomeG from '../Grocery/Pages/HomeG.jsx';
 import AddressG from '../Grocery/Pages/Address';
@@ -137,7 +143,13 @@ function Navbar() {
                 <Route path='/categories/cosmetics' element={<Cosmetics/>}/>
                 <Route path='/categories/fruitdetail' element={<Fruitdetail/>}/>
                 <Route path='/cosmetics/nykaa ' element={<Nykaa/>}/>
-                <Route path='categories/homeappliances' element={<Homeappliances/>}/>
+                <Route path='/categories/homeappliances' element={<Homeappliances/>}/>
+                <Route path="/categories/homeappliances/refrigerators" element={<Refrigerators />} />
+                <Route path="/categories/homeappliances/washing-machines" element={<WashingMachines />} />
+                <Route path="/categories/homeappliances/air-conditioners-coolers" element={<AirConditionersCoolers />} />
+                <Route path="/categories/homeappliances/kitchen-appliances" element={<KitchenAppliances />} />
+                <Route path="/categories/homeappliances/televisions" element={<Televisions />} />
+                <Route path="/categories/homeappliances/fans-other" element={<FansOther />} />
 
                  {/* Groceries */}
                 <Route path='/home-grocery' element={<HomeG />} />

@@ -3,17 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import Footer from '../../Utility/Footer';
 import EcommerceGroceryHeader from '../../Components/EcommerceGroceryHeader';
 import shirt from '../Images/shirt.svg';
-import vegetable from '../Images/vegetabel.svg';
-import fruitImage from '../Images/fruit.jpg';
 import cosmeticImage from '../Images/cosmetic.jpg'; 
-
+import homeAppliances from '../Images/homeAppliance.jpg';
 
 const categories = [
   { name: 'Men', image: shirt, bg: 'bg-gradient-to-t from-[#47FF9A00] to-[#47FF9A]', route: '/categories/men-uniforms' },
   { name: 'Women', image: shirt, bg: 'bg-gradient-to-t from-[#47FFFF00] to-[#47FFFF]', route: '/categories/women-uniforms' },
-  { name: 'Vegetables', image: vegetable, bg: 'bg-gradient-to-t from-[#E6F24200] to-[#E6F242]', route: '/categories/vegetables' },
-  { name: 'Fruits', image: fruitImage, bg: 'bg-gradient-to-t from-[#FF47C800] to-[#FF47C8]', route: '/categories/fruits' },
   { name: 'Cosmetics', image: cosmeticImage, bg: 'bg-gradient-to-t from-[#BC47FF00] to-[#BC47FF]', route: '/categories/cosmetics' },
+  { name: "Home Appliances",image: homeAppliances, bg: 'bg-gradient-to-t from-[#E6F24200] to-[#E6F242]', route:'/categories/homeappliances'}
 ];
 
 const CategoryCard = ({ name, image, bg, badge, onClick }) => {

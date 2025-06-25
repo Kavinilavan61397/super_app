@@ -8,12 +8,24 @@ module.exports = {
 
     const adminUsers = [
       {
+        id: 1, // Explicitly set ID to 1 for restaurant vendor references
+        name: 'Restaurant Vendor',
+        email: 'vendor@example.com',
+        password: hashedPassword,
+        role: 'restaurant_admin',
+        status: true,
+        phone: '+1234567890',
+        last_login: new Date(),
+        created_at: new Date(),
+        updated_at: new Date()
+      },
+      {
         name: 'Super Admin',
         email: 'admin@example.com',
         password: hashedPassword,
         role: 'admin',
         status: true,
-        phone: '+1234567890',
+        phone: '+1234567891',
         last_login: new Date(),
         created_at: new Date(),
         updated_at: new Date()
@@ -24,7 +36,7 @@ module.exports = {
         password: hashedPassword,
         role: 'ecommerce_admin',
         status: true,
-        phone: '+1234567891',
+        phone: '+1234567892',
         last_login: new Date(),
         created_at: new Date(),
         updated_at: new Date()
@@ -35,7 +47,7 @@ module.exports = {
         password: hashedPassword,
         role: 'grocery_admin',
         status: true,
-        phone: '+1234567892',
+        phone: '+1234567893',
         last_login: new Date(),
         created_at: new Date(),
         updated_at: new Date()
@@ -46,7 +58,7 @@ module.exports = {
         password: hashedPassword,
         role: 'taxi_admin',
         status: true,
-        phone: '+1234567893',
+        phone: '+1234567894',
         last_login: new Date(),
         created_at: new Date(),
         updated_at: new Date()
@@ -57,7 +69,7 @@ module.exports = {
         password: hashedPassword,
         role: 'hotel_admin',
         status: true,
-        phone: '+1234567894',
+        phone: '+1234567895',
         last_login: new Date(),
         created_at: new Date(),
         updated_at: new Date()
@@ -68,7 +80,7 @@ module.exports = {
         password: hashedPassword,
         role: 'user',
         status: true,
-        phone: '+1234567895',
+        phone: '+1234567896',
         last_login: new Date(),
         created_at: new Date(),
         updated_at: new Date()
@@ -78,6 +90,7 @@ module.exports = {
     // First, remove any existing admin users to avoid conflicts
     await queryInterface.bulkDelete('users', {
       email: [
+        'vendor@example.com',
         'admin@example.com',
         'ecommerce@example.com',
         'grocery@example.com',
@@ -95,6 +108,7 @@ module.exports = {
     // Remove all users created by this seeder
     await queryInterface.bulkDelete('users', {
       email: [
+        'vendor@example.com',
         'admin@example.com',
         'ecommerce@example.com',
         'grocery@example.com',

@@ -59,15 +59,6 @@ const ENDPOINTS = {
     USERS: '/api/admin/users',
     ROLES: '/api/admin/roles',
     PERMISSIONS: '/api/admin/permissions'
-  },
-  RESTAURANT: {
-    CATEGORIES: '/api/restaurant/categories',
-    SUB_CATEGORIES: '/api/restaurant/sub-categories',
-    PRODUCTS: '/api/restaurant/products',
-    PRODUCT_VARIATIONS: '/api/restaurant/product-variations',
-    ORDERS: '/api/restaurant/orders',
-    RATINGS: '/api/restaurant/ratings',
-    DISCOUNTS: '/api/restaurant/discounts'
   }
 };
 

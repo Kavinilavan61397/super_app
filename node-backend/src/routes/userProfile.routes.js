@@ -7,7 +7,7 @@ const {
 } = require('../controllers/userProfile.controller');
 const { protect } = require('../middlewares/auth.middleware');
 const upload = require('../middlewares/upload.middleware');
-const validateImage = require('../middlewares/imageValidation.middleware');
+const { validateImage } = require('../middlewares/imageValidation.middleware');
 
 // All routes require authentication
 router.use(protect);

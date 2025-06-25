@@ -10,7 +10,7 @@ const {
   toggleStatus
 } = require('../controllers/category.controller');
 const upload = require('../middlewares/upload.middleware');
-const validateImage = require('../middlewares/imageValidation.middleware');
+const { validateImage } = require('../middlewares/imageValidation.middleware');
 
 // Public routes
 router.get('/', getAllCategories);

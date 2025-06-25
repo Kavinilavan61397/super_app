@@ -9,7 +9,7 @@ const {
 } = require('../controllers/productVariation.controller');
 const { protect, authorize } = require('../middlewares/auth.middleware');
 const upload = require('../middlewares/upload.middleware');
-const validateImage = require('../middlewares/imageValidation.middleware');
+const { validateImage } = require('../middlewares/imageValidation.middleware');
 
 // Public routes
 router.get('/product/:productId', getProductVariations);

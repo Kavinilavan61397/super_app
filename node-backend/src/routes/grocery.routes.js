@@ -4,7 +4,7 @@ const Grocery = require('../models/Grocery');
 const groceryController = require('../controllers/grocery.controller');
 const upload = require('../middlewares/upload.middleware');
 const { protect, authorize } = require('../middlewares/auth.middleware');
-const validateImage = require('../middlewares/imageValidation.middleware');
+const { validateImage } = require('../middlewares/imageValidation.middleware');
 
 // GET all groceries (public)
 router.get('/', groceryController.getAllGroceries);

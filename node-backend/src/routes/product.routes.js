@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { protect, authorize } = require('../middlewares/auth.middleware');
 const upload = require('../middlewares/upload.middleware');
-const validateImage = require('../middlewares/imageValidation.middleware');
+const { validateImage } = require('../middlewares/imageValidation.middleware');
 
 // Import product controller
 const {

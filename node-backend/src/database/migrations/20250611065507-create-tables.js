@@ -28,7 +28,7 @@ module.exports = {
         allowNull: true
       },
       role: {
-        type: Sequelize.ENUM('user', 'admin'),
+        type: Sequelize.ENUM('user', 'admin', 'ecommerce_admin', 'grocery_admin', 'taxi_admin', 'hotel_admin', 'restaurant_admin'),
         defaultValue: 'user'
       },
       created_at: {
@@ -270,7 +270,8 @@ module.exports = {
   },
 
   down: async (queryInterface, Sequelize) => {
-    // Drop tables in reverse order
+    // Drop tables in reverse order, handling foreign key constraints
+    // First drop tables that depend on others
     await queryInterface.dropTable('user_profiles');
     await queryInterface.dropTable('product_variations');
     await queryInterface.dropTable('products');

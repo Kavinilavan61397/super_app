@@ -42,25 +42,14 @@ module.exports = {
     // Then, create child categories
     await queryInterface.bulkInsert('categories', [
       {
-        id: 3,
-        name: 'Smartphones',
-        description: 'Mobile phones and accessories',
-        slug: 'smartphones',
+        id: 99, // ✅ NEW category
+        name: 'Home Appliances',
+        description: 'Appliances for home use',
+        slug: 'home-appliances',
         status: true,
-        parent_id: 1, // Electronics
         created_at: new Date(),
-        updated_at: new Date()
-      },
-      {
-        id: 4,
-        name: 'Laptops',
-        description: 'Laptops and accessories',
-        slug: 'laptops',
-        status: true,
-        parent_id: 1, // Electronics
-        created_at: new Date(),
-        updated_at: new Date()
-      },
+        updated_at: new Date()
+      },
       {
         id: 5,
         name: 'Men\'s Clothing',

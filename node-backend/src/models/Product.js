@@ -101,6 +101,9 @@
 // Product.belongsTo(Category, { foreignKey: 'category_id', as: 'category' });
 
 // module.exports = Product; 
+
+
+
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const Brand = require('./Brand');

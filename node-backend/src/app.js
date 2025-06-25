@@ -22,7 +22,7 @@ const userRoutes = require('./routes/user.routes');
 const roleRoutes = require('./routes/role.routes');
 const staffRoutes = require('./routes/staff.routes');
 const productAttributeRoutes = require('./routes/productAttribute.routes');
-const groceryOrderRoutes = require('./routes/groceryOrder.routes');
+
 const app = express();
 
 // ✅ CORS configuration
@@ -49,6 +49,7 @@ app.use('/api/admin', sizeRoutes);      // /admin/sizes
 app.use('/api/admin', colorRoutes);     // /admin/colors
 app.use('/api/admin', unitRoutes);      // /admin/units
 app.use('/api/hotels', hotelRoutes);
+app.use('/api/products',productRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/groceries', groceryRoutes);

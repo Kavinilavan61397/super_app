@@ -26,12 +26,27 @@ module.exports = {
         updated_at: new Date()
       },
       {
-        product_id: 4, // Ceiling Fan
+        product_id: 3, // Ceiling Fan
         attribute_name: 'Power',
         attribute_value: '75W',
         created_at: new Date(),
         updated_at: new Date()
+      },
+      {
+        product_id: 10,
+        attribute_name: 'TON',
+        attribute_value: '1.5',
+        created_at: new Date(),
+        updated_at: new Date()
+      },
+      {
+        product_id: 10,
+        attribute_name: 'Energy Rating',
+        attribute_value: '5 Star',
+        created_at: new Date(),
+        updated_at: new Date()
       }
+
       
     ]);
   },

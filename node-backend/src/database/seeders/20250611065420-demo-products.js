@@ -24,7 +24,7 @@ module.exports = {
         sku: 'IP13P-001',
         price: 999.99,
         stock: 50,
-        category_id: 3, // Smartphones
+        category_id: 1, // Smartphones
         status: true,
         created_at: new Date(),
         updated_at: new Date()
@@ -37,7 +37,7 @@ module.exports = {
         sku: 'MBP-M1-001',
         price: 1299.99,
         stock: 30,
-        category_id: 4, // Laptops
+        category_id: 1, // Laptops
         status: true,
         created_at: new Date(),
         updated_at: new Date()
@@ -51,6 +51,32 @@ module.exports = {
         price: 29.99,
         stock: 100,
         category_id: 5, // Men's Clothing
+        status: true,
+        created_at: new Date(),
+        updated_at: new Date()
+      },
+      {
+        id: 4,
+        name: 'Ceiling Fan',
+        description: 'High speed 1200mm fan',
+        slug: 'ceiling-fan',
+        sku: 'FAN-001',
+        price: 75.99,
+        stock: 60,
+        category_id: 99, // 🔁 This must map to Home Appliances
+        status: true,
+        created_at: new Date(),
+        updated_at: new Date()
+      },
+      {
+        id: 10,
+        name: 'LG Air Conditioner',
+        description: '1.5 Ton Split AC',
+        slug: 'lg-ac-1-5-ton',
+        sku: 'LGAC-001',
+        price: 35000,
+        stock: 15,
+        category_id: 99, // ✅ This must match the Home Appliances category ID
         status: true,
         created_at: new Date(),
         updated_at: new Date()

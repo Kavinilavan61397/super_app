@@ -45,15 +45,7 @@ const ProductAttribute = (sequelize, DataTypes) => {
     collate: 'utf8mb4_unicode_ci'
   });
 
-  // ✅ Define the association with Product
-  ProductAttribute.associate = (models) => {
-    ProductAttribute.belongsTo(models.Product, {
-      foreignKey: 'product_id',
-      as: 'product', // Optional alias
-      onDelete: 'CASCADE',
-      onUpdate: 'CASCADE'
-    });
-  };
+  // Do NOT define any associations here. All associations are set in models/index.js
 
   return ProductAttribute;
 };

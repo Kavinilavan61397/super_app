@@ -21,12 +21,12 @@ const {
   updateProductVariationStock,
   getStockByProductVariation,
   deleteStockManagement,
-  getApplianceProductsWithAttributes // ✅ newly added
+  getApplianceProductsWithAttributes // custom endpoint
 } = require('../controllers/product.controller');
 
 // Product routes
 router.get('/get_all_product', getAllProducts);
-router.get('/appliances', getApplianceProductsWithAttributes); // ✅ added route
+router.get('/appliances', getApplianceProductsWithAttributes); // custom appliances endpoint
 router.get('/:id', getProductById);
 router.post('/save_product', protect, authorize('admin'), upload.single('product_image'), validateImage, createProduct);
 router.put('/update_product_by_id/:id', protect, authorize('admin'), upload.single('product_image'), validateImage, updateProduct);

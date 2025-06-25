@@ -73,16 +73,6 @@ import Units from "views/admin/Sidenav_pages/Units";
 import Staff from "views/admin/Sidenav_pages/Staff";
 import Role from "views/admin/Sidenav_pages/Role";
 import RolePermission from "views/admin/Sidenav_pages/RolePermission";
-// import RestoBrand from "views/admin/Sidenav_pages/RestoBrand";
-import RestoCategory from "views/admin/Sidenav_pages/RestoCategory";
-import RestoSubCategory from "views/admin/Sidenav_pages/RestoSubCategory";
-import RestoProducts from "views/admin/Sidenav_pages/RestoProducts";
-import RestoProductVariation from "views/admin/Sidenav_pages/RestoProductVariation";
-import RestoDiscount from "views/admin/Sidenav_pages/RestoDiscount";
-import RestoOrders from "views/admin/Sidenav_pages/RestoOrders";
-import RestoRatings from "views/admin/Sidenav_pages/RestoRatings";
-import RestoStockAdjustment from "views/admin/Sidenav_pages/RestoStockAdjustment";
-import RestoStocks from "views/admin/Sidenav_pages/RestoStocks";
 import Toppings from "views/admin/Sidenav_pages/Toppings";
 import HotelAttributes from "views/admin/Sidenav_pages/HotelAttributes";
 import HotelPolicy from "views/admin/Sidenav_pages/HotelPolicy";
@@ -181,56 +171,21 @@ const routes = [
         layout: "/admin",
         icon: <MdCategory className="h-6 w-6" />,
         path: "restocategory",
-        component: <RestoCategory />,
-      },
-      {
-        name: "Sub-Category",
-        layout: "/admin",
-        path: "restosubcategory",
-        icon: <FaTags className="h-6 w-6" />,
-        component: <RestoSubCategory />,
-      },
-      {
-        name: "Product",
-        layout: "/admin",
-        icon: <AiOutlineAppstore className="h-6 w-6" />,
-        path: "restoproducts",
-        component: <RestoProducts />,
-      },
-      {
-        name: "Orders",
-        layout: "/admin",
-        icon: <AiOutlineShoppingCart className="h-6 w-6" />,
-        path: "restoorders",
-        component: <RestoOrders />,
+        // component: <RestoCategory />,
       },
       {
         name: "Toppings",
         layout: "/admin",
         icon: <MdLocalPizza className="h-6 w-6" />, 
         path: "Toppings",
-        component: <Toppings />,
-      },
-      {
-        name: "Ratings",
-        layout: "/admin",
-        icon: <MdStar className="h-6 w-6" />, 
-        path: "RestoRatings",
-        component: <RestoRatings />,
-      },
-      {
-        name: "Discount",
-        layout: "/admin",
-        icon: <FaPercentage className="h-6 w-6" />,
-        path: "restodiscount",
-        component: <RestoDiscount />,
+        // component: <Toppings />,
       },
       {
         name: "Stock Management",
         layout: "/admin",
         icon: <MdStore className="h-6 w-6" />, 
         path: "restostockadjustment",
-        component: <RestoStockAdjustment />,
+        // component: <StockAdjustment />,
       },
     ]
   },
@@ -496,20 +451,8 @@ const routes = [
   {
     name: "",
     layout: "/admin",
-    path: "restoproductvariation",
-    component: <RestoProductVariation />,
-  },
-  {
-    name: "",
-    layout: "/admin",
     path: "stocks",
     component: <Stocks />,
-  },
-  {
-    name: "",
-    layout: "/admin",
-    path: "restostocks",
-    component: <RestoStocks />,
   },
   {
     name: "",

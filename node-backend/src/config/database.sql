@@ -245,6 +245,38 @@ CREATE TABLE IF NOT EXISTS gwhishlist (
   FOREIGN KEY (user_id) REFERENCES users(id),
   FOREIGN KEY (grocery_id) REFERENCES groceries(id)
 );
+-- Grocery Orders Table
+CREATE TABLE IF NOT EXISTS grocery_orders (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id BIGINT UNSIGNED NOT NULL,
+  total_amount DECIMAL(10,2) NOT NULL,
+  status ENUM('pending', 'processing', 'completed', 'cancelled') DEFAULT 'pending',
+  payment_status ENUM('pending', 'paid', 'failed') DEFAULT 'pending',
+  shipping_address TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+-- Grocery Order Items Table
+CREATE TABLE IF NOT EXISTS grocery_order_items (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  order_id BIGINT UNSIGNED NOT NULL,
+  grocery_id BIGINT UNSIGNED NOT NULL,
+  quantity INT NOT NULL,
+  original_price DECIMAL(10, 2),
+  discounted_price DECIMAL(10, 2),
+  name VARCHAR(255),
+  image VARCHAR(255),
+  category VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  FOREIGN KEY (order_id) REFERENCES grocery_orders(id),
+  FOREIGN KEY (grocery_id) REFERENCES groceries(id)
+);
+
 
 
 

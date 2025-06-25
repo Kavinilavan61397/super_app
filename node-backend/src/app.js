@@ -21,7 +21,8 @@ const gwishlistRoutes = require('./routes/gwishlist.routes');
 const userRoutes = require('./routes/user.routes');
 const roleRoutes = require('./routes/role.routes');
 const staffRoutes = require('./routes/staff.routes');
-
+const productAttributeRoutes = require('./routes/productAttribute.routes');
+const groceryOrderRoutes = require('./routes/groceryOrder.routes');
 const app = express();
 
 // ✅ CORS configuration
@@ -60,6 +61,8 @@ app.use('/api/taxi-vehicles', taxiVehicleRoutes);
 app.use('/api/users', userRoutes);      // ✅ User management
 app.use('/api/roles', roleRoutes);      // ✅ Role management
 app.use('/api/staff', staffRoutes);     // ✅ Staff management
+app.use('/api/grocery-orders', groceryOrderRoutes);
+app.use('/api/product-attributes', productAttributeRoutes);
 
 // ✅ Default API welcome route
 app.get('/', (req, res) => {

@@ -19,6 +19,7 @@ const RestaurantTable = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [deleteDialog, setDeleteDialog] = useState({ open: false, restaurant: null });
+  const [statusFilter, setStatusFilter] = useState('active'); // 'all', 'active', 'inactive'
 
   // Fetch restaurants
   const fetchRestaurants = async () => {
@@ -52,13 +53,20 @@ const RestaurantTable = () => {
     }
   };
 
-  // Filter restaurants
-  const filteredRestaurants = restaurants.filter((restaurant) => {
-    const matchesSearch = restaurant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         restaurant.address?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         restaurant.category?.name?.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesSearch;
-  });
+  // Filter and sort restaurants
+  const filteredRestaurants = restaurants
+    .filter((restaurant) => {
+      if (statusFilter === 'active') return restaurant.status === true;
+      if (statusFilter === 'inactive') return restaurant.status === false;
+      return true; // 'all'
+    })
+    .filter((restaurant) => {
+      const matchesSearch = restaurant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        restaurant.address?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        restaurant.category?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+      return matchesSearch;
+    })
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   // Navigate to add/edit form
   const navigateToForm = (restaurant = null) => {
@@ -85,8 +93,8 @@ const RestaurantTable = () => {
         <CardBody className="px-0 pt-0 pb-2">
           {/* Search and Add Button */}
           <div className="flex flex-col md:flex-row gap-4 p-4 border-b border-blue-gray-50 bg-blue-gray-50/30 rounded-t-lg">
-            <div className="flex-1">
-              <div className="relative">
+            <div className="flex-1 flex gap-2 items-center">
+              <div className="relative w-full">
                 <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-blue-gray-400" />
                 <Input
                   type="text"
@@ -97,6 +105,15 @@ const RestaurantTable = () => {
                   labelProps={{ className: "hidden" }}
                 />
               </div>
+              <select
+                value={statusFilter}
+                onChange={e => setStatusFilter(e.target.value)}
+                className="px-3 py-2 border border-blue-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[120px]"
+              >
+                <option value="all">All</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
             </div>
             <Button
               color="blue"
@@ -201,7 +218,7 @@ const RestaurantTable = () => {
                               <PencilIcon className="h-4 w-4" />
                             </IconButton>
                           </Tooltip>
-                          <Tooltip content="Delete Restaurant">
+                          {/* <Tooltip content="Delete Restaurant">
                             <IconButton
                               variant="text"
                               color="red"
@@ -209,7 +226,7 @@ const RestaurantTable = () => {
                             >
                               <TrashIcon className="h-4 w-4" />
                             </IconButton>
-                          </Tooltip>
+                          </Tooltip> */}
                         </div>
                       </td>
                     </tr>

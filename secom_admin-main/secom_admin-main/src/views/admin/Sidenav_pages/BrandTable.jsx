@@ -14,6 +14,7 @@ const BrandTable = () => {
   const [selectedBrands, setSelectedBrands] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
+  const [statusFilter, setStatusFilter] = useState('active'); // 'all', 'active', 'inactive'
 
   // Fetch brands on component mount
   useEffect(() => {
@@ -34,10 +35,17 @@ const BrandTable = () => {
     }
   };
 
-  // Filter brands based on search query
-  const filteredBrands = brands.filter(brand =>
-    brand.brand_name?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter brands based on search query and status
+  const filteredBrands = brands
+    .filter(brand => {
+      if (statusFilter === 'active') return brand.status === true;
+      if (statusFilter === 'inactive') return brand.status === false;
+      return true; // 'all'
+    })
+    .filter(brand =>
+      brand.brand_name?.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   // Pagination
   const totalPages = Math.ceil(filteredBrands.length / itemsPerPage);
@@ -139,17 +147,25 @@ const BrandTable = () => {
 
       {/* Search and Actions */}
       <div className="flex justify-between items-center mb-4">
-        <div className="relative">
+        <div className="relative flex gap-2 items-center w-full max-w-md">
           <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <input
             type="text"
             placeholder="Search brands..."
             value={searchQuery}
             onChange={handleSearch}
-            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full"
           />
+          <select
+            value={statusFilter}
+            onChange={e => setStatusFilter(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[120px]"
+          >
+            <option value="all">All</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
         </div>
-        
         {selectedBrands.length > 0 && (
           <button
             onClick={handleBulkDelete}

@@ -10,6 +10,7 @@ const GroceryTable = () => {
   const [groceries, setGroceries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [statusFilter, setStatusFilter] = useState('active'); // 'all', 'active', 'inactive'
 
   useEffect(() => {
     fetchGroceries();
@@ -43,14 +44,34 @@ const GroceryTable = () => {
     }
   };
 
+  // Filter and sort groceries
+  const filteredGroceries = groceries
+    .filter(grocery => {
+      if (statusFilter === 'active') return grocery.status === true;
+      if (statusFilter === 'inactive') return grocery.status === false;
+      return true; // 'all'
+    })
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
   return (
     <div className="p-6">
       <ToastContainer />
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Grocery Management</h1>
-        <Link to="/admin/groceries/new" className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-          <FaPlus className="mr-2" /> Add New Grocery
-        </Link>
+        <div className="flex gap-2 items-center">
+          <select
+            value={statusFilter}
+            onChange={e => setStatusFilter(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[120px]"
+          >
+            <option value="all">All</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+          <Link to="/admin/groceries/new" className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            <FaPlus className="mr-2" /> Add New Grocery
+          </Link>
+        </div>
       </div>
       <div className="bg-white shadow-md rounded-lg overflow-x-auto">
         {loading ? (
@@ -72,12 +93,12 @@ const GroceryTable = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {groceries.length === 0 ? (
+              {filteredGroceries.length === 0 ? (
                 <tr>
                   <td colSpan="6" className="px-6 py-4 text-center text-gray-500">No groceries found.</td>
                 </tr>
               ) : (
-                groceries.map((grocery) => (
+                filteredGroceries.map((grocery) => (
                   <tr key={grocery.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
                       <img

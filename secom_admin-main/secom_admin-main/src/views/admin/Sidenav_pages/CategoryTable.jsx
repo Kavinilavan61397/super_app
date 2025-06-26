@@ -18,6 +18,7 @@ function CategoryTable() {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState(null);
+  const [statusFilter, setStatusFilter] = useState('active'); // 'all', 'active', 'inactive'
   const navigate = useNavigate();
 
   // Fetch categories on component mount
@@ -32,19 +33,22 @@ function CategoryTable() {
     checkAuth();
   }, [navigate]);
 
-  // Filter categories when search query changes
+  // Filter categories when search query or status filter changes
   useEffect(() => {
+    let filtered = categories;
+    if (statusFilter === 'active') filtered = filtered.filter(cat => cat.status === true);
+    else if (statusFilter === 'inactive') filtered = filtered.filter(cat => cat.status === false);
     if (searchQuery) {
-      const filtered = categories.filter(category =>
+      filtered = filtered.filter(category =>
         category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (category.parent && category.parent.name.toLowerCase().includes(searchQuery.toLowerCase()))
       );
-      setFilteredCategories(filtered);
-    } else {
-      setFilteredCategories(categories);
     }
+    // Sort by createdAt descending
+    filtered = filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    setFilteredCategories(filtered);
     setCurrentPage(1);
-  }, [searchQuery, categories]);
+  }, [searchQuery, categories, statusFilter]);
 
   const fetchCategories = async () => {
     setLoading(true);
@@ -239,32 +243,35 @@ function CategoryTable() {
         </div>
 
         <div className="bg-white rounded-lg shadow-md p-4 mb-6">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search categories..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            </div>
-            
-            <div className="flex gap-2">
+          <div className="flex justify-between items-center mb-4">
+            <div className="relative flex gap-2 items-center w-full max-w-md">
+              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search categories..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full"
+              />
               <select
-                value={itemsPerPage}
-                onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
-                className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={statusFilter}
+                onChange={e => setStatusFilter(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[120px]"
               >
-                <option value={5}>5 per page</option>
-                <option value={10}>10 per page</option>
-                <option value={20}>20 per page</option>
-                <option value={50}>50 per page</option>
+                <option value="all">All</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
               </select>
             </div>
+            {selectedRows.length > 0 && (
+              <button
+                onClick={handleBulkDelete}
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+              >
+                <FaTrashAlt className="text-sm" />
+                Delete Selected ({selectedRows.length})
+              </button>
+            )}
           </div>
         </div>
       </div>

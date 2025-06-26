@@ -48,8 +48,63 @@ module.exports = {
         slug: 'home-appliances',
         status: true,
         created_at: new Date(),
-        updated_at: new Date()
-      },
+        updated_at: new Date()
+      },
+      // Home Appliances subcategories
+      {
+        name: 'Refrigerators',
+        description: 'All types of refrigerators',
+        slug: 'refrigerators',
+        status: true,
+        parent_id: 99,
+        created_at: new Date(),
+        updated_at: new Date()
+      },
+      {
+        name: 'Washing Machines',
+        description: 'All types of washing machines',
+        slug: 'washing-machines',
+        status: true,
+        parent_id: 99,
+        created_at: new Date(),
+        updated_at: new Date()
+      },
+      {
+        name: 'Air Conditioners & Coolers',
+        description: 'Air conditioners and coolers',
+        slug: 'air-conditioners-coolers',
+        status: true,
+        parent_id: 99,
+        created_at: new Date(),
+        updated_at: new Date()
+      },
+      {
+        name: 'Kitchen Appliances',
+        description: 'Kitchen appliances',
+        slug: 'kitchen-appliances',
+        status: true,
+        parent_id: 99,
+        created_at: new Date(),
+        updated_at: new Date()
+      },
+      {
+        name: 'Televisions',
+        description: 'All types of televisions',
+        slug: 'televisions',
+        status: true,
+        parent_id: 99,
+        created_at: new Date(),
+        updated_at: new Date()
+      },
+      {
+        name: 'Fans & Other appliances',
+        description: 'Fans and other appliances',
+        slug: 'fans-other',
+        status: true,
+        parent_id: 99,
+        created_at: new Date(),
+        updated_at: new Date()
+      },
       {
         id: 5,
         name: 'Men\'s Clothing',

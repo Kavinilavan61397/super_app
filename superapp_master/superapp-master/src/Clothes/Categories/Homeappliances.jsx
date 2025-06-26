@@ -12,22 +12,36 @@ import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import banner1 from '../Images/home_appliances_banner.jpeg';
-import homeApplianceImg from '../Images/homeAppliance.jpg';
-import preethiAppliances from '../Images/preethi appliances.png';
+import banner2 from '../Images/fan_banner.jpeg';
+import banner3 from '../Images/tv_banner.jpg';
+import banner4 from '../Images/ac_banner.jpg';
+import banner5 from '../Images/kitchen_banner.jpeg';
+import banner6 from '../Images/refrigerator_banner.jpeg';
+import refrigeratorImg from '../Images/refrigerator.png';
+import washingMachineImg from '../Images/washing_machine.png';
+import airConditionerImg from '../Images/air_conditioner.png';
+import kitchenAppliancesImg from '../Images/blender.png';
+import televisionImg from '../Images/television.png';
+import fansImg from '../Images/fans.png';
 import Footer from '../../Utility/Footer';
 
 
 const categories = [
-    { name: "Refrigerators", image: homeApplianceImg, route: '/categories/homeappliances/refrigerators' },
-    { name: "Washing Machines", image: homeApplianceImg, route: '/categories/homeappliances/washing-machines' },
-    { name: "Air Conditioners & Coolers", image: homeApplianceImg, route: '/categories/homeappliances/air-conditioners-coolers' },
-    { name: "Kitchen Appliances", image: preethiAppliances, route: '/categories/homeappliances/kitchen-appliances' },
-    { name: "Televisions", image: homeApplianceImg, route: '/categories/homeappliances/televisions' },
-    { name: "Fans & Other appliances", image: homeApplianceImg, route: '/categories/homeappliances/fans-other' },
+    { name: "Refrigerators", image: refrigeratorImg, route: '/categories/homeappliances/refrigerators' },
+    { name: "Washing Machines", image: washingMachineImg, route: '/categories/homeappliances/washing-machines' },
+    { name: "Air Conditioners & Coolers", image: airConditionerImg, route: '/categories/homeappliances/air-conditioners-coolers' },
+    { name: "Kitchen Appliances", image: kitchenAppliancesImg, route: '/categories/homeappliances/kitchen-appliances' },
+    { name: "Televisions", image: televisionImg, route: '/categories/homeappliances/televisions' },
+    { name: "Fans & Other appliances", image: fansImg, route: '/categories/homeappliances/fans-other' },
 ];
 
 const bannerImage = [
     { id: 1, mobile_image_url: banner1 },
+    { id: 2, mobile_image_url: banner2 },
+    { id: 3, mobile_image_url: banner3 },
+    { id: 4, mobile_image_url: banner4 },
+    { id: 5, mobile_image_url: banner5 },
+    { id: 6, mobile_image_url: banner6 },
     // Add more banners if available
 ];
 
@@ -109,8 +123,8 @@ function HomeAppliances() {
                     <span className="text-lg font-bold text-[#222]">Best Sellers</span>
                 </div>
 
-                <Footer/>
             </div>
+                <Footer/>
         </div>
     );
 }

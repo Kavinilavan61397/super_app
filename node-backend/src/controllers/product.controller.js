@@ -521,17 +521,22 @@ exports.deleteStockManagement = async (req, res) => {
 // Appliances endpoint (custom logic)
 exports.getApplianceProductsWithAttributes = async (req, res) => {
   try {
+    // 1. Find the parent category
+    const parent = await Category.findOne({ where: { name: 'Home Appliances' } });
+    if (!parent) {
+      return res.status(404).json({ success: false, message: 'Home Appliances category not found' });
+    }
+
+    // 2. Find all subcategories
+    const subcategories = await Category.findAll({ where: { parent_id: parent.id } });
+    const subcategoryIds = subcategories.map(cat => cat.id);
+
+    // 3. Fetch products in any subcategory
     const appliances = await Product.findAll({
+      where: { category_id: subcategoryIds },
       include: [
-        {
-          model: Category,
-          as: 'category',
-          where: { name: 'Home Appliances' } // change if needed
-        },
-        {
-          model: ProductAttribute,
-          as: 'attributes' // should match Product.hasMany association
-        }
+        { model: Category, as: 'category' },
+        { model: ProductAttribute, as: 'attributes' }
       ],
       order: [['createdAt', 'DESC']]
     });

@@ -88,6 +88,8 @@ import TaxiDriverTable from "views/admin/Sidenav_pages/TaxiDriverTable";
 import TaxiDriverForm from "views/admin/Sidenav_pages/TaxiDriverForm";
 import TaxiVehicleTable from "views/admin/Sidenav_pages/TaxiVehicleTable";
 import TaxiVehicleForm from "views/admin/Sidenav_pages/TaxiVehicleForm";
+import RestoCategoryTable from "views/admin/Sidenav_pages/RestoCategoryTable";
+import RestoCategoryForm from "views/admin/Sidenav_pages/RestoCategoryForm";
 
 const routes = [
   ...authRoutes,
@@ -171,21 +173,21 @@ const routes = [
         layout: "/admin",
         icon: <MdCategory className="h-6 w-6" />,
         path: "restocategory",
-        // component: <RestoCategory />,
+        component: <RestoCategoryTable />,
       },
       {
         name: "Toppings",
         layout: "/admin",
         icon: <MdLocalPizza className="h-6 w-6" />, 
         path: "Toppings",
-        // component: <Toppings />,
+        component: <Toppings />,
       },
       {
         name: "Stock Management",
         layout: "/admin",
         icon: <MdStore className="h-6 w-6" />, 
         path: "restostockadjustment",
-        // component: <StockAdjustment />,
+        component: <StockAdjustment />,
       },
     ]
   },

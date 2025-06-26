@@ -17,6 +17,10 @@ module.exports = (sequelize, DataTypes) => {
     name: DataTypes.STRING,
     description: DataTypes.TEXT,
     image: DataTypes.STRING,
+    status: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true
+    },
     createdAt: {
       type: DataTypes.DATE,
       field: 'created_at'

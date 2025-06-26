@@ -1,4 +1,5 @@
 const { RestaurantCategory } = require('../models');
+const { processImage } = require('../utils/imageProcessor');
 
 module.exports = {
   // List all categories
@@ -25,8 +26,22 @@ module.exports = {
   // Create category
   async create(req, res) {
     try {
-      const { name, description, image } = req.body;
-      const category = await RestaurantCategory.create({ name, description, image });
+      const { name, description, status } = req.body;
+      
+      // Handle image upload
+      let imagePath = null;
+      if (req.file) {
+        const processedImage = await processImage(req.file, {}, 'restaurant_categories');
+        imagePath = `/uploads/restaurant_categories/${processedImage.filename}`;
+      }
+
+      const category = await RestaurantCategory.create({ 
+        name, 
+        description, 
+        image: imagePath,
+        status: status === 'true' || status === true
+      });
+      
       res.status(201).json(category);
     } catch (err) {
       res.status(400).json({ error: 'Failed to create category', details: err.message });
@@ -36,10 +51,25 @@ module.exports = {
   // Update category
   async update(req, res) {
     try {
-      const { name, description, image } = req.body;
+      const { name, description, status } = req.body;
       const category = await RestaurantCategory.findByPk(req.params.id);
+      
       if (!category) return res.status(404).json({ error: 'Category not found' });
-      await category.update({ name, description, image });
+      
+      // Handle image upload
+      let imagePath = category.image; // Keep existing image if no new one
+      if (req.file) {
+        const processedImage = await processImage(req.file, {}, 'restaurant_categories');
+        imagePath = `/uploads/restaurant_categories/${processedImage.filename}`;
+      }
+
+      await category.update({ 
+        name, 
+        description, 
+        image: imagePath,
+        status: status === 'true' || status === true
+      });
+      
       res.json(category);
     } catch (err) {
       res.status(400).json({ error: 'Failed to update category', details: err.message });

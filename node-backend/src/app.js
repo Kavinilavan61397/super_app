@@ -22,6 +22,7 @@ const userRoutes = require('./routes/user.routes');
 const roleRoutes = require('./routes/role.routes');
 const staffRoutes = require('./routes/staff.routes');
 const productAttributeRoutes = require('./routes/productAttribute.routes');
+const restaurantRoutes = require('./routes/restaurant.routes');
 
 const app = express();
 
@@ -64,6 +65,7 @@ app.use('/api/roles', roleRoutes);      // ✅ Role management
 app.use('/api/staff', staffRoutes);     // ✅ Staff management
 app.use('/api/grocery-orders', groceryOrderRoutes);
 app.use('/api/product-attributes', productAttributeRoutes);
+app.use('/api/restaurants', restaurantRoutes); // ✅ Restaurant management
 
 // ✅ Default API welcome route
 app.get('/', (req, res) => {

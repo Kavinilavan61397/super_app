@@ -10,6 +10,8 @@ import BrandTable from '../views/admin/Sidenav_pages/BrandTable';
 import BrandForm from '../views/admin/Sidenav_pages/BrandForm';
 import CategoryTable from '../views/admin/Sidenav_pages/CategoryTable';
 import CategoryForm from '../views/admin/Sidenav_pages/CategoryForm';
+import RestoCategoryTable from '../views/admin/Sidenav_pages/RestoCategoryTable';
+import RestoCategoryForm from '../views/admin/Sidenav_pages/RestoCategoryForm';
 
 const adminRoutes = [
   {
@@ -23,6 +25,18 @@ const adminRoutes = [
   {
     path: 'categories/edit/:id',
     element: <CategoryForm />,
+  },
+  {
+    path: 'restocategory',
+    element: <RestoCategoryTable />,
+  },
+  {
+    path: 'restocategory/new',
+    element: <RestoCategoryForm />,
+  },
+  {
+    path: 'restocategory/edit/:id',
+    element: <RestoCategoryForm />,
   },
   {
     path: 'groceries',

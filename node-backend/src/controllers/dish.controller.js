@@ -1,4 +1,5 @@
 const { Dish, Restaurant } = require('../models');
+const { imageProcessor } = require('../utils/imageProcessor');
 
 module.exports = {
   // List all dishes (optionally filter by restaurantId)
@@ -34,8 +35,24 @@ module.exports = {
   // Create dish
   async create(req, res) {
     try {
-      const { name, price, description, image, restaurantId } = req.body;
-      const dish = await Dish.create({ name, price, description, image, restaurantId });
+      const { name, price, description, restaurantId, status } = req.body;
+      
+      // Handle image upload
+      let imagePath = null;
+      if (req.file) {
+        const processedImage = await imageProcessor(req.file, 'dishes');
+        imagePath = processedImage.systemPath.replace(/\\/g, '/').replace('uploads', '/uploads');
+      }
+
+      const dish = await Dish.create({ 
+        name, 
+        price, 
+        description, 
+        image: imagePath, 
+        restaurantId,
+        status: status === 'true' || status === true
+      });
+      
       res.status(201).json(dish);
     } catch (err) {
       res.status(400).json({ error: 'Failed to create dish', details: err.message });
@@ -45,10 +62,27 @@ module.exports = {
   // Update dish
   async update(req, res) {
     try {
-      const { name, price, description, image, restaurantId } = req.body;
+      const { name, price, description, restaurantId, status } = req.body;
       const dish = await Dish.findByPk(req.params.id);
+      
       if (!dish) return res.status(404).json({ error: 'Dish not found' });
-      await dish.update({ name, price, description, image, restaurantId });
+      
+      // Handle image upload
+      let imagePath = dish.image; // Keep existing image if no new one
+      if (req.file) {
+        const processedImage = await imageProcessor(req.file, 'dishes');
+        imagePath = processedImage.systemPath.replace(/\\/g, '/').replace('uploads', '/uploads');
+      }
+
+      await dish.update({ 
+        name, 
+        price, 
+        description, 
+        image: imagePath, 
+        restaurantId,
+        status: status === 'true' || status === true
+      });
+      
       res.json(dish);
     } catch (err) {
       res.status(400).json({ error: 'Failed to update dish', details: err.message });

@@ -1,0 +1,195 @@
+import axios from 'axios';
+import API_CONFIG from '../config/api.config';
+
+// Create axios instance for restaurant API calls
+const restaurantAPI = axios.create({
+  baseURL: `${API_CONFIG.BASE_URL}/api/restaurants`,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Add auth token to requests
+restaurantAPI.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('OnlineShop-accessToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Restaurant Categories
+export const restaurantCategoryService = {
+  // Get all categories
+  getAll: async () => {
+    try {
+      const response = await restaurantAPI.get('/categories');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // Get category by ID
+  getById: async (id) => {
+    try {
+      const response = await restaurantAPI.get(`/categories/${id}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // Create category
+  create: async (formData) => {
+    try {
+      const response = await restaurantAPI.post('/categories', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // Update category
+  update: async (id, formData) => {
+    try {
+      const response = await restaurantAPI.put(`/categories/${id}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // Delete category
+  delete: async (id) => {
+    try {
+      const response = await restaurantAPI.delete(`/categories/${id}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+};
+
+// Restaurants
+export const restaurantService = {
+  // Get all restaurants
+  getAll: async (params = {}) => {
+    try {
+      const response = await restaurantAPI.get('/', { params });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // Get restaurant by ID
+  getById: async (id) => {
+    try {
+      const response = await restaurantAPI.get(`/${id}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // Create restaurant
+  create: async (formData) => {
+    try {
+      const response = await restaurantAPI.post('/', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // Update restaurant
+  update: async (id, formData) => {
+    try {
+      const response = await restaurantAPI.put(`/${id}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // Delete restaurant
+  delete: async (id) => {
+    try {
+      const response = await restaurantAPI.delete(`/${id}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+};
+
+// Dishes
+export const dishService = {
+  // Get all dishes
+  getAll: async (params = {}) => {
+    try {
+      const response = await restaurantAPI.get('/dishes', { params });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // Get dish by ID
+  getById: async (id) => {
+    try {
+      const response = await restaurantAPI.get(`/dishes/${id}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // Create dish
+  create: async (formData) => {
+    try {
+      const response = await restaurantAPI.post('/dishes', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // Update dish
+  update: async (id, formData) => {
+    try {
+      const response = await restaurantAPI.put(`/dishes/${id}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // Delete dish
+  delete: async (id) => {
+    try {
+      const response = await restaurantAPI.delete(`/dishes/${id}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+}; 

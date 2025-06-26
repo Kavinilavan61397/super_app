@@ -26,6 +26,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.FLOAT,
       field: 'average_rating'
     },
+    status: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true
+    },
     createdAt: {
       type: DataTypes.DATE,
       field: 'created_at'

@@ -1,4 +1,5 @@
 const { Restaurant, RestaurantCategory } = require('../models');
+const { imageProcessor } = require('../utils/imageProcessor');
 
 module.exports = {
   // List all restaurants (optionally filter by categoryId)
@@ -34,8 +35,24 @@ module.exports = {
   // Create restaurant
   async create(req, res) {
     try {
-      const { name, address, categoryId, image, averageRating } = req.body;
-      const restaurant = await Restaurant.create({ name, address, categoryId, image, averageRating });
+      const { name, address, categoryId, averageRating, status } = req.body;
+      
+      // Handle image upload
+      let imagePath = null;
+      if (req.file) {
+        const processedImage = await imageProcessor(req.file, 'restaurants');
+        imagePath = processedImage.systemPath.replace(/\\/g, '/').replace('uploads', '/uploads');
+      }
+
+      const restaurant = await Restaurant.create({ 
+        name, 
+        address, 
+        categoryId, 
+        image: imagePath, 
+        averageRating: averageRating || 0,
+        status: status === 'true' || status === true
+      });
+      
       res.status(201).json(restaurant);
     } catch (err) {
       res.status(400).json({ error: 'Failed to create restaurant', details: err.message });
@@ -45,10 +62,27 @@ module.exports = {
   // Update restaurant
   async update(req, res) {
     try {
-      const { name, address, categoryId, image, averageRating } = req.body;
+      const { name, address, categoryId, averageRating, status } = req.body;
       const restaurant = await Restaurant.findByPk(req.params.id);
+      
       if (!restaurant) return res.status(404).json({ error: 'Restaurant not found' });
-      await restaurant.update({ name, address, categoryId, image, averageRating });
+      
+      // Handle image upload
+      let imagePath = restaurant.image; // Keep existing image if no new one
+      if (req.file) {
+        const processedImage = await imageProcessor(req.file, 'restaurants');
+        imagePath = processedImage.systemPath.replace(/\\/g, '/').replace('uploads', '/uploads');
+      }
+
+      await restaurant.update({ 
+        name, 
+        address, 
+        categoryId, 
+        image: imagePath, 
+        averageRating: averageRating || restaurant.averageRating,
+        status: status === 'true' || status === true
+      });
+      
       res.json(restaurant);
     } catch (err) {
       res.status(400).json({ error: 'Failed to update restaurant', details: err.message });

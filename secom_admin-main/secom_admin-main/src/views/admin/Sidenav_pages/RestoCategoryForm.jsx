@@ -174,7 +174,7 @@ const RestoCategoryForm = () => {
   return (
     <div className="mt-8 mb-8 flex flex-col items-center gap-8">
       <Card className="w-full max-w-2xl shadow-lg p-2">
-        <CardHeader variant="gradient" color="blue" className="mb-4 p-4 rounded-t-lg">
+        <CardHeader variant="filled" color="blue" className="mb-4 p-4 rounded-t-lg">
           <div className="flex items-center justify-between">
             <Typography variant="h5" color="white">
               {isEditMode ? 'Edit Restaurant Category' : 'Add Restaurant Category'}
@@ -186,7 +186,7 @@ const RestoCategoryForm = () => {
               onClick={() => navigate('/admin/restocategory')}
             >
               <ArrowLeftIcon className="h-4 w-4" />
-              Back
+              {/* Back */}
             </Button>
           </div>
         </CardHeader>

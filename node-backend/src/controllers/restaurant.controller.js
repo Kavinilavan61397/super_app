@@ -1,5 +1,5 @@
 const { Restaurant, RestaurantCategory } = require('../models');
-const { imageProcessor } = require('../utils/imageProcessor');
+const { processImage } = require('../utils/imageProcessor');
 
 module.exports = {
   // List all restaurants (optionally filter by categoryId)
@@ -40,8 +40,8 @@ module.exports = {
       // Handle image upload
       let imagePath = null;
       if (req.file) {
-        const processedImage = await imageProcessor(req.file, 'restaurants');
-        imagePath = processedImage.systemPath.replace(/\\/g, '/').replace('uploads', '/uploads');
+        const processedImage = await processImage(req.file, {}, 'restaurants');
+        imagePath = `/uploads/restaurants/${processedImage.filename}`;
       }
 
       const restaurant = await Restaurant.create({ 
@@ -70,8 +70,8 @@ module.exports = {
       // Handle image upload
       let imagePath = restaurant.image; // Keep existing image if no new one
       if (req.file) {
-        const processedImage = await imageProcessor(req.file, 'restaurants');
-        imagePath = processedImage.systemPath.replace(/\\/g, '/').replace('uploads', '/uploads');
+        const processedImage = await processImage(req.file, {}, 'restaurants');
+        imagePath = `/uploads/restaurants/${processedImage.filename}`;
       }
 
       await restaurant.update({ 

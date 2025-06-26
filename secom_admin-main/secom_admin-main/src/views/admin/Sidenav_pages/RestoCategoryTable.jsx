@@ -30,10 +30,13 @@ const RestoCategoryTable = () => {
   const fetchCategories = async () => {
     try {
       setLoading(true);
+      console.log('Fetching restaurant categories...');
       const data = await restaurantCategoryService.getAll();
+      console.log('Categories fetched successfully:', data);
       setCategories(data);
     } catch (error) {
       console.error('Error fetching categories:', error);
+      console.error('Error details:', error.response?.data || error.message);
       toast.error('Failed to fetch categories');
     } finally {
       setLoading(false);
@@ -132,7 +135,7 @@ const RestoCategoryTable = () => {
             <table className="w-full min-w-[640px] table-fixed">
               <thead>
                 <tr>
-                  <th className="border-b border-blue-gray-50 py-3 px-6 text-left w-24">
+                  <th className="border-b border-blue-gray-50 py-3 px-6 text-left w-20">
                     <Typography variant="small" className="text-[11px] font-medium uppercase text-blue-gray-400">
                       Image
                     </Typography>
@@ -165,32 +168,32 @@ const RestoCategoryTable = () => {
                 <tbody>
                   {filteredCategories.map((category, key) => (
                     <tr key={key} className="hover:bg-blue-gray-50 transition-colors">
-                      <td className="py-3 px-6">
+                      <td className="py-3 px-6 w-20">
                         {category.image ? (
                           <img
                             src={`${API_CONFIG.BASE_URL}${category.image}`}
                             alt={category.name}
-                            className="h-10 w-10 rounded-lg object-cover border border-blue-gray-100"
+                            className="h-16 w-16 rounded-lg object-cover border border-blue-gray-100"
                           />
                         ) : (
-                          <div className="h-10 w-10 rounded-lg bg-blue-gray-100 flex items-center justify-center border border-blue-gray-100">
+                          <div className="h-16 w-16 rounded-lg bg-blue-gray-100 flex items-center justify-center border border-blue-gray-100">
                             <Typography variant="small" className="text-blue-gray-400">
                               No Image
                             </Typography>
                           </div>
                         )}
                       </td>
-                      <td className="py-3 px-6">
+                      <td className="py-3 px-6 w-40">
                         <Typography variant="small" color="blue-gray" className="font-medium">
                           {category.name}
                         </Typography>
                       </td>
-                      <td className="py-3 px-6">
+                      <td className="py-3 px-6 w-64">
                         <Typography variant="small" color="blue-gray" className="font-normal">
                           {category.description || 'No description'}
                         </Typography>
                       </td>
-                      <td className="py-3 px-6 align-middle">
+                      <td className="py-3 px-6 w-28 align-middle">
                         <span className={
                           `inline-flex items-center justify-center px-2 py-1 text-xs font-semibold rounded-full
                           ${category.status === true ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}
@@ -199,7 +202,7 @@ const RestoCategoryTable = () => {
                           {category.status === true ? 'Active' : 'Inactive'}
                         </span>
                       </td>
-                      <td className="py-3 px-6">
+                      <td className="py-3 px-6 w-28">
                         <div className="flex gap-2">
                           <Tooltip content="Edit Category">
                             <IconButton

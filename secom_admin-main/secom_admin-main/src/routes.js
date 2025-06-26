@@ -90,6 +90,7 @@ import TaxiVehicleTable from "views/admin/Sidenav_pages/TaxiVehicleTable";
 import TaxiVehicleForm from "views/admin/Sidenav_pages/TaxiVehicleForm";
 import RestoCategoryTable from "views/admin/Sidenav_pages/RestoCategoryTable";
 import RestoCategoryForm from "views/admin/Sidenav_pages/RestoCategoryForm";
+import RestaurantTable from "views/admin/Sidenav_pages/RestaurantTable";
 
 const routes = [
   ...authRoutes,
@@ -168,6 +169,13 @@ const routes = [
     layout: "/admin",
     icon: <MdRestaurant className="h-6 w-6" />,
     subNav: [
+      {
+        name: "Restaurant",
+        layout: "/admin",
+        icon: <MdRestaurant className="h-6 w-6" />,
+        path: "restaurant",
+        component: <RestaurantTable />,
+      },
       {
         name: "Category",
         layout: "/admin",

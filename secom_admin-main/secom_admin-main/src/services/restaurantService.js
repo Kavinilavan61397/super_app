@@ -28,9 +28,13 @@ export const restaurantCategoryService = {
   // Get all categories
   getAll: async () => {
     try {
+      console.log('Making API call to:', `${restaurantAPI.defaults.baseURL}/categories`);
       const response = await restaurantAPI.get('/categories');
+      console.log('API response:', response.data);
       return response.data;
     } catch (error) {
+      console.error('API call failed:', error);
+      console.error('Error response:', error.response?.data);
       throw error.response?.data || error.message;
     }
   },

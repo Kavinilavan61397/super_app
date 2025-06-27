@@ -9,6 +9,8 @@ const { processImage } = require('../utils/imageProcessor');
 const path = require('path');
 const fs = require('fs').promises;
 const { ProductAttribute } = require('../models');
+const { Op } = require('sequelize');
+const sequelize = require('sequelize');
 
 // Get all products
 exports.getAllProducts = async (req, res) => {
@@ -531,14 +533,83 @@ exports.getApplianceProductsWithAttributes = async (req, res) => {
     const subcategories = await Category.findAll({ where: { parent_id: parent.id } });
     const subcategoryIds = subcategories.map(cat => cat.id);
 
-    // 3. Fetch products in any subcategory
+    // 3. Build dynamic filters
+    const {
+      search,
+      minPrice,
+      maxPrice,
+      rating,
+      brand,
+      sort,
+      ...attributeFilters // any other query params are treated as attribute filters
+    } = req.query;
+
+    const where = { category_id: subcategoryIds };
+    if (minPrice) where.price = { ...(where.price || {}), [Op.gte]: parseFloat(minPrice) };
+    if (maxPrice) where.price = { ...(where.price || {}), [Op.lte]: parseFloat(maxPrice) };
+    if (rating) where.rating = { [Op.gte]: parseFloat(rating) };
+    if (brand) {
+      // support comma-separated or array
+      const brands = Array.isArray(brand) ? brand : String(brand).split(',');
+      where['$brand.brand_name$'] = { [Op.in]: brands };
+    }
+    if (search) {
+      where[Op.or] = [
+        { name: { [Op.like]: `%${search}%` } },
+        { '$brand.brand_name$': { [Op.like]: `%${search}%` } },
+        { '$attributes.attribute_value$': { [Op.like]: `%${search}%` } }
+      ];
+    }
+
+    // Attribute filters (e.g., capacity=6kg)
+    const attributeFilterEntries = Object.entries(attributeFilters).filter(
+      ([key]) => !['search','minPrice','maxPrice','rating','brand','sort'].includes(key)
+    );
+    let productIds = null;
+    if (attributeFilterEntries.length > 0) {
+      // Find product IDs that match all attribute filters
+      const matchingAttributes = await ProductAttribute.findAll({
+        where: {
+          [Op.or]: attributeFilterEntries.map(([name, value]) => ({
+            attribute_name: name,
+            attribute_value: value
+          }))
+        }
+      });
+      // Count matches per product
+      const productIdCount = {};
+      matchingAttributes.forEach(attr => {
+        productIdCount[attr.product_id] = (productIdCount[attr.product_id] || 0) + 1;
+      });
+      // Only keep products that match all filters
+      productIds = Object.entries(productIdCount)
+        .filter(([id, count]) => count === attributeFilterEntries.length)
+        .map(([id]) => Number(id));
+      if (productIds.length === 0) {
+        // No products match, return empty
+        return res.status(200).json({ success: true, message: 'No products found', data: [] });
+      }
+      where.id = { [Op.in]: productIds };
+    }
+
+    // Sorting
+    let order = [['createdAt', 'DESC']];
+    if (sort) {
+      if (sort === 'price_asc') order = [[sequelize.col('Product.price'), 'ASC']];
+      else if (sort === 'price_desc') order = [[sequelize.col('Product.price'), 'DESC']];
+      else if (sort === 'newest') order = [['createdAt', 'DESC']];
+      // Add more as needed
+    }
+
+    // 4. Fetch products in any subcategory with filters, always include all attributes
     const appliances = await Product.findAll({
-      where: { category_id: subcategoryIds },
+      where,
       include: [
         { model: Category, as: 'category' },
-        { model: ProductAttribute, as: 'attributes' }
+        { model: ProductAttribute, as: 'attributes' }, // Always include all attributes
+        { model: require('../models/Brand'), as: 'brand' }
       ],
-      order: [['createdAt', 'DESC']]
+      order
     });
 
     res.status(200).json({

@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import Header from '../Header/ClothesHeader';
 import search from '../../Icons/search.svg';
 import mic from '../../Icons/Mic.svg';
@@ -24,6 +24,7 @@ import kitchenAppliancesImg from '../Images/blender.png';
 import televisionImg from '../Images/television.png';
 import fansImg from '../Images/fans.png';
 import Footer from '../../Utility/Footer';
+import { FaHeart, FaRegHeart, FaEye } from 'react-icons/fa';
 
 
 const categories = [
@@ -45,11 +46,94 @@ const bannerImage = [
     // Add more banners if available
 ];
 
+function ProductCard({ product, onQuickView }) {
+    const isBestSeller = product.attributes?.find(attr => attr.attribute_name === 'isBestSeller')?.attribute_value === 'true';
+    const rating = product.attributes?.find(attr => attr.attribute_name === 'Rating')?.attribute_value;
+    const [qty, setQty] = useState(1);
+    const [wishlisted, setWishlisted] = useState(false);
+    const imgSrc = product.featured_image || product.photo || refrigeratorImg;
+    return (
+        <div className="border rounded-2xl p-3 bg-white shadow-sm flex flex-col items-center relative h-full">
+            <div className="relative w-full flex justify-center mb-2">
+                <img src={imgSrc} alt={product.name} className="w-36 h-36 object-contain rounded" />
+                {isBestSeller && (
+                    <span className="absolute top-2 left-2 bg-yellow-400 text-[10px] font-semibold px-1.5 py-0.5 rounded z-10 mr-2" style={{lineHeight: '1.1'}}>Best Seller</span>
+                )}
+                <button className="absolute top-2 right-2 text-gray-400 hover:text-red-500 text-xl bg-white rounded-full p-1 z-10 ml-2" onClick={() => setWishlisted(w => !w)}>{wishlisted ? <FaHeart /> : <FaRegHeart />}</button>
+                <button className="absolute top-2 right-10 text-gray-400 hover:text-blue-500 text-xl bg-white rounded-full p-1 z-10 ml-2" onClick={() => onQuickView(product)}><FaEye /></button>
+            </div>
+            <div className="font-semibold text-sm text-center mb-1 line-clamp-2">{product.name}</div>
+            <div className="flex items-center justify-center gap-4 w-full mb-1">
+                {rating && <div className="flex items-center text-xs text-yellow-600"><span className="mr-1 text-base">★</span><span className="font-semibold">{rating}</span></div>}
+                <div className="flex items-center gap-1">
+                    <span className="text-xs">Qty:</span>
+                    <button className="border px-2 rounded text-xs" onClick={() => setQty(q => Math.max(1, q-1))}>-</button>
+                    <span className="text-xs w-4 text-center">{qty}</span>
+                    <button className="border px-2 rounded text-xs" onClick={() => setQty(q => q+1)}>+</button>
+                </div>
+            </div>
+            <div className="text-lg font-bold text-green-700 mb-1">₹{product.price}</div>
+            <button className="bg-[#5C3FFF] hover:bg-[#4326c7] text-white px-4 py-2 rounded text-xs font-semibold w-full mt-auto mb-2">Add to Cart</button>
+        </div>
+    );
+}
+
+function QuickViewModal({ product, onClose }) {
+    if (!product) return null;
+    const imgSrc = product.featured_image || product.photo || refrigeratorImg;
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 w-80 max-h-[90vh] overflow-y-auto relative border border-gray-200">
+            <button className="absolute top-2 right-2 text-gray-400 hover:text-gray-700 text-2xl" onClick={onClose}>✕</button>
+            <img src={imgSrc} alt={product.name} className="w-60 h-60 object-contain mx-auto mb-4 rounded-lg shadow-sm" />
+            {product.brand && (
+              <div className="flex justify-center mb-3">
+                <span className="inline-flex items-center px-3 py-1 rounded-full bg-[#F3F0FF] text-[#684DFF] font-semibold text-sm shadow-sm border border-[#E0D7FF]">
+                  {product.brand.brand_name}
+                </span>
+              </div>
+            )}
+            <div className="border-b border-gray-200 mb-3"></div>
+            <div className="font-extrabold text-lg text-center mb-1 text-gray-900">{product.name}</div>
+            <div className="text-center text-[#1FA300] font-bold text-lg mb-3">₹{product.price}</div>
+            {product.attributes && product.attributes.length > 0 && (
+              <ul className="text-[15px] text-gray-800 space-y-1 mb-1">
+                {product.attributes
+                  .filter(attr => attr.attribute_name !== 'isBestSeller')
+                  .map(attr => (
+                    <li key={attr.attribute_name}>
+                      <span className="font-semibold">{attr.attribute_name}:</span> <span className="font-normal">{attr.attribute_value}</span>
+                    </li>
+                  ))}
+              </ul>
+            )}
+          </div>
+        </div>
+    );
+}
+
 function HomeAppliances() {
-
     const navigate = useNavigate();
+    const [bestSellers, setBestSellers] = useState([]);
+    const [quickViewProduct, setQuickViewProduct] = useState(null);
 
-
+    useEffect(() => {
+        async function fetchBestSellers() {
+            try {
+                const res = await fetch('/api/products/appliances');
+                const data = await res.json();
+                let all = (data.data || data) || [];
+                // Find all best sellers
+                let best = all.filter(p => p.attributes?.find(attr => attr.attribute_name === 'isBestSeller')?.attribute_value === 'true');
+                // Shuffle and pick up to 6
+                best = best.sort(() => 0.5 - Math.random()).slice(0, 6);
+                setBestSellers(best);
+            } catch (e) {
+                setBestSellers([]);
+            }
+        }
+        fetchBestSellers();
+    }, []);
 
     return (
         <div className='min-h-screen'>
@@ -122,6 +206,13 @@ function HomeAppliances() {
                 <div className="mt-6 mb-2 flex items-center">
                     <span className="text-lg font-bold text-[#222]">Best Sellers</span>
                 </div>
+                <div className="grid grid-cols-2 gap-3">
+                  {bestSellers.length === 0 && <div className="col-span-2 text-gray-400 text-center">No best sellers found.</div>}
+                  {bestSellers.map(product => (
+                    <ProductCard key={product.id} product={product} onQuickView={setQuickViewProduct} />
+                  ))}
+                </div>
+                <QuickViewModal product={quickViewProduct} onClose={() => setQuickViewProduct(null)} />
 
             </div>
                 <Footer/>

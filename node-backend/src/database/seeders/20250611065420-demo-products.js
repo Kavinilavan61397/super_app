@@ -14,6 +14,45 @@ module.exports = {
       console.log('Products already exist, skipping seeding');
       return;
     }
+
+    // 1. Create a lookup for brand names to IDs (assuming order in brands seeder)
+    const brandNameToId = {
+      'LG': 1,
+      'Samsung': 2,
+      'Whirlpool': 3,
+      'Godrej': 4,
+      'Haier': 5,
+      'Panasonic': 6,
+      'Bosch': 7,
+      'Hitachi': 8,
+      'IFB': 9,
+      'Voltas': 10,
+      'Blue Star': 11,
+      'Symphony': 12,
+      'Crompton': 13,
+      'Daikin': 14,
+      'Kenstar': 15,
+      'Preethi': 16,
+      'Philips': 17,
+      'Bajaj': 18,
+      'Prestige': 19,
+      'Morphy Richards': 20,
+      'Butterfly': 21,
+      'Sujata': 22,
+      'Kent': 23,
+      'Sony': 24,
+      'TCL': 25,
+      'OnePlus': 26,
+      'Vu': 27,
+      'Mi': 28,
+      'Havells': 29,
+      'Usha': 30,
+      'Orient': 31,
+      'V-Guard': 32,
+      'Khaitan': 33,
+      'Polycab': 34
+    };
+
     // First, create the products
     await queryInterface.bulkInsert('products', [
       // Refrigerators (category_id: 100)
@@ -27,6 +66,7 @@ module.exports = {
         stock: 20,
         category_id: 100,
         status: true,
+        brand_id: brandNameToId['LG'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -40,6 +80,7 @@ module.exports = {
         stock: 15,
         category_id: 100,
         status: true,
+        brand_id: brandNameToId['Samsung'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -53,6 +94,7 @@ module.exports = {
         stock: 10,
         category_id: 100,
         status: true,
+        brand_id: brandNameToId['Whirlpool'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -66,6 +108,7 @@ module.exports = {
         stock: 25,
         category_id: 100,
         status: true,
+        brand_id: brandNameToId['Godrej'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -79,6 +122,7 @@ module.exports = {
         stock: 8,
         category_id: 100,
         status: true,
+        brand_id: brandNameToId['Haier'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -92,6 +136,7 @@ module.exports = {
         stock: 12,
         category_id: 100,
         status: true,
+        brand_id: brandNameToId['Panasonic'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -105,6 +150,7 @@ module.exports = {
         stock: 9,
         category_id: 100,
         status: true,
+        brand_id: brandNameToId['Bosch'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -118,6 +164,7 @@ module.exports = {
         stock: 7,
         category_id: 100,
         status: true,
+        brand_id: brandNameToId['Hitachi'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -132,6 +179,7 @@ module.exports = {
         stock: 12,
         category_id: 101,
         status: true,
+        brand_id: brandNameToId['LG'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -145,6 +193,7 @@ module.exports = {
         stock: 18,
         category_id: 101,
         status: true,
+        brand_id: brandNameToId['Samsung'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -158,6 +207,7 @@ module.exports = {
         stock: 20,
         category_id: 101,
         status: true,
+        brand_id: brandNameToId['Whirlpool'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -171,6 +221,7 @@ module.exports = {
         stock: 10,
         category_id: 101,
         status: true,
+        brand_id: brandNameToId['Bosch'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -184,6 +235,7 @@ module.exports = {
         stock: 14,
         category_id: 101,
         status: true,
+        brand_id: brandNameToId['IFB'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -197,6 +249,7 @@ module.exports = {
         stock: 11,
         category_id: 101,
         status: true,
+        brand_id: brandNameToId['Panasonic'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -210,6 +263,7 @@ module.exports = {
         stock: 13,
         category_id: 101,
         status: true,
+        brand_id: brandNameToId['Godrej'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -223,6 +277,7 @@ module.exports = {
         stock: 10,
         category_id: 101,
         status: true,
+        brand_id: brandNameToId['Haier'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -237,6 +292,7 @@ module.exports = {
         stock: 10,
         category_id: 102,
         status: true,
+        brand_id: brandNameToId['LG'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -250,6 +306,7 @@ module.exports = {
         stock: 8,
         category_id: 102,
         status: true,
+        brand_id: brandNameToId['Voltas'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -263,6 +320,7 @@ module.exports = {
         stock: 5,
         category_id: 102,
         status: true,
+        brand_id: brandNameToId['Blue Star'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -276,6 +334,7 @@ module.exports = {
         stock: 20,
         category_id: 102,
         status: true,
+        brand_id: brandNameToId['Symphony'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -289,6 +348,7 @@ module.exports = {
         stock: 25,
         category_id: 102,
         status: true,
+        brand_id: brandNameToId['Crompton'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -302,6 +362,7 @@ module.exports = {
         stock: 7,
         category_id: 102,
         status: true,
+        brand_id: brandNameToId['Daikin'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -315,6 +376,7 @@ module.exports = {
         stock: 9,
         category_id: 102,
         status: true,
+        brand_id: brandNameToId['Hitachi'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -328,6 +390,7 @@ module.exports = {
         stock: 11,
         category_id: 102,
         status: true,
+        brand_id: brandNameToId['Kenstar'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -342,6 +405,7 @@ module.exports = {
         stock: 30,
         category_id: 103,
         status: true,
+        brand_id: brandNameToId['Preethi'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -355,6 +419,7 @@ module.exports = {
         stock: 18,
         category_id: 103,
         status: true,
+        brand_id: brandNameToId['Philips'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -368,6 +433,7 @@ module.exports = {
         stock: 22,
         category_id: 103,
         status: true,
+        brand_id: brandNameToId['Bajaj'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -381,6 +447,7 @@ module.exports = {
         stock: 16,
         category_id: 103,
         status: true,
+        brand_id: brandNameToId['Prestige'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -394,6 +461,7 @@ module.exports = {
         stock: 10,
         category_id: 103,
         status: true,
+        brand_id: brandNameToId['Morphy Richards'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -407,6 +475,7 @@ module.exports = {
         stock: 14,
         category_id: 103,
         status: true,
+        brand_id: brandNameToId['Butterfly'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -420,6 +489,7 @@ module.exports = {
         stock: 12,
         category_id: 103,
         status: true,
+        brand_id: brandNameToId['Sujata'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -433,6 +503,7 @@ module.exports = {
         stock: 9,
         category_id: 103,
         status: true,
+        brand_id: brandNameToId['Kent'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -447,6 +518,7 @@ module.exports = {
         stock: 7,
         category_id: 104,
         status: true,
+        brand_id: brandNameToId['Sony'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -460,6 +532,7 @@ module.exports = {
         stock: 9,
         category_id: 104,
         status: true,
+        brand_id: brandNameToId['Samsung'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -473,6 +546,7 @@ module.exports = {
         stock: 5,
         category_id: 104,
         status: true,
+        brand_id: brandNameToId['LG'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -486,6 +560,7 @@ module.exports = {
         stock: 12,
         category_id: 104,
         status: true,
+        brand_id: brandNameToId['TCL'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -499,6 +574,7 @@ module.exports = {
         stock: 6,
         category_id: 104,
         status: true,
+        brand_id: brandNameToId['OnePlus'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -512,6 +588,7 @@ module.exports = {
         stock: 8,
         category_id: 104,
         status: true,
+        brand_id: brandNameToId['Panasonic'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -525,6 +602,7 @@ module.exports = {
         stock: 10,
         category_id: 104,
         status: true,
+        brand_id: brandNameToId['Vu'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -538,6 +616,7 @@ module.exports = {
         stock: 15,
         category_id: 104,
         status: true,
+        brand_id: brandNameToId['Mi'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -552,6 +631,7 @@ module.exports = {
         stock: 30,
         category_id: 105,
         status: true,
+        brand_id: brandNameToId['Havells'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -565,6 +645,7 @@ module.exports = {
         stock: 18,
         category_id: 105,
         status: true,
+        brand_id: brandNameToId['Usha'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -578,6 +659,7 @@ module.exports = {
         stock: 22,
         category_id: 105,
         status: true,
+        brand_id: brandNameToId['Bajaj'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -591,6 +673,7 @@ module.exports = {
         stock: 15,
         category_id: 105,
         status: true,
+        brand_id: brandNameToId['Orient'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -604,6 +687,7 @@ module.exports = {
         stock: 20,
         category_id: 105,
         status: true,
+        brand_id: brandNameToId['Crompton'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -617,6 +701,7 @@ module.exports = {
         stock: 13,
         category_id: 105,
         status: true,
+        brand_id: brandNameToId['V-Guard'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -630,6 +715,7 @@ module.exports = {
         stock: 17,
         category_id: 105,
         status: true,
+        brand_id: brandNameToId['Khaitan'],
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -643,6 +729,7 @@ module.exports = {
         stock: 11,
         category_id: 105,
         status: true,
+        brand_id: brandNameToId['Polycab'],
         created_at: new Date(),
         updated_at: new Date()
       }

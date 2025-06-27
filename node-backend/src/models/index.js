@@ -12,6 +12,8 @@ const CartItem = require('./CartItem');
 const Order = require('./Order');
 const OrderItem = require('./OrderItem');
 const OTP = require('./otp.model');
+const GroceryOrder = require('./grocery_order')(sequelize, Sequelize.DataTypes);
+const GroceryOrderItem = require('./grocery_order_item')(sequelize, Sequelize.DataTypes);
 
 // Factory models — initialize with sequelize
 const RestaurantCategory = require('./restaurantcategory')(sequelize, Sequelize.DataTypes);
@@ -40,6 +42,14 @@ User.hasMany(GCartItem, { foreignKey: 'user_id', as: 'gcartItems', onDelete: 'CA
 GCartItem.belongsTo(User, { foreignKey: 'user_id', as: 'user', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
 User.hasMany(Gwhishlist, { foreignKey: 'user_id', as: 'gwishlistItems', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
 Gwhishlist.belongsTo(User, { foreignKey: 'user_id', as: 'user', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
+
+
+// Add these associations:
+GroceryOrder.hasMany(GroceryOrderItem, { foreignKey: 'order_id', as: 'items' });
+GroceryOrderItem.belongsTo(GroceryOrder, { foreignKey: 'order_id', as: 'order' });
+
+User.hasMany(GroceryOrder, { foreignKey: 'user_id', as: 'groceryOrders' });
+GroceryOrder.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 
 // Category self-reference (subcategories/parent for admin panel)
 Category.hasMany(Category, { as: 'subcategories', foreignKey: 'parent_id', onDelete: 'SET NULL', onUpdate: 'CASCADE' });
@@ -114,6 +124,8 @@ module.exports = {
   Hotel,
   Room,
   Booking,
+  GroceryOrder,
+  GroceryOrderItem,
   GCartItem,
   Gwhishlist,
   ProductAttribute,

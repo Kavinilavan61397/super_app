@@ -91,6 +91,7 @@ import TaxiVehicleForm from "views/admin/Sidenav_pages/TaxiVehicleForm";
 import RestoCategoryTable from "views/admin/Sidenav_pages/RestoCategoryTable";
 import RestoCategoryForm from "views/admin/Sidenav_pages/RestoCategoryForm";
 import RestaurantTable from "views/admin/Sidenav_pages/RestaurantTable";
+import DishTable from "views/admin/Sidenav_pages/DishTable";
 
 const routes = [
   ...authRoutes,
@@ -182,6 +183,13 @@ const routes = [
         icon: <MdCategory className="h-6 w-6" />,
         path: "restocategory",
         component: <RestoCategoryTable />,
+      },
+      {
+        name: "Dishes",
+        layout: "/admin",
+        icon: <MdLocalPizza className="h-6 w-6" />,
+        path: "dish",
+        component: <DishTable />,
       },
       {
         name: "Toppings",

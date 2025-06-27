@@ -1,2 +1,6 @@
 chat.txt
 .env
+*.jpg
+*.png
+*.jpg
+.cursorignore

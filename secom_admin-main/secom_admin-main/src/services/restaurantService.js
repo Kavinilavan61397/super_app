@@ -141,12 +141,33 @@ export const restaurantService = {
   },
 };
 
+// Create axios instance for dish API calls
+const dishAPI = axios.create({
+  baseURL: `${API_CONFIG.BASE_URL}/api/dishes`,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+dishAPI.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('OnlineShop-accessToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 // Dishes
 export const dishService = {
   // Get all dishes
   getAll: async (params = {}) => {
     try {
-      const response = await restaurantAPI.get('/dishes', { params });
+      const response = await dishAPI.get('/', { params });
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;
@@ -156,7 +177,7 @@ export const dishService = {
   // Get dish by ID
   getById: async (id) => {
     try {
-      const response = await restaurantAPI.get(`/dishes/${id}`);
+      const response = await dishAPI.get(`/${id}`);
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;
@@ -166,7 +187,7 @@ export const dishService = {
   // Create dish
   create: async (formData) => {
     try {
-      const response = await restaurantAPI.post('/dishes', formData, {
+      const response = await dishAPI.post('/', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       return response.data;
@@ -178,7 +199,7 @@ export const dishService = {
   // Update dish
   update: async (id, formData) => {
     try {
-      const response = await restaurantAPI.put(`/dishes/${id}`, formData, {
+      const response = await dishAPI.put(`/${id}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       return response.data;
@@ -190,7 +211,7 @@ export const dishService = {
   // Delete dish
   delete: async (id) => {
     try {
-      const response = await restaurantAPI.delete(`/dishes/${id}`);
+      const response = await dishAPI.delete(`/${id}`);
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;

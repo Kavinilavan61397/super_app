@@ -14,6 +14,8 @@ import RestoCategoryTable from '../views/admin/Sidenav_pages/RestoCategoryTable'
 import RestoCategoryForm from '../views/admin/Sidenav_pages/RestoCategoryForm';
 import RestaurantTable from '../views/admin/Sidenav_pages/RestaurantTable';
 import RestaurantForm from '../views/admin/Sidenav_pages/RestaurantForm';
+import DishTable from '../views/admin/Sidenav_pages/DishTable';
+import DishForm from '../views/admin/Sidenav_pages/DishForm';
 
 const adminRoutes = [
   {
@@ -111,6 +113,18 @@ const adminRoutes = [
   {
     path: 'restaurant/edit/:id',
     element: <RestaurantForm />,
+  },
+  {
+    path: 'dish',
+    element: <DishTable />,
+  },
+  {
+    path: 'dish/new',
+    element: <DishForm />,
+  },
+  {
+    path: 'dish/edit/:id',
+    element: <DishForm />,
   },
 ];
 

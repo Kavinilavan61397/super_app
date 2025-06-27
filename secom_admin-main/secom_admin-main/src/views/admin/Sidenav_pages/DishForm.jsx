@@ -218,7 +218,7 @@ const DishForm = () => {
                 onChange={e => handleInputChange('restaurantId', e.target.value)}
               >
                 <option value="">Select restaurant</option>
-                {restaurants.map(restaurant => (
+                {restaurants.filter(rest => rest.status).map(restaurant => (
                   <option key={restaurant.id} value={String(restaurant.id)}>{restaurant.name}</option>
                 ))}
               </select>

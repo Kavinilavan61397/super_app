@@ -785,15 +785,11 @@ function Products() {
                             }}
                           >
                             <option value="">Select a Brand</option>
-                            {brands.length === 0 ? (
-                              <option disabled>Loading brands...</option>
-                            ) : (
-                              brands.map((brand) => (
-                                <option key={brand.id} value={brand.id}>
-                                  {brand.brand_name}
-                                </option>
-                              ))
-                            )}
+                            {brands.filter(brand => brand.status).map((brand) => (
+                              <option key={brand.id} value={brand.id}>
+                                {brand.brand_name}
+                              </option>
+                            ))}
                           </select>
                           {errors.brand_id && (
                             <p className="text-red-500 text-sm mt-1">{errors.brand_id.message}</p>
@@ -822,7 +818,7 @@ function Products() {
                             }}
                           >
                             <option value="">Select a Category</option>
-                            {categories.map((category) => (
+                            {categories.filter(cat => cat.status).map((category) => (
                               <option key={category.id} value={category.id}>
                                 {category.name}
                               </option>
@@ -1140,15 +1136,11 @@ function Products() {
                             }}
                           >
                             <option value="">Select a Brand</option>
-                            {brands.length === 0 ? (
-                              <option disabled>Loading brands...</option>
-                            ) : (
-                              brands.map((brand) => (
-                                <option key={brand.id} value={brand.id}>
-                                  {brand.brand_name}
-                                </option>
-                              ))
-                            )}
+                            {brands.filter(brand => brand.status).map((brand) => (
+                              <option key={brand.id} value={brand.id}>
+                                {brand.brand_name}
+                              </option>
+                            ))}
                           </select>
                           {errors.brand_id && (
                             <p className="text-red-500 text-sm mt-1">{errors.brand_id.message}</p>
@@ -1178,7 +1170,7 @@ function Products() {
                             }}
                           >
                             <option value="">Select a Category</option>
-                            {categories.map((category) => (
+                            {categories.filter(cat => cat.status).map((category) => (
                               <option key={category.id} value={category.id}>
                                 {category.name}
                               </option>

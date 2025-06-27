@@ -202,7 +202,7 @@ const RestaurantForm = () => {
                 onChange={e => handleInputChange('categoryId', e.target.value)}
               >
                 <option value="">Select category</option>
-                {categories.map(cat => (
+                {categories.filter(cat => cat.status).map(cat => (
                   <option key={cat.id} value={String(cat.id)}>{cat.name}</option>
                 ))}
               </select>

@@ -121,13 +121,13 @@ const routes = [
         path: "categories",
         component: <CategoryTable />,
       },
-      {
-        name: "Sub-Category",
-        layout: "/admin",
-        path: "subCategory",
-        icon: <FaTags className="h-6 w-6" />,
-        component: <SubCategory />,
-      },
+      // {
+      //   name: "Sub-Category",
+      //   layout: "/admin",
+      //   path: "subCategory",
+      //   icon: <FaTags className="h-6 w-6" />,
+      //   component: <SubCategory />,
+      // },
       {
         name: "Product",
         layout: "/admin",
@@ -171,18 +171,18 @@ const routes = [
     icon: <MdRestaurant className="h-6 w-6" />,
     subNav: [
       {
+        name: " Category",
+        layout: "/admin",
+        icon: <MdCategory className="h-6 w-6" />,
+        path: "restocategory",
+        component: <RestoCategoryTable />,
+      },
+      {
         name: "Restaurant",
         layout: "/admin",
         icon: <MdRestaurant className="h-6 w-6" />,
         path: "restaurant",
         component: <RestaurantTable />,
-      },
-      {
-        name: "Category",
-        layout: "/admin",
-        icon: <MdCategory className="h-6 w-6" />,
-        path: "restocategory",
-        component: <RestoCategoryTable />,
       },
       {
         name: "Dishes",
@@ -191,20 +191,20 @@ const routes = [
         path: "dish",
         component: <DishTable />,
       },
-      {
-        name: "Toppings",
-        layout: "/admin",
-        icon: <MdLocalPizza className="h-6 w-6" />, 
-        path: "Toppings",
-        component: <Toppings />,
-      },
-      {
-        name: "Stock Management",
-        layout: "/admin",
-        icon: <MdStore className="h-6 w-6" />, 
-        path: "restostockadjustment",
-        component: <StockAdjustment />,
-      },
+      // {
+      //   name: "Toppings",
+      //   layout: "/admin",
+      //   icon: <MdLocalPizza className="h-6 w-6" />, 
+      //   path: "Toppings",
+      //   component: <Toppings />,
+      // },
+      // {
+      //   name: "Stock Management",
+      //   layout: "/admin",
+      //   icon: <MdStore className="h-6 w-6" />, 
+      //   path: "restostockadjustment",
+      //   component: <StockAdjustment />,
+      // },
     ]
   },
   {

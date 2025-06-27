@@ -8,7 +8,7 @@ import SetPassword from '../Auth/SetPassword';
 import Login from '../Auth/Login';
 import HomeScreen from '../Pages/HomeScreen';
 import HomeC from '../Clothes/Pages/HomeC';
-import MenUniforms from '../Clothes/Categories/Menuniforms';
+import MenClothings from '../Clothes/Categories/MensWear/MenClothings';
 import Vegetables from '../Clothes/Categories/Vegetables';
 import Fruits from '../Clothes/Categories/Fruits';
 import WomenUniforms from '../Clothes/Categories/Womenuniforms';
@@ -82,6 +82,15 @@ import AirConditionersCoolers from '../Clothes/Categories/HomeAppliances/AirCond
 import KitchenAppliances from '../Clothes/Categories/HomeAppliances/KitchenAppliances';
 import Televisions from '../Clothes/Categories/HomeAppliances/Televisions';
 import FansOther from '../Clothes/Categories/HomeAppliances/FansOther';
+import Tops from '../Clothes/Categories/MensWear/Tops';
+import Bottoms from '../Clothes/Categories/MensWear/Bottoms';
+import Outerwear from '../Clothes/Categories/MensWear/Outerwear';
+import SuitsFormals from '../Clothes/Categories/MensWear/SuitsFormals';
+import UnderwearLoungewear from '../Clothes/Categories/MensWear/UnderwearLoungewear';
+import Footwear from '../Clothes/Categories/MensWear/Footwear';
+import Accessories from '../Clothes/Categories/MensWear/Accessories';
+import SeasonalCollections from '../Clothes/Categories/MensWear/SeasonalCollections';
+import NewArrivals from '../Clothes/Categories/MensWear/NewArrivals';
 
 import HomeG from '../Grocery/Pages/HomeG.jsx';
 import AddressG from '../Grocery/Pages/Address';
@@ -136,7 +145,16 @@ function Navbar() {
                 <Route path='/home-clothes/terms-conditions' element={<TermsConditions />} />
                 <Route path='/home-clothes/privacy-policy' element={<PrivacyPolicy />} />
                 <Route path='/home-clothes/about' element={<About />} />
-                <Route path='/Categories/men-uniforms' element={<MenUniforms/>}/>
+                <Route path='/categories/mens-wear' element={<MenClothings/>}/>
+                <Route path='/categories/mens-wear/tops' element={<Tops />} />
+                <Route path='/categories/mens-wear/bottoms' element={<Bottoms />} />
+                <Route path='/categories/mens-wear/outerwear' element={<Outerwear />} />
+                <Route path='/categories/mens-wear/suits-formals' element={<SuitsFormals />} />
+                <Route path='/categories/mens-wear/underwear-loungewear' element={<UnderwearLoungewear />} />
+                <Route path='/categories/mens-wear/footwear' element={<Footwear />} />
+                <Route path='/categories/mens-wear/accessories' element={<Accessories />} />
+                <Route path='/categories/mens-wear/seasonal-collections' element={<SeasonalCollections />} />
+                <Route path='/categories/mens-wear/new-arrivals' element={<NewArrivals />} />
                 <Route path='/categories/vegetables' element={<Vegetables/>}/>
                 <Route path='/categories/women-uniforms' element={<WomenUniforms />} />
                 <Route path='/categories/fruits' element={<Fruits/>}/>

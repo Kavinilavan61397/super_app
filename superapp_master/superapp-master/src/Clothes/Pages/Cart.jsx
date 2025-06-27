@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom'; 
 import EcommerceGroceryHeader from '../../Components/EcommerceGroceryHeader';
-import shirt from '../Images/shirt.svg';
 
-import Delete from '../Images/delete.svg';
+
 import Footer from '../../Utility/Footer';
 import { FaTrash } from 'react-icons/fa';
 
@@ -30,10 +29,31 @@ function Cart() {
   }
   const handleProceedToPay = () => {
     if (cartItems.length === 0) {
-      alert('Your cart is empty!'); 
+      alert('Your cart is empty!');
       return;
     }
-    navigate('/home-clothes/order-list', { state: { cartItems } });
+
+    // Get existing orders
+    const existingOrders = JSON.parse(localStorage.getItem('orders')) || [];
+
+    // Create a new order object
+    const newOrder = {
+      id: Date.now(), // unique order id
+      items: cartItems,
+      status: "Process",
+      date: new Date().toISOString()
+    };
+
+    // Add new order to orders array
+    const updatedOrders = [newOrder, ...existingOrders];
+    localStorage.setItem('orders', JSON.stringify(updatedOrders));
+
+    // Clear cart
+    localStorage.removeItem('cartItems');
+    setCartItems([]);
+
+    // Navigate to orders page
+    navigate('/home-clothes/order-list');
   };
 
   return (

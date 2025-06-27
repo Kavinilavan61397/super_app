@@ -1,17 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ClothesHeader from "../Header/ClothesHeader";
-import shirt from "../Images/shirt.svg";
 import Footer from '../../Utility/Footer';
 import filter from "../Images/filterbutton.svg";
-import { useNavigate } from 'react-router-dom';
+//import { useNavigate } from 'react-router-dom';
 import filterColor from "../Images/filtertcolorButton.svg";
 
 function Myorders() {
-    const navigate = useNavigate();
+    //const navigate = useNavigate();
     const steps = ["Process", "Packaged", "Out of delivered", "Received"];
     const currentStep = 0;
-    const [isOpen, setIsOpen] = useState(false);
+    //const [isOpen, setIsOpen] = useState(false);
     const [isOpenFilter, setIsOpenFilter] = useState(false);
+    const [orders, setOrders] = useState([]);
+    const [expandedOrderId, setExpandedOrderId] = useState(null);
+
+    useEffect(() => {
+        const storedOrders = JSON.parse(localStorage.getItem('orders')) || [];
+        setOrders(storedOrders);
+    }, []);
 
     return (
         <div>
@@ -22,61 +28,80 @@ function Myorders() {
                         <p className='font-medium text-base text-[#484848]'>Your Orders</p>
                         <img src={filter} alt="filter" className="w-[60px] h-[30px]" onClick={() => setIsOpenFilter(true)} />
                     </div>
-                    <div className="bg-white border border-[#E1E1E1] rounded-[20px] mt-4 p-4 cursor-pointer" onClick={() => setIsOpen(!isOpen)}>
-                        <div className="flex row gap-4">
-                            <div className="w-[120px] h-[140px]">
-                                <img src={shirt} alt="product" className="w-full h-full p-4" />
-                            </div>
-                            <div>
-                                <div className="flex justify-between items-center w-full">
-                                    
-                                    <p className="text-[#5C3FFF] font-medium text-base">OD-1223</p>
-                                    <p className="font-medium text-base text-[#5C3FFF]">Invoice</p>
-                                </div>
-                                <div className="font-semibold text-base text-[#242424] pt-2">Blue cotton school uniforms</div>
-                                <p className="font-medium text-sm text-[#242424] mb-2">
-                                    ₹ 1,400 <span className="line-through text-[#C1C1C1]">₹ 1,500</span>
-                                </p>
-                                <div className="text-[#F3A91F] font-medium font-base">Process</div>
-                            </div>
-                        </div>
-                        {isOpen && (
-                            <div className="mt-4 flex flex-col relative gap-2">
-                                {steps.map((step, index) => (
-                                    <div key={index} className="flex items-start gap-3 relative">
-                                        {/* Vertical Line (Behind Dots) */}
-                                        {index !== steps.length - 1 && (
-                                            <div
-                                                className={`absolute left-[5px] top-3 w-0.5 h-full 
-                                         ${index < currentStep ? "bg-[#5C3FFF]" : "bg-gray-300"}`}
-                                            ></div>
-                                        )}
-
-                                        {/* Step Icon */}
-                                        <div className="relative z-10">
-                                            <div
-                                                className={`w-3 h-3 rounded-full border-2 
-                                         ${index <= currentStep
-                                                        ? "bg-[#5C3FFF] border-[#5C3FFF]"
-                                                        : "bg-gray-300 border-gray-300"
-                                                    }`}
-                                            ></div>
-                                        </div>
-
-                                        {/* Step Text */}
-                                        <span
-                                            className={`text-sm ${index <= currentStep ? "text-black font-medium" : "text-gray-500"
-                                                }`}
-                                        >
-                                            {step}
-                                        </span>
+                    {orders.length === 0 ? (
+                        <div className="flex items-center justify-center h-[50vh] text-center text-[#484848] text-lg">No orders yet.</div>
+                    ) : (
+                        orders.map((order) => (
+                            <div key={order.id} className="bg-white border border-[#E1E1E1] rounded-[20px] mt-4 p-4 cursor-pointer" onClick={() => setExpandedOrderId(expandedOrderId === order.id ? null : order.id)}>
+                                <div className="flex row gap-4">
+                                    <div className="w-[120px] h-[140px]">
+                                        <img src={order.items[0]?.image} alt="product" className="w-full h-full p-4" />
                                     </div>
-                                ))}
+                                    <div>
+                                        <div className="flex justify-between items-center w-full">
+                                            <p className="text-[#5C3FFF] font-medium text-base">OD-{order.id}</p>
+                                            <p className="font-medium text-base text-[#5C3FFF]">Invoice</p>
+                                        </div>
+                                        <div className="font-semibold text-base text-[#242424] pt-2">{order.items[0]?.name} {order.items.length > 1 ? `+${order.items.length - 1} more` : ''}</div>
+                                        <p className="font-medium text-sm text-[#242424] mb-2">
+                                            ₹ {order.items.reduce((sum, item) => sum + (parseFloat(item.discountedPrice) * item.quantity), 0)}
+                                        </p>
+                                        <div className="text-[#F3A91F] font-medium font-base">{order.status}</div>
+                                    </div>
+                                </div>
+                                {expandedOrderId === order.id && (
+                                    <div className="mt-4 flex flex-col relative gap-2">
+                                        <div className="mb-2 font-semibold text-sm text-[#484848]">Order Items:</div>
+                                        {order.items.map((item, idx) => (
+                                            <div key={idx} className="flex items-center gap-3 border-b py-2">
+                                                <img src={item.image} alt={item.name} className="w-12 h-12 rounded" />
+                                                <div className="flex-1">
+                                                    <div className="font-medium text-sm">{item.name}</div>
+                                                    <div className="text-xs text-[#797979]">Size: {item.size}</div>
+                                                    <div className="text-xs text-[#797979]">Qty: {item.quantity}</div>
+                                                </div>
+                                                <div className="font-medium text-sm">₹ {parseFloat(item.discountedPrice) * item.quantity}</div>
+                                            </div>
+                                        ))}
+                                        <div className="mt-2 text-xs text-[#797979]">Order Date: {new Date(order.date).toLocaleString()}</div>
+                                        {/* Steps */}
+                                        <div className="mt-4 flex flex-col relative gap-2">
+                                            {steps.map((step, index) => (
+                                                <div key={index} className="flex items-start gap-3 relative">
+                                                    {/* Vertical Line (Behind Dots) */}
+                                                    {index !== steps.length - 1 && (
+                                                        <div
+                                                            className={`absolute left-[5px] top-3 w-0.5 h-full 
+                                         ${index < currentStep ? "bg-[#5C3FFF]" : "bg-gray-300"}`}
+                                                        ></div>
+                                                    )}
+
+                                                    {/* Step Icon */}
+                                                    <div className="relative z-10">
+                                                        <div
+                                                            className={`w-3 h-3 rounded-full border-2 
+                                         ${index <= currentStep
+                                                                ? "bg-[#5C3FFF] border-[#5C3FFF]"
+                                                                : "bg-gray-300 border-gray-300"
+                                                            }`}
+                                                        ></div>
+                                                    </div>
+
+                                                    {/* Step Text */}
+                                                    <span
+                                                        className={`text-sm ${index <= currentStep ? "text-black font-medium" : "text-gray-500"
+                                                            }`}
+                                                    >
+                                                        {step}
+                                                    </span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
-
-
-                        )}
-                    </div>
+                        ))
+                    )}
                 </div>
                 <Footer />
             </div>

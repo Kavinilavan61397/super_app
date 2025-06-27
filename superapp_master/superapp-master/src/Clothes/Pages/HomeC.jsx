@@ -24,7 +24,7 @@ import cosmetics from '../Images/cosmetics.jpg';
 import homeAppliances from '../Images/homeAppliance.jpg';
 
 const categories = [
-    { name: "Men ", image: mensWear, route: '/categories/men-uniforms' },
+    { name: "Men ", image: mensWear, route: '/categories/mens-wear' },
     { name: "Women ", image: womensWear, route: '/categories/women-uniforms' },
     { name: "Cosmetics", image: cosmetics, route: "/categories/cosmetics" },
     { name: "Home Appliances",image: homeAppliances,route:'/categories/homeappliances'}

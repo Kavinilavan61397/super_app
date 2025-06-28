@@ -129,7 +129,7 @@ function Myorders() {
                     status: order.status,
                     total_amount: parseFloat(order.total_amount),
                     totalDiscountedPrice: parseFloat(order.total_amount),
-                    items: order.GroceryOrderItems ? order.GroceryOrderItems.map(item => ({
+                    items: order.items ? order.items.map(item => ({
                         id: item.id,
                         grocery_id: item.grocery_id,
                         name: item.name,

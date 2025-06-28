@@ -68,7 +68,7 @@ function Invoice() {
     const { order, profile, address } = orderData;
 
     // --- Calculations ---
-    const subtotal = order.GroceryOrderItems?.reduce((sum, item) => sum + (parseFloat(item.discounted_price) * item.quantity), 0) || 0;
+    const subtotal = order.items?.reduce((sum, item) => sum + (parseFloat(item.discounted_price) * item.quantity), 0) || 0;
     const deliveryFee = 50; // Example fee
     const total = subtotal + deliveryFee;
 
@@ -132,7 +132,7 @@ function Invoice() {
                             </tr>
                         </thead>
                         <tbody>
-                            {order.GroceryOrderItems?.map(item => (
+                            {order.items?.map(item => (
                                 <tr key={item.id} className="border-b border-gray-200">
                                     <td className="py-2.5">{item.name}</td>
                                     <td className="py-2.5 text-center">{item.quantity}</td>

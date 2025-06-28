@@ -22,7 +22,7 @@ module.exports = (sequelize, DataTypes) => {
 
   GroceryOrder.associate = function(models) {
     GroceryOrder.belongsTo(models.User, { foreignKey: 'user_id' });
-    GroceryOrder.hasMany(models.GroceryOrderItem, { foreignKey: 'order_id' });
+    GroceryOrder.hasMany(models.GroceryOrderItem, { foreignKey: 'order_id', as: 'items' });
   };
 
   return GroceryOrder;

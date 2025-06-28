@@ -33,7 +33,7 @@ module.exports = {
       const user_id = req.user.id; // Get user ID from authenticated token
       const orders = await GroceryOrder.findAll({ 
         where: { user_id },
-        include: GroceryOrderItem,
+        include: [{ model: GroceryOrderItem, as: 'items' }],
         order: [['created_at', 'DESC']]
       });
       res.status(200).json(orders);
@@ -46,7 +46,7 @@ module.exports = {
   // Get All Orders
   async getAll(req, res) {
     try {
-      const orders = await GroceryOrder.findAll({ include: GroceryOrderItem });
+      const orders = await GroceryOrder.findAll({ include: [{ model: GroceryOrderItem, as: 'items' }] });
       res.status(200).json(orders);
     } catch (error) {
       res.status(500).json({ message: 'Internal Server Error' });
@@ -59,15 +59,16 @@ module.exports = {
       const { id } = req.params;
       const order = await GroceryOrder.findByPk(id, { 
         include: [
-          { model: GroceryOrderItem },
-          { model: User, attributes: ['name', 'email'] }
+          { model: GroceryOrderItem, as: 'items' },
+          { model: User,as: 'user', attributes: ['name', 'email'] }
         ]
       });
 
       if (!order) return res.status(404).json({ message: 'Order not found' });
       res.status(200).json(order);
     } catch (error) {
-      res.status(500).json({ message: 'Internal Server Error' });
+      console.error('Order fetch error:', error); // <--- Add this line
+      res.status(500).json({ message: error.message, stack: error.stack });
     }
   },
 

@@ -5,34 +5,34 @@ import { FaFilter, FaHeart, FaEye, FaChevronDown, FaChevronUp } from 'react-icon
 import { Link } from 'react-router-dom';
 
 // Import images
-import SportsTShirt from '../../Images/SportsTShirt.png';
-import VNeckTee from '../../Images/VNeckTee.png';
-import HoodedSweatshirt from '../../Images/HoodedSweatShirt.png';
-import RunningTop from '../../Images/RunningTop.png';
-import DenimJeans from '../../Images/DenimJeans.png';
+import SportsTShirt from '../../Images/TShirt.png';
+import VNeckTee from '../../Images/TShirt.png';
+import HoodedSweatshirt from '../../Images/TShirt.png';
+import RunningTop from '../../Images/TShirt.png';
+import DenimJeans from '../../Images/FormalTrouser.jpg';
 import FormalTrousers from '../../Images/FormalTrouser.jpg';
-import CorduroyPants from '../../Images/CorduroyPants.jpg';
-import StylishWinterJacket from '../../Images/StylishWinterJacket.jpg';
-import LeatherBikerJacket from '../../Images/LeatherBikerJacket.jpg';
-import TrenchCoat from '../../Images/TrenchCoat.jpg';
-import NavyBlueBusinessSuit from '../../Images/NavyBlueBusinessSuit.png';
-import BlackTuxedo from '../../Images/BlackTuxedo.jpg';
+import CorduroyPants from '../../Images/FormalTrouser.jpg';
+import StylishWinterJacket from '../../Images/ClassicDenimJacket.jpg';
+import LeatherBikerJacket from '../../Images/ClassicDenimJacket.jpg';
+import TrenchCoat from '../../Images/ThreePieceSuit.jpg';
+import NavyBlueBusinessSuit from '../../Images/ThreePieceSuit.jpg';
+import BlackTuxedo from '../../Images/ThreePieceSuit.jpg';
 import ThreePieceSuit from '../../Images/ThreePieceSuit.jpg';
-import CharcoalGreySuit from '../../Images/CharcoalGreySuit.jpg';
-import SilkPajamas from '../../Images/SilkPajamas.jpg';
+import CharcoalGreySuit from '../../Images/ThreePieceSuit.jpg';
+import SilkPajamas from '../../Images/TerryRobe.jpg';
 import TerryRobe from '../../Images/TerryRobe.jpg';
 import MensCasualSneakers from '../../Images/MensCasualSneakers.png';
-import RunningShoes from '../../Images/RunningShoes.png';
-import HikingBoots from '../../Images/HikingBoots.png';
-import ClassicWhiteSneakers from '../../Images/ClassicWhiteSneakers.png';
-import Wallets from '../../Images/Wallets.jpg';
+import RunningShoes from '../../Images/MensCasualSneakers.png';
+import HikingBoots from '../../Images/MensCasualSneakers.png';
+import ClassicWhiteSneakers from '../../Images/MensCasualSneakers.png';
+import Wallets from '../../Images/AviatorSunglasses.jpg';
 import AviatorSunglasses from '../../Images/AviatorSunglasses.jpg';
-import TieClipSet from '../../Images/TieClipSet.jpg';
-import CasualBackpack from '../../Images/CasualBackpack.jpg';
+import TieClipSet from '../../Images/AviatorSunglasses.jpg';
+import CasualBackpack from '../../Images/AviatorSunglasses.jpg';
 import SummerCollectionTShirt from '../../Images/SummerCollectionTShirt.jpg';
-import WinterJacket from '../../Images/WinterJacket.jpg';
-import SummerLinenShirt from '../../Images/SummerLinenShirt.jpg';
-import HolidaySweater from '../../Images/HolidaySweater.jpg';
+import WinterJacket from '../../Images/SummerCollectionTShirt.jpg';
+import SummerLinenShirt from '../../Images/SummerCollectionTShirt.jpg';
+import HolidaySweater from '../../Images/SummerCollectionTShirt.jpg';
 
 const newArrivalItems = [
   // Tops
@@ -328,49 +328,6 @@ function NewArrivals() {
       }
     });
   };
-
-  /*const styles = {
-    container: {
-      padding: '20px',
-      backgroundColor: '#f5f5f5',
-    },
-    header: {
-      fontSize: '24px',
-      fontWeight: 'bold',
-      marginBottom: '20px',
-    },
-    productGrid: {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-      gap: '20px',
-    },
-    productCard: {
-      border: '1px solid #ddd',
-      borderRadius: '8px',
-      padding: '10px',
-      backgroundColor: 'white',
-      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-    },
-    productImage: {
-      width: '100%',
-      height: 'auto',
-      borderRadius: '4px',
-    },
-    productName: {
-      fontSize: '16px',
-      fontWeight: 'bold',
-      margin: '10px 0',
-    },
-    productPrice: {
-      fontSize: '14px',
-      color: '#666',
-    },
-    productDescription: {
-      fontSize: '14px',
-      color: '#888',
-      marginTop: '5px',
-    },
-  };*/
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 font-sans">

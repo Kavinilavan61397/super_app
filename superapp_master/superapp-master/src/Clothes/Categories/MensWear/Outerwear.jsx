@@ -5,15 +5,15 @@ import { FaFilter, FaHeart, FaEye, FaChevronDown, FaChevronUp } from 'react-icon
 import { Link } from 'react-router-dom';
 
 // Import images
-import StylishWinterJacket from '../../Images/StylishWinterJacket.jpg';
+import StylishWinterJacket from '../../Images/ClassicDenimJacket.jpg';
 import ClassicDenimJacket from '../../Images/ClassicDenimJacket.jpg';
-import LeatherBikerJacket from '../../Images/LeatherBikerJacket.jpg';
-import PufferVest from '../../Images/PufferVest.jpg';
-import TrenchCoat from '../../Images/TrenchCoat.jpg';
-import WindbreakerJacket from '../../Images/WindBreakerJacket.jpg';
-import BomberJacket from '../../Images/BomberJacket.jpg';
-import ParkaJacket from '../../Images/ParkaJacket.jpg';
-import FleeceJacket from '../../Images/FleeceJacket.jpg';
+import LeatherBikerJacket from '../../Images/ClassicDenimJacket.jpg';
+import PufferVest from '../../Images/ClassicDenimJacket.jpg';
+import TrenchCoat from '../../Images/ClassicDenimJacket.jpg';
+import WindbreakerJacket from '../../Images/ClassicDenimJacket.jpg';
+import BomberJacket from '../../Images/ClassicDenimJacket.jpg';
+import ParkaJacket from '../../Images/ClassicDenimJacket.jpg';
+import FleeceJacket from '../../Images/ClassicDenimJacket.jpg';
 
 const outerwearItems = [
   { id: 12, name: 'Stylish Winter Jacket', originalPrice: 5000, discountedPrice: 4000, image: StylishWinterJacket, description: 'Warm and stylish winter jacket.', rating: 4.6, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Outerwear', sizes: ['S', 'M', 'L', 'XL'], brand: 'The North Face', material: 'Polyester' },

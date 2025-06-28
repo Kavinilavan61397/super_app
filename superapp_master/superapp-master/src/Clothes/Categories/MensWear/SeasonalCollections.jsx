@@ -6,21 +6,21 @@ import { Link } from 'react-router-dom';
 
 // Import images
 import SummerCollectionTShirt from '../../Images/SummerCollectionTShirt.jpg';
-import WinterJacket from '../../Images/WinterJacket.jpg';
-import RainCoat from '../../Images/RainCoat.jpg';
-import SummerLinenShirt from '../../Images/SummerLinenShirt.jpg';
-import AutumnCardigan from '../../Images/AutumnCardigan.jpg';
-import SpringFloralTShirt from '../../Images/SpringFloralTShirt.jpg';
-import HolidaySweater from '../../Images/HolidaySweater.jpg';
-import BeachShorts from '../../Images/BeachShorts.jpg';
-import LightweightScarf from '../../Images/LightweightScarf.jpg';
-import GumBoots from '../../Images/GumBoots.jpg';
-import WindcheaterJacket from '../../Images/WindcheaterJacket.jpeg';
-import TurtleneckSweater from '../../Images/TurtleneckSweater.jpg';
-import HalfZipPullover from '../../Images/HalfzipPullover.jpg';
-import LightBomberJacket from '../../Images/LightBomberJacket.jpg';
-import LightweightHoodie from '../../Images/LightweightHoodies.jpg';
-import PastelPoloTShirt from '../../Images/PastelPoloTShirts.jpg';
+import WinterJacket from '../../Images/SummerCollectionTShirt.jpg';
+import RainCoat from '../../Images/SummerCollectionTShirt.jpg';
+import SummerLinenShirt from '../../Images/SummerCollectionTShirt.jpg';
+import AutumnCardigan from '../../Images/SummerCollectionTShirt.jpg';
+import SpringFloralTShirt from '../../Images/SummerCollectionTShirt.jpg';
+import HolidaySweater from '../../Images/SummerCollectionTShirt.jpg';
+import BeachShorts from '../../Images/SummerCollectionTShirt.jpg';
+import LightweightScarf from '../../Images/SummerCollectionTShirt.jpg';
+import GumBoots from '../../Images/SummerCollectionTShirt.jpg';
+import WindcheaterJacket from '../../Images/SummerCollectionTShirt.jpg';
+import TurtleneckSweater from '../../Images/SummerCollectionTShirt.jpg';
+import HalfZipPullover from '../../Images/SummerCollectionTShirt.jpg';
+import LightBomberJacket from '../../Images/SummerCollectionTShirt.jpg';
+import LightweightHoodie from '../../Images/SummerCollectionTShirt.jpg';
+import PastelPoloTShirt from '../../Images/SummerCollectionTShirt.jpg';
 
 
 const seasonalItems = [

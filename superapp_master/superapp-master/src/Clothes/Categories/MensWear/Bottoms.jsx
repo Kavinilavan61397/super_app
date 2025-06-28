@@ -5,15 +5,15 @@ import { FaFilter, FaHeart, FaEye, FaChevronDown, FaChevronUp } from 'react-icon
 import { Link } from 'react-router-dom';
 
 // Import images
-import DenimJeans from '../../Images/DenimJeans.png';
-import ComfortableTrackPants from '../../Images/ComfortableTrackPants.png';
-import CargoShorts from '../../Images/CargoShorts.jpg';
-import JoggerPants from '../../Images/JoggerPants.png';
+import DenimJeans from '../../Images/FormalTrouser.jpg';
+import ComfortableTrackPants from '../../Images/FormalTrouser.jpg';
+import CargoShorts from '../../Images/FormalTrouser.jpg';
+import JoggerPants from '../../Images/FormalTrouser.jpg';
 import FormalTrousers from '../../Images/FormalTrouser.jpg';
-import AthleticSweatpants from '../../Images/AthleticSweatpants.jpg';
-import CorduroyPants from '../../Images/CorduroyPants.jpg';
-import RelaxedFitJeans from '../../Images/RelaxedFitJeans.jpg';
-import MeshShorts from '../../Images/MeshShorts.jpg';
+import AthleticSweatpants from '../../Images/FormalTrouser.jpg';
+import CorduroyPants from '../../Images/FormalTrouser.jpg';
+import RelaxedFitJeans from '../../Images/FormalTrouser.jpg';
+import MeshShorts from '../../Images/FormalTrouser.jpg';
 
 const bottomsItems = [
   { id: 10, name: 'Slim Fit Denim Jeans', originalPrice: 2000, discountedPrice: 1600, image: DenimJeans, description: 'Classic denim jeans with a slim fit.', rating: 4.5, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Bottoms', sizes: ['28', '30', '32', '34', '36','38'], brand: 'Levi\'s', material: 'Denim', topic: 'Jeans' },

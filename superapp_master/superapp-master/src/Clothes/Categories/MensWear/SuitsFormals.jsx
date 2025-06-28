@@ -5,21 +5,21 @@ import { FaFilter, FaHeart, FaEye, FaChevronDown, FaChevronUp } from 'react-icon
 import { Link } from 'react-router-dom';
 
 // Import images
-import NavyBlueBusinessSuit from '../../Images/NavyBlueBusinessSuit.png';
-import FormalWhiteShirt from '../../Images/FormalWhiteShirt.jpg';
-import BlackTuxedo from '../../Images/BlackTuxedo.jpg';
-import GreySlimFitSuit from '../../Images/GreySlimFitSuit.jpg';
-import BlueStripedShirt from '../../Images/BlueStrippedShirt.jpg';
-import FormalBlackTrouser from '../../Images/FormalBlackTrouser.jpg';
+import NavyBlueBusinessSuit from '../../Images/ThreePieceSuit.jpg';
+import FormalWhiteShirt from '../../Images/ThreePieceSuit.jpg';
+import BlackTuxedo from '../../Images/ThreePieceSuit.jpg';
+import GreySlimFitSuit from '../../Images/ThreePieceSuit.jpg';
+import BlueStripedShirt from '../../Images/ThreePieceSuit.jpg';
+import FormalBlackTrouser from '../../Images/ThreePieceSuit.jpg';
 import ThreePieceSuit from '../../Images/ThreePieceSuit.jpg';
-import SilkTieSet from '../../Images/SilkTieSet.jpg';
-import CharcoalGreySuit from '../../Images/CharcoalGreySuit.jpg';
-import FormalWaistcoat from '../../Images/FormalWaistCoat2.jpg';
-import DoubleBreastedSuit from '../../Images/DoubleBreastedSuit.jpg';
-import FormalDressShirt from '../../Images/FormalDressShirt.jpg';
-import PinstripeSuit from '../../Images/PinstripeSuit.jpg';
-import FormalBlazer from '../../Images/FormalBlazer.jpg';
-import FormalChinos from '../../Images/FormalChinos.jpg';
+import SilkTieSet from '../../Images/ThreePieceSuit.jpg';
+import CharcoalGreySuit from '../../Images/ThreePieceSuit.jpg';
+import FormalWaistcoat from '../../Images/ThreePieceSuit.jpg';
+import DoubleBreastedSuit from '../../Images/ThreePieceSuit.jpg';
+import FormalDressShirt from '../../Images/ThreePieceSuit.jpg';
+import PinstripeSuit from '../../Images/ThreePieceSuit.jpg';
+import FormalBlazer from '../../Images/ThreePieceSuit.jpg';
+import FormalChinos from '../../Images/ThreePieceSuit.jpg';
 
 const suitsFormalsItems = [
   { id: 14, name: 'Navy Blue Business Suit', originalPrice: 8000, discountedPrice: 6400, image: NavyBlueBusinessSuit, description: 'Premium quality navy blue business suit.', rating: 4.7, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Suits & Formals', sizes: ['S', 'M', 'L', 'XL'], brand: 'Raymond', material: 'Wool Blend' },

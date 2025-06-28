@@ -6,19 +6,19 @@ import { Link } from 'react-router-dom';
 
 // Import images
 import CottonTShirt from '../../Images/TShirt.png';
-import SportsTShirt from '../../Images/SportsTShirt.png';
-import GraphicTShirt from '../../Images/GraphicTShirt.jpg';
-import VNeckTee from '../../Images/VNeckTee.png';
-import PoloShirt from '../../Images/PoloShirt.png';
-import HoodedSweatshirt from '../../Images/HoodedSweatShirt.png';
-import HenleyShirt from '../../Images/HenleyShirt.png';
-import RunningTop from '../../Images/RunningTop.png';
-import FlannelShirt from '../../Images/FlanelShirt.png';
-import CheckShirt from '../../Images/CheckShirt.png';
-import DenimShirt from '../../Images/DenimShirt.jpg';
-import PrintedShirt from '../../Images/PrintedShirt.jpg';
-import LinenShirt from '../../Images/LinenShirt.jpg';
-import CubanCollarShirt from '../../Images/CubanCollarShirt2.jpg';
+import SportsTShirt from '../../Images/TShirt.png';
+import GraphicTShirt from '../../Images/TShirt.png';
+import VNeckTee from '../../Images/TShirt.png';
+import PoloShirt from '../../Images/TShirt.png';
+import HoodedSweatshirt from '../../Images/TShirt.png';
+import HenleyShirt from '../../Images/TShirt.png';
+import RunningTop from '../../Images/TShirt.png';
+import FlannelShirt from '../../Images/TShirt.png';
+import CheckShirt from '../../Images/TShirt.png';
+import DenimShirt from '../../Images/TShirt.png';
+import PrintedShirt from '../../Images/TShirt.png';
+import LinenShirt from '../../Images/TShirt.png';
+import CubanCollarShirt from '../../Images/TShirt.png';
 
 const topsItems = [
   { id: 1, name: 'Cotton T-Shirt', originalPrice: 1200, discountedPrice: 960, image: CottonTShirt, description: 'Comfortable cotton t-shirt.', rating: 4.1, isBestSeller: false, quantity: 1, category: 'Men\'s Wear - Tops', sizes: ['S', 'M', 'L', 'XL'], brand: 'Levi\'s', material: 'Cotton', topic: 'T-Shirts' },

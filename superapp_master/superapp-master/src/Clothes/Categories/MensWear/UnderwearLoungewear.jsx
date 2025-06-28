@@ -5,15 +5,15 @@ import { FaFilter, FaHeart, FaEye, FaChevronDown, FaChevronUp } from 'react-icon
 import { Link } from 'react-router-dom';
 
 // Import images
-import CottonBoxerBriefs from '../../Images/CottonBoxerBriefs.png';
-import SilkPajamas from '../../Images/SilkPajamas.jpg';
-import CottonLoungeShorts from '../../Images/CottonLoungeShorts.jpg';
-import ModalTrunks from '../../Images/ModalTrunks.jpg';
+import CottonBoxerBriefs from '../../Images/TerryRobe.jpg';
+import SilkPajamas from '../../Images/TerryRobe.jpg';
+import CottonLoungeShorts from '../../Images/TerryRobe.jpg';
+import ModalTrunks from '../../Images/TerryRobe.jpg';
 import TerryRobe from '../../Images/TerryRobe.jpg';
-import BambooCrewSocks from '../../Images/BambooCrewSocks.jpg';
+import BambooCrewSocks from '../../Images/JerseyLoungePants.jpg';
 import JerseyLoungePants from '../../Images/JerseyLoungePants.jpg';
-import ThermalUnderwearSet from '../../Images/ThermalUnderwearSet.jpg';
-import FleeceSleepHoodie from '../../Images/FleeceSleepHoodie.jpg';
+import ThermalUnderwearSet from '../../Images/JerseyLoungePants.jpg';
+import FleeceSleepHoodie from '../../Images/JerseyLoungePants.jpg';
 
 const underwearLoungewearItems = [
   { id: 1, name: 'Cotton Boxer Briefs', originalPrice: 800, discountedPrice: 599, image: CottonBoxerBriefs, description: 'Comfortable cotton boxer briefs.', rating: 4.5, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Underwear', sizes: ['S', 'M', 'L', 'XL'], brand: 'Jockey', material: 'Cotton' },

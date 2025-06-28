@@ -5,17 +5,17 @@ import { FaFilter, FaHeart, FaEye, FaChevronDown, FaChevronUp } from 'react-icon
 import { Link } from 'react-router-dom';
 
 // Import images
-import RunningShoes from '../../Images/RunningShoes.png';
+import RunningShoes from '../../Images/MensCasualSneakers.png';
 import MensCasualSneakers from '../../Images/MensCasualSneakers.png';
-import FormalLeatherShoes from '../../Images/FormalLeatherShoes.jpg';
-import CasualLoafers from '../../Images/CasualLoafers.jpg';
-import HikingBoots from '../../Images/HikingBoots.png';
-import BeachSandals from '../../Images/BeachSandals.jpg';
-import ClassicWhiteSneakers from '../../Images/ClassicWhiteSneakers.png';
-import OxfordDressShoes from '../../Images/OxfordDressShoes.jpg';
-import SlipOnCanvasShoes from '../../Images/SlipOnCanvasShoes.png';
-import FlipFlops from '../../Images/Flipflops.jpg';
-import Slippers from '../../Images/Slippers.jpg';
+import FormalLeatherShoes from '../../Images/MensCasualSneakers.png';
+import CasualLoafers from '../../Images/MensCasualSneakers.png';
+import HikingBoots from '../../Images/MensCasualSneakers.png';
+import BeachSandals from '../../Images/MensCasualSneakers.png';
+import ClassicWhiteSneakers from '../../Images/MensCasualSneakers.png';
+import OxfordDressShoes from '../../Images/MensCasualSneakers.png';
+import SlipOnCanvasShoes from '../../Images/MensCasualSneakers.png';
+import FlipFlops from '../../Images/MensCasualSneakers.png';
+import Slippers from '../../Images/MensCasualSneakers.png';
 
 const footwearItems = [
     { id: 18, name: "Men's Casual Sneakers", originalPrice: 2500, discountedPrice: 2000, image: MensCasualSneakers, description: 'Comfortable and stylish casual sneakers.', rating: 4.5, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Footwear', sizes: ['7', '8', '9', '10', '11'], brand: 'Nike, Puma', material: 'Canvas', topic: 'Sneakers' },

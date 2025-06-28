@@ -5,25 +5,25 @@ import { FaFilter, FaHeart, FaEye, FaChevronDown, FaChevronUp } from 'react-icon
 import { Link } from 'react-router-dom';
 
 // Import images
-import Wallets from '../../Images/Wallets.jpg';
-import MenWatch from '../../Images/MenWatch.png';
-import AviatorSunglasses from '../../Images/AviatorSunglasses.jpg';
-import LeatherBelt from '../../Images/LeatherBelt.png';
-import BaseballCap from '../../Images/BaseballCap.jpg';
-import TieClipSet from '../../Images/TieClipSet.jpg';
-import CasualBackpack from '../../Images/CasualBackpack.jpg';
-import SportsSocksSet from '../../Images/SportsSocksSet.jpg';
-import LeatherCardHolder from '../../Images/LeatherCardHolder.jpg';
-import SmartWatch from '../../Images/SmartWatch.png';
+import Wallets from '../../Images/DesignerSunglasses.jpg';
+import MenWatch from '../../Images/DesignerSunglasses.jpg';
+import AviatorSunglasses from '../../Images/DesignerSunglasses.jpg';
+import LeatherBelt from '../../Images/DesignerSunglasses.jpg';
+import BaseballCap from '../../Images/DesignerSunglasses.jpg';
+import TieClipSet from '../../Images/DesignerSunglasses.jpg';
+import CasualBackpack from '../../Images/DesignerSunglasses.jpg';
+import SportsSocksSet from '../../Images/DesignerSunglasses.jpg';
+import LeatherCardHolder from '../../Images/DesignerSunglasses.jpg';
+import SmartWatch from '../../Images/DesignerSunglasses.jpg';
 import DesignerSunglasses from '../../Images/DesignerSunglasses.jpg';
-import FormalTieCollection from '../../Images/FormalTieCollection.jpg';
-import LeatherMessengerBag from '../../Images/LeatherMessengerBag.jpg';
-import PremiumCufflinks from '../../Images/PremiumCufflinks.jpg';
-import LeatherKeyChain from '../../Images/LeatherKeyChain.jpg';
-import Perfume from '../../Images/Perfume.jpg';
-import LongLastingPerfumes from '../../Images/LongLastingPerfumes.png';
-import DigitalWatch from '../../Images/DigitalWatch.jpg';
-import Beanies from '../../Images/Beanies.jpg';
+import FormalTieCollection from '../../Images/DesignerSunglasses.jpg';
+import LeatherMessengerBag from '../../Images/DesignerSunglasses.jpg';
+import PremiumCufflinks from '../../Images/DesignerSunglasses.jpg';
+import LeatherKeyChain from '../../Images/DesignerSunglasses.jpg';
+import Perfume from '../../Images/DesignerSunglasses.jpg';
+import LongLastingPerfumes from '../../Images/DesignerSunglasses.jpg';
+import DigitalWatch from '../../Images/DesignerSunglasses.jpg';
+import Beanies from '../../Images/DesignerSunglasses.jpg';
 
 const accessoriesItems = [
   { id: 20, name: 'Leather Wallet', originalPrice: 1200, discountedPrice: 960, image: Wallets, description: 'Stylish and durable leather wallet.', rating: 4.6, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Accessories', sizes: ['OS'], brand: 'Fossil', type: ['Bags & Wallets'] },

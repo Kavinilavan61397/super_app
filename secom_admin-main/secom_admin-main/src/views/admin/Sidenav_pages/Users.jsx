@@ -393,6 +393,7 @@ function Users() {
                                                 <option value="grocery_admin">Grocery Admin</option>
                                                 <option value="taxi_admin">Taxi Admin</option>
                                                 <option value="hotel_admin">Hotel Admin</option>
+                                                <option value="restaurant_admin">Restaurant Admin</option>
                                             </select>
                                         )}
                                     />
@@ -483,6 +484,7 @@ function Users() {
                                 </div>
                             </th>
                             <th className="px-6 py-4 text-left">Date</th>
+                            <th className="px-6 py-4 text-left">Last Login</th>
                             <th className="px-6 py-4 text-left">Name</th>
                             <th className="px-6 py-4 text-left">Email</th>
                             <th className="px-6 py-4 text-left">Phone</th>
@@ -494,7 +496,7 @@ function Users() {
                     <tbody>
                         {getPaginatedData().length === 0 ? (
                             <tr>
-                                <td colSpan="8" className="text-center py-4 text-gray-500">
+                                <td colSpan="9" className="text-center py-4 text-gray-500">
                                     {loading ? 'Loading...' : 'No Users found'}
                                 </td>
                             </tr>
@@ -511,6 +513,9 @@ function Users() {
                                     <td className="px-6 py-4">
                                         {formatDateWithOrdinal(user.created_at || user.createdAt)}
                                     </td>
+                                    <td className="px-6 py-4">
+                                        {user.last_login ? new Date(user.last_login).toLocaleString() : '-'}
+                                    </td>
                                     <td className="px-6 py-4">{user.name}</td>
                                     <td className="px-6 py-4">{user.email}</td>
                                     <td className="px-6 py-4">{user.phone || user.mobile_number || '-'}</td>
@@ -521,6 +526,7 @@ function Users() {
                                             user.role === 'grocery_admin' ? 'bg-green-100 text-green-800' :
                                             user.role === 'taxi_admin' ? 'bg-yellow-100 text-yellow-800' :
                                             user.role === 'hotel_admin' ? 'bg-purple-100 text-purple-800' :
+                                            user.role === 'restaurant_admin' ? 'bg-pink-100 text-pink-800' :
                                             'bg-gray-100 text-gray-800'
                                         }`}>
                                             {user.role.replace('_', ' ').toUpperCase()}

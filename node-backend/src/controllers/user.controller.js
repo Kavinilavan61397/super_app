@@ -96,6 +96,7 @@ exports.createUser = async (req, res) => {
       phone: user.phone,
       role: user.role,
       status: user.status,
+      last_login: user.last_login,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt
     };
@@ -164,6 +165,7 @@ exports.updateUser = async (req, res) => {
       phone: user.phone,
       role: user.role,
       status: user.status,
+      last_login: user.last_login,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt
     };

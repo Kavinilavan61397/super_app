@@ -102,6 +102,10 @@ if (ProductAttribute.associate) ProductAttribute.associate({ Product }); // opti
 User.hasMany(OTP, { foreignKey: 'user_id', as: 'otps', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
 OTP.belongsTo(User, { foreignKey: 'user_id', as: 'user', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
 
+// Register associations for User and Staff
+if (User.associate) User.associate({ Staff });
+if (Staff.associate) Staff.associate({ User });
+
 // Export all models
 module.exports = {
   sequelize,

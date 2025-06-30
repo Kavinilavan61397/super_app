@@ -547,29 +547,32 @@ function Users() {
                                             >
                                                 <FaEllipsisV />
                                             </button>
-                                            <div
-                                                className="absolute right-10 flex space-x-2 opacity-0 group-hover:opacity-100 group-hover:flex transition-all duration-200"
-                                                style={{ marginTop: "-30px" }}
-                                            >
+                                            {openDropdown === user.id && (
                                                 <div
-                                                    onClick={() => {
-                                                        handleEditUser(user);
-                                                        setOpenDropdown(null);
-                                                    }}
-                                                    className="flex items-center px-4 py-2 text-navy-700 hover:bg-gray-200 cursor-pointer"
+                                                    className="absolute right-10 flex space-x-2 bg-white border border-gray-200 rounded shadow-lg z-10"
+                                                    style={{ marginTop: "-30px" }}
+                                                    ref={dropdownRef}
                                                 >
-                                                    <FaEdit className="mr-2 text-black" />
+                                                    <button
+                                                        onClick={() => {
+                                                            handleEditUser(user);
+                                                            setOpenDropdown(null);
+                                                        }}
+                                                        className="flex items-center px-4 py-2 text-navy-700 hover:bg-gray-200 cursor-pointer"
+                                                    >
+                                                        <FaEdit className="mr-2 text-black" /> Edit
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            handleDeleteUser(user);
+                                                            setOpenDropdown(null);
+                                                        }}
+                                                        className="flex items-center px-4 py-2 text-red-600 hover:bg-gray-200 cursor-pointer"
+                                                    >
+                                                        <FaTrashAlt className="mr-2" /> Delete
+                                                    </button>
                                                 </div>
-                                                <div
-                                                    onClick={() => {
-                                                        handleDeleteUser(user);
-                                                        setOpenDropdown(null);
-                                                    }}
-                                                    className="flex items-center px-4 py-2 text-red-600 hover:bg-gray-200 cursor-pointer"
-                                                >
-                                                    <FaTrashAlt className="mr-2" />
-                                                </div>
-                                            </div>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>

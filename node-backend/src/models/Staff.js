@@ -51,4 +51,8 @@ const Staff = sequelize.define('Staff', {
   underscored: true
 });
 
+Staff.associate = (models) => {
+  Staff.belongsTo(models.User, { foreignKey: 'user_id', as: 'user' });
+};
+
 module.exports = Staff; 

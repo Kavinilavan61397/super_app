@@ -4,7 +4,10 @@ const User = require('../models/User');
 // Get all staff with user details
 exports.getAllStaff = async (req, res) => {
   try {
+    // Only show active staff by default, allow ?status=all to fetch all
+    const statusFilter = req.query.status === 'all' ? {} : { status: true };
     const staff = await Staff.findAll({
+      where: statusFilter,
       include: [{
         model: User,
         as: 'user',
@@ -12,7 +15,6 @@ exports.getAllStaff = async (req, res) => {
       }],
       order: [['createdAt', 'DESC']]
     });
-
     res.json({
       success: true,
       data: staff

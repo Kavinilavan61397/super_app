@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
-import { FaEdit, FaTrashAlt, FaPlus, FaEllipsisV } from 'react-icons/fa';
+import { FaEdit, FaTrashAlt, FaPlus, FaEllipsisV, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 import * as Yup from 'yup';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -10,285 +9,126 @@ import { TokenExpiration } from 'views/auth/TokenExpiration ';
 import 'react-toastify/dist/ReactToastify.css';
 import { toast, ToastContainer } from 'react-toastify';
 import Navbar from 'components/navbar';
+import { staffService } from 'services/staffService';
+import { userService } from 'services/userService';
+
 function Staff() {
     const [tableData, setTableData] = useState([]);
+    const [users, setUsers] = useState([]);
     const [openAddModal, setOpenAddModal] = useState(false);
     const [openEditModal, setOpenEditModal] = useState(false);
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-    const [selectedSize, setSelectedSize] = useState(null);
-    const [brandImage, setBrandImage] = useState(null);
+    const [selectedStaff, setSelectedStaff] = useState(null);
     const [selectedRows, setSelectedRows] = useState([]);
     const [openDropdown, setOpenDropdown] = useState(null);
-    const [rowIdToDelete, setRowIdToDelete] = useState(null);
     const [loading, setLoading] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const [totalItems, setTotalItems] = useState(0);
     const [isDeleting, setIsDeleting] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
-    const [filteredData, setFilteredData] = useState([]);  // For storing the filtered data
-
-
+    const [filteredData, setFilteredData] = useState([]);
+    const [statusFilter, setStatusFilter] = useState('active');
 
     // Yup validation schema
-    const validationSchemaAdd = Yup.object({
-        size_name: Yup.string().required('Size Name is required'),
-
+    const validationSchema = Yup.object({
+        user_id: Yup.string().required('User is required'),
+        department: Yup.string().required('Department is required'),
+        position: Yup.string().required('Position is required'),
+        hire_date: Yup.date().nullable(),
+        salary: Yup.number().typeError('Salary must be a number').nullable(),
+        status: Yup.boolean().required('Status is required')
     });
 
-    const validationSchemaEdit = Yup.object({
-        size_name: Yup.string().required('Size Name is required'),
-    });
-
-    const { reset, control, handleSubmit, setValue, trigger, formState: { errors } } = useForm({
-        resolver: yupResolver(openAddModal ? validationSchemaAdd : validationSchemaEdit),
+    const { reset, control, handleSubmit, setValue, formState: { errors } } = useForm({
+        resolver: yupResolver(validationSchema),
         defaultValues: {
-            size_name: selectedSize?.size_name || '',
-        },
+            user_id: '',
+            department: '',
+            position: '',
+            hire_date: '',
+            salary: '',
+            status: true
+        }
     });
 
-    const fetchSizeData = async () => {
+    // Fetch staff and users
+    const fetchStaffData = async () => {
         try {
-            const response = await axios.get('https://yrpitsolutions.com/ecom_backend/api/admin/get_all_size');
-            let data = response.data.data;
-            console.log(data);
-
-            // Apply the search query filter here
-            if (searchQuery.trim() !== '') {
-                data = data.filter((size) =>
-                    size.size_name.toLowerCase().includes(searchQuery.toLowerCase())
-                );
+            setLoading(true);
+            // Always fetch all staff, filter on frontend for instant UI like GroceryTable
+            const response = await staffService.getAllStaff('?status=all');
+            if (response.success) {
+                setTableData(response.data);
+                setFilteredData(response.data);
+                setTotalItems(response.data.length);
             }
-
-            // Set filtered data (filtered by search query)
-            setFilteredData(data);
-            setTotalItems(data.length);  // Set total items for pagination
         } catch (error) {
-            console.error('Error fetching data:', error);
+            toast.error(error.message || 'Failed to fetch staff');
+        } finally {
+            setLoading(false);
+        }
+    };
+    const fetchUsers = async () => {
+        try {
+            const response = await userService.getAllUsers({ limit: 1000 });
+            if (response.success) {
+                setUsers(response.data.users || response.data);
+            }
+        } catch (error) {
+            toast.error('Failed to fetch users');
         }
     };
 
     useEffect(() => {
-        fetchSizeData();  // Fetch data whenever itemsPerPage or currentPage changes
-    }, [itemsPerPage, currentPage, searchQuery]);
+        fetchStaffData();
+        fetchUsers();
+    }, []);
 
+    // Filter and sort staff like GroceryTable
+    const filteredStaff = tableData
+        .filter(staff => {
+            if (statusFilter === 'active') return staff.status === true;
+            if (statusFilter === 'inactive') return staff.status === false;
+            return true; // 'all'
+        })
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    // Search
     useEffect(() => {
-        if (searchQuery.trim() === '') {
-            // If there's no search query, reset to all data
+        if (searchQuery) {
+            const filtered = tableData.filter((staff) => {
+                const user = staff.user || {};
+                const lowercasedSearchQuery = searchQuery.toLowerCase();
+                return (
+                    user.name?.toLowerCase().includes(lowercasedSearchQuery) ||
+                    user.email?.toLowerCase().includes(lowercasedSearchQuery) ||
+                    staff.department?.toLowerCase().includes(lowercasedSearchQuery) ||
+                    staff.position?.toLowerCase().includes(lowercasedSearchQuery)
+                );
+            });
+            setFilteredData(filtered);
+            setTotalItems(filtered.length);
+            setCurrentPage(1);
+        } else {
             setFilteredData(tableData);
             setTotalItems(tableData.length);
-        } else {
-            // Filter the table data based on the search query
-            const filtered = tableData.filter((size) =>
-                size.size_name.toLowerCase().includes(searchQuery.toLowerCase())
-            );
-            setFilteredData(filtered);
-            setTotalItems(filtered.length); // Update total items count after filtering
         }
     }, [searchQuery, tableData]);
 
-
-
-    // Handle Page Change
+    // Pagination
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    const getPaginatedData = () => {
+        const start = (currentPage - 1) * itemsPerPage;
+        const end = start + itemsPerPage;
+        return filteredData.slice(start, end);
+    };
     const handlePageChange = (page) => {
         if (page < 1 || page > totalPages) return;
         setCurrentPage(page);
     };
 
-    const totalPages = Math.ceil(totalItems / itemsPerPage);
-
-    useEffect(() => {
-        fetchSizeData();
-    }, [itemsPerPage]);
-
-
-
-
-
-
-    const handleFormSubmit = async (data) => {
-        const formData = new FormData();
-        formData.append('size_name', data.size_name);
-        setLoading(true);
-
-        try {
-            const accessToken = localStorage.getItem('OnlineShop-accessToken');
-            const url = 'https://yrpitsolutions.com/ecom_backend/api/admin/save_size';
-
-            setTimeout(async () => {
-                try {
-                    const response = await axios.post(url, formData, {
-                        headers: { Authorization: `Bearer ${accessToken}` }
-                    });
-
-                    if (response.status === 200) {
-                        fetchSizeData();
-                        setOpenAddModal(false);
-                        setBrandImage(null);
-                        reset();
-
-                        // Success toast
-                        toast.success('Size added successfully!', {
-                            progress: undefined,  // Hide progress bar
-                            hideProgressBar: true,
-                        });
-                    }
-                } catch (error) {
-                    console.error('Error submitting form:', error);
-
-                    // Error toast
-                    toast.error('Error adding size!', {
-                        progress: undefined,  // Hide progress bar
-                        hideProgressBar: true,
-                    });
-                } finally {
-                    setLoading(false);
-                }
-            }, 2000);
-        } catch (error) {
-            setLoading(false);
-            console.error('Error preparing form data:', error);
-        }
-    };
-
-    const handleFormUpdate = async (data) => {
-        setLoading(true);
-
-        const formData = new FormData();
-        formData.append('_method', 'PUT');
-        formData.append('size_name', data.size_name || selectedSize.size_name);
-
-        try {
-            const accessToken = localStorage.getItem('OnlineShop-accessToken');
-            const url = `https://yrpitsolutions.com/ecom_backend/api/admin/update_size_by_id/${selectedSize.id}`;
-
-            setTimeout(async () => {
-                try {
-                    const response = await axios.post(url, formData, {
-                        headers: { Authorization: `Bearer ${accessToken}` },
-                    });
-
-                    if (response.status === 200) {
-                        fetchSizeData();
-                        setOpenEditModal(false);
-                        setBrandImage(null);
-                        reset();
-
-                        // Success toast
-                        toast.success('Size updated successfully!', {
-                            progress: undefined,  // Hide progress bar
-                            hideProgressBar: true,
-                        });
-                    }
-                } catch (error) {
-                    console.error('Error updating form:', error);
-
-                    // Error toast
-                    toast.error('Error updating size!', {
-                        progress: undefined,  // Hide progress bar
-                        hideProgressBar: true,
-                    });
-                } finally {
-                    setLoading(false);
-                }
-            }, 2000);
-        } catch (error) {
-            setLoading(false);
-            console.error('Error preparing form data:', error);
-        }
-    };
-
-    const handleAddBrand = () => {
-        setSelectedSize(null);
-        setValue('size_name', '');
-        setOpenAddModal(true);
-    };
-
-    const handleEditRow = (size) => {
-        setSelectedSize(size);
-        setValue('size_name', size.size_name);
-        setOpenEditModal(true);
-        trigger();
-    };
-
-
-    const handleDeleteRow = (id) => {
-        setRowIdToDelete(id);
-        setOpenDeleteDialog(true);
-    };
-
-    const handleDeleteConfirmation = async () => {
-        setIsDeleting(true);
-        try {
-            const accessToken = localStorage.getItem('OnlineShop-accessToken');
-
-            // Perform the delete request
-            await axios.delete(`https://yrpitsolutions.com/ecom_backend/api/admin/delete_size_by_id/${rowIdToDelete}`, {
-                headers: { Authorization: `Bearer ${accessToken}` },
-            });
-
-            // Refresh size data and close the delete dialog
-            fetchSizeData();
-            setOpenDeleteDialog(false);
-
-            // Show success toast
-            toast.success('Size deleted successfully!', {
-                progress: undefined,  // Hide progress bar
-                hideProgressBar: true,
-            });
-
-        } catch (error) {
-            console.error('Error deleting size:', error);
-
-            // Show error toast
-            toast.error('Error deleting size!', {
-                progress: undefined,  // Hide progress bar
-                hideProgressBar: true,
-            });
-        } finally {
-            setIsDeleting(false);
-        }
-    };
-
-    const handleCancelDelete = () => {
-        setOpenDeleteDialog(false);
-    };
-    const handleBulkDelete = async () => {
-        setLoading(true);
-        try {
-            const accessToken = localStorage.getItem('OnlineShop-accessToken');
-
-            // Iterate through selected rows and delete each size
-            for (let id of selectedRows) {
-                await axios.delete(`https://yrpitsolutions.com/ecom_backend/api/admin/delete_size_by_id/${id}`, {
-                    headers: { Authorization: `Bearer ${accessToken}` },
-                });
-            }
-
-            // Refresh size data
-            await fetchSizeData();
-            setSelectedRows([]); // Clear selection
-            window.location.reload(); // Optionally refresh the page
-
-            // Show success toast after bulk delete is complete
-            toast.success('Selected sizes deleted successfully!', {
-                progress: undefined,  // Hide progress bar
-                hideProgressBar: true,
-            });
-
-        } catch (error) {
-            console.error('Error deleting selected sizes:', error);
-
-            // Show error toast if something goes wrong
-            toast.error('Error deleting selected sizes!', {
-                progress: undefined,  // Hide progress bar
-                hideProgressBar: true,
-            });
-        } finally {
-            setLoading(false);
-        }
-    };
-
+    // Row selection
     const handleRowSelection = (id) => {
         setSelectedRows((prevSelectedRows) =>
             prevSelectedRows.includes(id)
@@ -297,449 +137,309 @@ function Staff() {
         );
     };
 
-    useEffect(() => {
-        if (searchQuery) {
-            // Ensure you're filtering by the discount name
-            const filtered = tableData.filter((size) =>
-                size.size_name?.toLowerCase().includes(searchQuery.toLowerCase()) // Filter by discount name
-            );
-            setFilteredData(filtered);
-            setTotalItems(filtered.length);
-            setCurrentPage(1); // Reset to first page when search query changes
-        } else {
-            setFilteredData(tableData); // If no search query, show all discounts
-            setTotalItems(tableData.length);
+    // Form submit
+    const handleFormSubmit = async (data) => {
+        try {
+            setLoading(true);
+            if (openEditModal && selectedStaff) {
+                await staffService.updateStaff(selectedStaff.id, data);
+                toast.success('Staff updated successfully!');
+            } else {
+                await staffService.createStaff(data);
+                toast.success('Staff created successfully!');
+            }
+            setOpenAddModal(false);
+            setOpenEditModal(false);
+            setSelectedStaff(null);
+            reset();
+            fetchStaffData();
+        } catch (error) {
+            toast.error(error.message || 'Failed to save staff');
+        } finally {
+            setLoading(false);
         }
-    }, [searchQuery, tableData]);
-
-    // Get paginated data
-    const getPaginatedData = () => {
-        const start = (currentPage - 1) * itemsPerPage;
-        const end = start + itemsPerPage;
-        return filteredData.slice(start, end);
     };
 
+    // Edit staff
+    const handleEditStaff = (staff) => {
+        setSelectedStaff(staff);
+        setValue('user_id', staff.user_id);
+        setValue('department', staff.department || '');
+        setValue('position', staff.position || '');
+        setValue('hire_date', staff.hire_date ? staff.hire_date.split('T')[0] : '');
+        setValue('salary', staff.salary || '');
+        setValue('status', staff.status);
+        setOpenEditModal(true);
+    };
 
-    // const [openDropdown, setOpenDropdown] = useState(null);
+    // Delete staff
+    const handleDeleteStaff = (staff) => {
+        setSelectedStaff(staff);
+        setOpenDeleteDialog(true);
+    };
+    const handleDeleteConfirmation = async () => {
+        if (!selectedStaff) return;
+        try {
+            setIsDeleting(true);
+            await staffService.deleteStaff(selectedStaff.id);
+            toast.success('Staff deleted successfully!');
+            setOpenDeleteDialog(false);
+            setSelectedStaff(null);
+            fetchStaffData();
+        } catch (error) {
+            toast.error(error.message || 'Failed to delete staff');
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
+    // Dropdown ref for outside click
     const dropdownRef = useRef(null);
-
-
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
                 setOpenDropdown(null);
             }
         };
-
         document.addEventListener('mousedown', handleClickOutside);
-
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, []);
+
     return (
-        <div className=" min-h-screen pt-6">
+        <div className="p-6">
             <Navbar brandText={"Staff"} />
             <TokenExpiration />
             <ToastContainer />
-            <div className="w-full mx-auto">
-                <span className="flex mt-4 items-center w-full gap-6">
-                    {/* Search bar */}
-                    <div className="relative flex flex-grow items-center justify-around gap-2 rounded-full bg-white px-2 py-3 shadow-xl shadow-shadow-500 dark:!bg-navy-800 dark:shadow-none">
-                        <div className="flex h-full w-full items-center rounded-full text-navy-700 dark:bg-navy-900 dark:text-white">
-                            <p className="pl-3 pr-2 text-xl">
-                                <FiSearch className="h-4 w-4 text-gray-400 dark:text-white" />
-                            </p>
-                            <input
-                                type="text"
-                                placeholder="Search by Staff Name..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)} // Update searchQuery state on change
-                                className="block w-full rounded-full text-base font-medium text-navy-700 outline-none placeholder:!text-gray-400 dark:bg-navy-900 dark:text-white dark:placeholder:!text-white"
-                            />
-                        </div>
-                    </div>
-
-
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-2xl font-bold text-gray-800">Staff Management</h1>
+                <div className="flex gap-2 items-center">
+                    <select
+                        value={statusFilter}
+                        onChange={e => setStatusFilter(e.target.value)}
+                        className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[120px]"
+                    >
+                        <option value="all">All</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
                     <button
-                        onClick={handleAddBrand}
-                        className="bg-[#4318ff] text-white px-6 py-2 rounded-full text-lg font-medium flex items-center ml-auto"
+                        onClick={() => {
+                            reset();
+                            setOpenAddModal(true);
+                        }}
+                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                     >
                         <FaPlus className="mr-2" /> Add Staff
                     </button>
-                </span>
-
-
-                {openAddModal && !openEditModal && (
-                    <div
-                        className="fixed inset-0 flex items-center justify-center z-50 bg-gray-900 bg-opacity-50"
-                        onClick={() => setOpenAddModal(false)}
-                    >
-                        <div
-                            className="bg-white rounded-lg shadow-2xl p-12  w-[35%]  max-h-[80%] overflow-y-auto"
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <h2 className="text-2xl font-semibold text-gray-800 mb-6">Add Staff</h2>
-
-                            <div className="mb-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-lg text-gray-600 font-medium mb-2">Staff Name
-                                        <span className="text-red-500 ">*</span>
-                                    </label>
-                                    <Controller
-                                        name="button_name"
-                                        control={control}
-                                        render={({ field }) => (
-                                            <input
-                                                type="text"
-                                                placeholder="Enter Staff Name"
-                                                className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-800 focus:outline-none"
-                                                {...field}
-                                            />
-                                        )}
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-lg text-gray-600 font-medium mb-2">EmailL
-                                        <span className="text-red-500 ">*</span>
-                                    </label>
-                                    <Controller
-                                        name="url"
-                                        control={control}
-                                        render={({ field }) => (
-                                            <input
-                                                type="text"
-                                                placeholder="Enter Email"
-                                                className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-800 focus:outline-none"
-                                                {...field}
-                                            />
-                                        )}
-                                    />
-                                </div>
-                            </div>
-                            <div className="mb-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-lg text-gray-600 font-medium mb-2">Role
-                                        <span className="text-red-500 ">*</span>
-                                    </label>
-                                    <Controller
-                                        name="button_name"
-                                        control={control}
-                                        render={({ field }) => (
-                                            <input
-                                                type="text"
-                                                placeholder="Enter Role"
-                                                className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-800 focus:outline-none"
-                                                {...field}
-                                            />
-                                        )}
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-lg text-gray-600 font-medium mb-2">Password
-                                        <span className="text-red-500 ">*</span>
-                                    </label>
-                                    <Controller
-                                        name="url"
-                                        control={control}
-                                        render={({ field }) => (
-                                            <input
-                                                type="text"
-                                                placeholder="Enter Password"
-                                                className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-800 focus:outline-none"
-                                                {...field}
-                                            />
-                                        )}
-                                    />
-                                </div>
-                            </div>
-
-
-
-                            <div className="flex justify-end space-x-4 mt-6">
-                                <button
-                                    onClick={() => setOpenAddModal(false)}
-                                    className="bg-gray-300 text-gray-800 px-6 py-3 rounded-md"
-                                >
-                                    Cancel
-                                </button>
-
-                                <button
-                                    onClick={handleSubmit(handleFormSubmit)}
-                                    disabled={loading}
-                                    className="relative bg-[#4318ff] text-white px-6 py-3 rounded-lg flex items-center ml-auto max-w-xs"
-                                >
-                                    {loading ? (
-                                        <div className="absolute inset-0 flex items-center justify-center w-full h-full">
-                                            <div className="w-6 h-6 border-4 border-t-transparent border-white rounded-full animate-spin"></div>
-                                        </div>
-                                    ) : (
-                                        'Save'
-                                    )}
-                                </button>
-                            </div>
-                        </div>
+                </div>
+            </div>
+            <div className="bg-white shadow-md rounded-lg overflow-x-auto">
+                {loading ? (
+                    <div className="flex justify-center items-center p-8">
+                        <FaSpinner className="animate-spin text-4xl text-blue-500" />
                     </div>
-                )}
-
-                {openEditModal && (
-                    <div
-                        className="fixed inset-0 flex items-center justify-center z-50 bg-gray-900 bg-opacity-50"
-                        onClick={() => setOpenEditModal(false)}
-                    >
-                        <div
-                            className="bg-white rounded-lg shadow-2xl p-12  w-[35%]  max-h-[80%] overflow-y-auto"
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <h2 className="text-2xl font-semibold text-gray-800 mb-6">Edit Staff</h2>
-
-                            <div className="mb-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-lg text-gray-600 font-medium mb-2">Staff Name</label>
-                                    <Controller
-                                        name="button_name"
-                                        control={control}
-                                        render={({ field }) => (
-                                            <input
-                                                type="text"
-                                                placeholder="Enter Staff Name"
-                                                className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-800 focus:outline-none"
-                                                {...field}
-                                            />
-                                        )}
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-lg text-gray-600 font-medium mb-2">Email</label>
-                                    <Controller
-                                        name="url"
-                                        control={control}
-                                        render={({ field }) => (
-                                            <input
-                                                type="text"
-                                                placeholder="Enter Email"
-                                                className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-800 focus:outline-none"
-                                                {...field}
-                                            />
-                                        )}
-                                    />
-                                </div>
-                            </div>
-                            
-                            <div className="mb-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-lg text-gray-600 font-medium mb-2">Role</label>
-                                    <Controller
-                                        name="button_name"
-                                        control={control}
-                                        render={({ field }) => (
-                                            <input
-                                                type="text"
-                                                placeholder="Enter Role"
-                                                className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-800 focus:outline-none"
-                                                {...field}
-                                            />
-                                        )}
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-lg text-gray-600 font-medium mb-2">Password</label>
-                                    <Controller
-                                        name="url"
-                                        control={control}
-                                        render={({ field }) => (
-                                            <input
-                                                type="text"
-                                                placeholder="Enter Password"
-                                                className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-800 focus:outline-none"
-                                                {...field}
-                                            />
-                                        )}
-                                    />
-                                </div>
-                            </div>
-
-
-
-
-                            <div className="flex justify-end space-x-4 mt-4">
-                                <button
-                                    onClick={() => setOpenEditModal(false)}
-                                    className="bg-gray-300 text-gray-800 px-6 py-3 rounded-md"
-                                >
-                                    Cancel
-                                </button>
-
-                                <button
-                                    onClick={handleSubmit(handleFormUpdate)}
-                                    disabled={loading}
-                                    className="relative bg-[#4318ff] text-white px-6 py-3 rounded-lg flex items-center ml-auto max-w-xs"
-                                >
-                                    {loading ? (
-                                        <div className="absolute inset-0 flex items-center justify-center">
-                                            <div className="w-6 h-6 border-4 border-t-transparent border-white rounded-full animate-spin"></div>
-                                        </div>
-                                    ) : (
-                                        'Save Changes'
-                                    )}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-
-
-                {/* Table */}
-                <div className="mt-8 bg-white shadow-lg rounded-lg p-6">
-                    <table className="w-full table-auto">
-                        <thead>
-                            <tr className="text-gray-600">
-                                <th className="px-6 py-4 text-left">
-                                    <div className="flex justify-between items-center">
-                                        <input
-                                            type="checkbox"
-                                            // checked={selectedRows.length === getPaginatedData().length}
-                                            checked={false}
-                                            onChange={() => {
-                                                if (selectedRows.length === getPaginatedData().length) {
-                                                    setSelectedRows([]);
-                                                } else {
-                                                    setSelectedRows(getPaginatedData().map((row) => row.id));
-                                                }
-                                            }}
-                                        />
-                                    </div>
-                                </th>
-
-                                <th className="px-6 py-4 text-left">Name</th>
-                                <th className="px-6 py-4 text-left">Email</th>
-                                <th className="px-6 py-4 text-left">Role</th>
-                                <th className="px-6 py-4 text-left">Password</th>
-                                <th className="">
-                                    {selectedRows.length > 0 && (
-                                        <button
-                                            onClick={handleBulkDelete}
-                                            className={`text-gray-600 hover:text-red-600 text-xl flex items-center ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                            disabled={loading}
-                                        >
-                                            {loading ? (
-                                                <div className="relative">
-                                                    <div className="w-6 h-6 border-4 border-t-transparent border-red-600 rounded-full animate-spin"></div>
-                                                </div>
-                                            ) : (
-                                                <FaTrashAlt />
-                                            )}
-                                        </button>
-                                    )}
-                                </th>
+                ) : (
+                    <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                            <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Position</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hire Date</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Salary</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            {getPaginatedData().length > 0 ? (
-                                getPaginatedData().map((size) => (
-                                    <tr key={size.id} className="border-t">
-                                        <td className="px-6 py-4">
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedRows.includes(size.id)}
-                                                onChange={() => handleRowSelection(size.id)}
-                                            />
+                        <tbody className="bg-white divide-y divide-gray-200">
+                            {filteredStaff.length === 0 ? (
+                                <tr>
+                                    <td colSpan="7" className="px-6 py-4 text-center text-gray-500">No staff found.</td>
+                                </tr>
+                            ) : (
+                                filteredStaff.map((staff) => (
+                                    <tr key={staff.id} className="hover:bg-gray-50">
+                                        <td className="px-6 py-4 font-medium text-gray-900">
+                                            {staff.user ? `${staff.user.name} (${staff.user.email})` : '-'}
                                         </td>
-
-                                        <td className="px-6 py-4">{size.size_name}</td>
-                                        <td className="px-6 py-4">{size.size_name}</td>
-                                        <td className="px-6 py-4">{size.size_name}</td>
-                                        <td className="px-6 py-4">{size.size_name}</td>
-                                        {/* <td className="text-right">
-                                            <div className="relative inline-block">
+                                        <td className="px-6 py-4 text-gray-700">{staff.department || '-'}</td>
+                                        <td className="px-6 py-4 text-gray-700">{staff.position || '-'}</td>
+                                        <td className="px-6 py-4 text-gray-700">{staff.hire_date ? new Date(staff.hire_date).toLocaleDateString() : '-'}</td>
+                                        <td className="px-6 py-4 text-gray-700">{staff.salary !== null && staff.salary !== undefined ? staff.salary : '-'}</td>
+                                        <td className="px-6 py-4">
+                                            {staff.status ? (
+                                                <FaCheckCircle className="text-green-500 text-xl" />
+                                            ) : (
+                                                <FaTimesCircle className="text-red-500 text-xl" />
+                                            )}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm font-medium">
+                                            <div className="flex items-center space-x-4">
                                                 <button
-                                                    onClick={() => setOpenDropdown(openDropdown === size.id ? null : size.id)}
-                                                    className="text-gray-600 hover:text-gray-900"
+                                                    onClick={() => handleEditStaff(staff)}
+                                                    className="text-blue-600 hover:text-blue-900"
                                                 >
-                                                    <FaEllipsisV />
+                                                    <FaEdit className="text-lg" />
                                                 </button>
-                                                {openDropdown === size.id && (
-                                                    <div
-                                                        ref={dropdownRef}
-                                                        className="absolute right-0 mt-2 bg-white border border-gray-200 shadow-lg rounded-md w-40 z-10"
-                                                    >
-                                                        <div
-                                                            onClick={() => {
-                                                                handleEditRow(size);
-                                                                setOpenDropdown(null);
-                                                            }}
-                                                            className="flex items-center px-4 py-2 text-navy-700 hover:bg-gray-200 cursor-pointer"
-                                                        >
-                                                            <FaEdit className="mr-2 text-black" />
-                                                            Edit
-                                                        </div>
-                                                        <div
-                                                            onClick={() => {
-                                                                handleDeleteRow(size.id);
-                                                                setOpenDropdown(null);
-                                                            }}
-                                                            className="flex items-center px-4 py-2 text-red-600 hover:bg-gray-200 cursor-pointer"
-                                                        >
-                                                            <FaTrashAlt className="mr-2" />
-                                                            Delete
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </td> */}
-
-                                        <td className="text-right">
-                                            <div className="relative inline-block group">
                                                 <button
-                                                    onClick={() => setOpenDropdown(openDropdown === size.id ? null : size.id)}
-                                                    className="text-gray-600 hover:text-gray-900"
+                                                    onClick={() => handleDeleteStaff(staff)}
+                                                    className="text-red-600 hover:text-red-900"
                                                 >
-                                                    <FaEllipsisV />
+                                                    <FaTrashAlt className="text-lg" />
                                                 </button>
-                                                <div
-                                                    className="absolute right-10 flex space-x-2 opacity-0 group-hover:opacity-100 group-hover:flex transition-all duration-200  " style={{ marginTop: "-30px" }}
-                                                >
-                                                    <div
-                                                        onClick={() => {
-                                                            handleEditRow(size);
-                                                            setOpenDropdown(null);
-                                                        }}
-                                                        className="flex items-center px-4 py-2 text-navy-700 hover:bg-gray-200 cursor-pointer"
-                                                    >
-                                                        <FaEdit className="mr-2 text-black" />
-                                                    </div>
-                                                    <div
-                                                        onClick={() => {
-                                                            handleDeleteRow(size.id);
-                                                            setOpenDropdown(null);
-                                                        }}
-                                                        className="flex items-center px-4 py-2 text-red-600 hover:bg-gray-200 cursor-pointer"
-                                                    >
-                                                        <FaTrashAlt className="mr-2" />
-                                                    </div>
-                                                </div>
                                             </div>
                                         </td>
                                     </tr>
                                 ))
-                            ) : (
-                                <tr>
-                                    <td colSpan="4" className="px-6 py-4 text-center text-gray-500">
-                                        No data found
-                                    </td>
-                                </tr>
                             )}
                         </tbody>
                     </table>
-                </div>
-
-
+                )}
             </div>
+            {/* Add/Edit Modal */}
+            {(openAddModal || openEditModal) && (
+                <div className="fixed inset-0 flex items-center justify-center z-50 bg-gray-900 bg-opacity-50" onClick={() => {
+                    setOpenAddModal(false);
+                    setOpenEditModal(false);
+                    setSelectedStaff(null);
+                    reset();
+                }}>
+                    <div className="bg-white rounded-lg shadow-2xl p-12 w-[50%] max-h-[85%] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                        <h2 className="text-2xl font-semibold text-gray-800 mb-6">
+                            {openEditModal ? 'Edit Staff' : 'Add New Staff'}
+                        </h2>
+                        <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-lg text-gray-600 font-medium mb-2">User <span className="text-red-500">*</span></label>
+                                    <Controller
+                                        name="user_id"
+                                        control={control}
+                                        render={({ field }) => (
+                                            <select
+                                                className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-800 focus:outline-none"
+                                                {...field}
+                                            >
+                                                <option value="">Select User</option>
+                                                {users.map((user) => (
+                                                    <option key={user.id} value={user.id}>
+                                                        {user.name} ({user.email})
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        )}
+                                    />
+                                    {errors.user_id && <p className="text-red-500 text-sm mt-1">{errors.user_id.message}</p>}
+                                </div>
+                                <div>
+                                    <label className="block text-lg text-gray-600 font-medium mb-2">Department <span className="text-red-500">*</span></label>
+                                    <Controller
+                                        name="department"
+                                        control={control}
+                                        render={({ field }) => (
+                                            <input
+                                                type="text"
+                                                placeholder="Enter Department"
+                                                className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-800 focus:outline-none"
+                                                {...field}
+                                            />
+                                        )}
+                                    />
+                                    {errors.department && <p className="text-red-500 text-sm mt-1">{errors.department.message}</p>}
+                                </div>
+                                <div>
+                                    <label className="block text-lg text-gray-600 font-medium mb-2">Position <span className="text-red-500">*</span></label>
+                                    <Controller
+                                        name="position"
+                                        control={control}
+                                        render={({ field }) => (
+                                            <input
+                                                type="text"
+                                                placeholder="Enter Position"
+                                                className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-800 focus:outline-none"
+                                                {...field}
+                                            />
+                                        )}
+                                    />
+                                    {errors.position && <p className="text-red-500 text-sm mt-1">{errors.position.message}</p>}
+                                </div>
+                                <div>
+                                    <label className="block text-lg text-gray-600 font-medium mb-2">Hire Date</label>
+                                    <Controller
+                                        name="hire_date"
+                                        control={control}
+                                        render={({ field }) => (
+                                            <input
+                                                type="date"
+                                                className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-800 focus:outline-none"
+                                                {...field}
+                                            />
+                                        )}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-lg text-gray-600 font-medium mb-2">Salary</label>
+                                    <Controller
+                                        name="salary"
+                                        control={control}
+                                        render={({ field }) => (
+                                            <input
+                                                type="number"
+                                                placeholder="Enter Salary"
+                                                className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-800 focus:outline-none"
+                                                {...field}
+                                            />
+                                        )}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-lg text-gray-600 font-medium mb-2">Status <span className="text-red-500">*</span></label>
+                                    <Controller
+                                        name="status"
+                                        control={control}
+                                        render={({ field }) => (
+                                            <select
+                                                className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-800 focus:outline-none"
+                                                {...field}
+                                            >
+                                                <option value={true}>Active</option>
+                                                <option value={false}>Inactive</option>
+                                            </select>
+                                        )}
+                                    />
+                                    {errors.status && <p className="text-red-500 text-sm mt-1">{errors.status.message}</p>}
+                                </div>
+                            </div>
+                            <div className="flex justify-end space-x-4 mt-6">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setOpenAddModal(false);
+                                        setOpenEditModal(false);
+                                        setSelectedStaff(null);
+                                        reset();
+                                    }}
+                                    className="px-6 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-100"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="px-6 py-2 text-white bg-[#4318ff] rounded-md hover:bg-[#3311db] flex items-center"
+                                    disabled={loading}
+                                >
+                                    {loading ? (
+                                        <FaSpinner className="animate-spin mr-2" />
+                                    ) : null}
+                                    {openEditModal ? 'Update Staff' : 'Create Staff'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
 
             {/* Pagination */}
             <div className="flex justify-between items-center mt-4">
@@ -750,39 +450,28 @@ function Staff() {
                         onChange={(e) => setItemsPerPage(Number(e.target.value))}
                         className="border border-gray-300 px-4 py-2 rounded-md"
                     >
-                        {[5, 10, 20, 50, 100].map((option) => (
-                            <option key={option} value={option}>
-                                {option}
-                            </option>
-                        ))}
+                        <option value={5}>5</option>
+                        <option value={10}>10</option>
+                        <option value={25}>25</option>
+                        <option value={50}>50</option>
                     </select>
                     <span className="ml-2">entries</span>
                 </div>
-
-                <div className="flex space-x-4">
-                    {/* Showing Item Range */}
-
+                <div className="flex items-center space-x-2">
                     <button
                         onClick={() => handlePageChange(currentPage - 1)}
                         disabled={currentPage === 1}
-                        className={`${currentPage === 1
-                            ? 'bg-[#4318ff] text-white opacity-50 cursor-not-allowed'
-                            : 'bg-[#4318ff] text-white hover:bg-[#3700b3]'
-                            } px-6 py-2 rounded-[20px]`}
+                        className="px-3 py-1 border border-gray-300 rounded-md disabled:opacity-50"
                     >
-                        Back
+                        Previous
                     </button>
-                    <span className="text-gray-600 mt-2">
-                        {` ${(currentPage - 1) * itemsPerPage + 1} to ${Math.min(currentPage * itemsPerPage, totalItems)} of ${totalItems} items`}
+                    <span className="px-3 py-1">
+                        Page {currentPage} of {totalPages}
                     </span>
-
                     <button
                         onClick={() => handlePageChange(currentPage + 1)}
                         disabled={currentPage === totalPages}
-                        className={`${currentPage === totalPages || totalItems === 0
-                            ? 'bg-[#4318ff] text-white opacity-50 cursor-not-allowed'
-                            : 'bg-[#4318ff] text-white hover:bg-[#3700b3]'
-                            } px-6 py-2 rounded-[20px]`}
+                        className="px-3 py-1 border border-gray-300 rounded-md disabled:opacity-50"
                     >
                         Next
                     </button>
@@ -791,12 +480,13 @@ function Staff() {
 
             {/* Delete Confirmation Dialog */}
             {openDeleteDialog && (
-                <div className="fixed inset-0 flex items-center justify-center z-20 bg-gray-500 bg-opacity-50">
+                <div className="fixed inset-0 flex items-center justify-center z-50 bg-gray-900 bg-opacity-50">
                     <div className="bg-white p-6 rounded-md shadow-lg w-1/3">
-                        <h2 className="text-xl font-semibold mb-4">Are you sure you want to delete this Size?</h2>
+                        <h2 className="text-xl font-semibold mb-4">Are you sure you want to delete this staff member?</h2>
+                        <p className="text-gray-600 mb-4">This action cannot be undone.</p>
                         <div className="flex justify-end">
                             <button
-                                onClick={handleCancelDelete}
+                                onClick={() => setOpenDeleteDialog(false)}
                                 className="px-4 py-2 mr-4 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-100"
                             >
                                 Cancel
@@ -818,10 +508,6 @@ function Staff() {
                 </div>
             )}
         </div>
-
-
-
-
     );
 }
 

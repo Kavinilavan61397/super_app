@@ -57,4 +57,8 @@ User.prototype.comparePassword = async function(candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
+User.associate = (models) => {
+  User.hasOne(models.Staff, { foreignKey: 'user_id', as: 'staff' });
+};
+
 module.exports = User;

@@ -45,9 +45,9 @@ api.interceptors.response.use(
 
 export const staffService = {
   // Get all staff
-  getAllStaff: async () => {
+  getAllStaff: async (query = '') => {
     try {
-      const response = await api.get('/api/staff');
+      const response = await api.get(`/api/staff${query}`);
       return response.data;
     } catch (error) {
       throw error.response?.data || {

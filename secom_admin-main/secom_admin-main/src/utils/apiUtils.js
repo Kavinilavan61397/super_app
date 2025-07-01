@@ -1,7 +1,7 @@
 import axios from 'axios';
 import API_CONFIG from '../config/api.config';
 
-// Function to convert remote URLs to local API endpoints
+// Function to convert remote URLs to local API endpoints (no hardcoded /api/)
 export const convertToLocalEndpoint = (remoteUrl) => {
   // Extract the API path from the remote URL
   const apiPath = remoteUrl.split('/api/')[1];
@@ -9,7 +9,8 @@ export const convertToLocalEndpoint = (remoteUrl) => {
     console.error('Invalid API URL:', remoteUrl);
     return remoteUrl;
   }
-  return `${API_CONFIG.BASE_URL}/api/${apiPath}`;
+  // Just append the path to BASE_URL (no /api/ prefix)
+  return `${API_CONFIG.BASE_URL}/${apiPath}`;
 };
 
 // Function to get the API base URL
@@ -17,9 +18,10 @@ export const getApiBaseUrl = () => {
   return API_CONFIG.BASE_URL;
 };
 
-// Function to get the full API URL for a given endpoint
+// Function to get the full API URL for a given endpoint (no /api/ prefix)
 export const getApiUrl = (endpoint) => {
-  return `${API_CONFIG.BASE_URL}${endpoint}`;
+  // Ensure endpoint starts with /
+  return `${API_CONFIG.BASE_URL}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
 };
 
 // Function to get headers with auth token

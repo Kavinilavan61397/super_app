@@ -12,7 +12,7 @@ const restaurantAPI = axios.create({
 // Add auth token to requests
 restaurantAPI.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('OnlineShop-accessToken');
+    const token = localStorage.getItem(API_CONFIG.STORAGE_KEYS.AUTH_TOKEN);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -151,7 +151,7 @@ const dishAPI = axios.create({
 
 dishAPI.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('OnlineShop-accessToken');
+    const token = localStorage.getItem(API_CONFIG.STORAGE_KEYS.AUTH_TOKEN);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }

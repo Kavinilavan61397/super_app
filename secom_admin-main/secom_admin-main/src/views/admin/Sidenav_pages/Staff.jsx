@@ -85,19 +85,15 @@ function Staff() {
         fetchUsers();
     }, []);
 
-    // Filter and sort staff like GroceryTable
-    const filteredStaff = tableData
-        .filter(staff => {
-            if (statusFilter === 'active') return staff.status === true;
-            if (statusFilter === 'inactive') return staff.status === false;
-            return true; // 'all'
-        })
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-    // Search
+
+    // Search and status filter
     useEffect(() => {
+        let filtered = tableData;
+        
+        // Apply search filter
         if (searchQuery) {
-            const filtered = tableData.filter((staff) => {
+            filtered = filtered.filter((staff) => {
                 const user = staff.user || {};
                 const lowercasedSearchQuery = searchQuery.toLowerCase();
                 return (
@@ -107,14 +103,22 @@ function Staff() {
                     staff.position?.toLowerCase().includes(lowercasedSearchQuery)
                 );
             });
-            setFilteredData(filtered);
-            setTotalItems(filtered.length);
-            setCurrentPage(1);
-        } else {
-            setFilteredData(tableData);
-            setTotalItems(tableData.length);
         }
-    }, [searchQuery, tableData]);
+        
+        // Apply status filter
+        if (statusFilter === 'active') {
+            filtered = filtered.filter(staff => staff.status === true);
+        } else if (statusFilter === 'inactive') {
+            filtered = filtered.filter(staff => staff.status === false);
+        }
+        
+        // Sort by creation date (newest first)
+        filtered = filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        
+        setFilteredData(filtered);
+        setTotalItems(filtered.length);
+        setCurrentPage(1);
+    }, [searchQuery, statusFilter, tableData]);
 
     // Pagination
     const totalPages = Math.ceil(totalItems / itemsPerPage);
@@ -215,6 +219,16 @@ function Staff() {
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold text-gray-800">Staff Management</h1>
                 <div className="flex gap-2 items-center">
+                    <div className="relative">
+                        <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                        <input
+                            type="text"
+                            placeholder="Search staff..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[250px]"
+                        />
+                    </div>
                     <select
                         value={statusFilter}
                         onChange={e => setStatusFilter(e.target.value)}
@@ -254,12 +268,12 @@ function Staff() {
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                            {filteredStaff.length === 0 ? (
+                            {getPaginatedData().length === 0 ? (
                                 <tr>
                                     <td colSpan="7" className="px-6 py-4 text-center text-gray-500">No staff found.</td>
                                 </tr>
                             ) : (
-                                filteredStaff.map((staff) => (
+                                getPaginatedData().map((staff) => (
                                     <tr key={staff.id} className="hover:bg-gray-50">
                                         <td className="px-6 py-4 font-medium text-gray-900">
                                             {staff.user ? `${staff.user.name} (${staff.user.email})` : '-'}

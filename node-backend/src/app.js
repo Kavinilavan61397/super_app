@@ -2,8 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const groceryOrderRoutes = require('./routes/groceryOrder.routes');
-const hotelRoutes = require('./routes/hotelRoutes');
-const roomRoutes = require('./routes/roomRoutes');
+const hotelRoutes = require('./routes/hotel.routes');
+const roomRoutes = require('./routes/room.routes');
 const bookingRoutes = require('./routes/bookingRoutes');
 const authRoutes = require('./routes/auth.routes');
 const categoryRoutes = require('./routes/category.routes');
@@ -24,6 +24,10 @@ const staffRoutes = require('./routes/staff.routes');
 const productAttributeRoutes = require('./routes/productAttribute.routes');
 const restaurantRoutes = require('./routes/restaurant.routes');
 const dishRoutes = require('./routes/dish.routes');
+const amenityRoutes = require('./routes/amenity.routes');
+const policyRoutes = require('./routes/policy.routes');
+const locationRoutes = require('./routes/location.routes');
+const faqRoutes = require('./routes/faq.routes');
 
 const app = express();
 
@@ -51,7 +55,6 @@ app.use('/api/admin', sizeRoutes);      // /admin/sizes
 app.use('/api/admin', colorRoutes);     // /admin/colors
 app.use('/api/admin', unitRoutes);      // /admin/units
 app.use('/api/hotels', hotelRoutes);
-app.use('/api/products',productRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/groceries', groceryRoutes);
@@ -68,6 +71,10 @@ app.use('/api/grocery-orders', groceryOrderRoutes);
 app.use('/api/product-attributes', productAttributeRoutes);
 app.use('/api/restaurants', restaurantRoutes); // ✅ Restaurant management
 app.use('/api/dishes', dishRoutes);
+app.use('/api/amenities', amenityRoutes);
+app.use('/api/policies', policyRoutes);
+app.use('/api/locations', locationRoutes);
+app.use('/api/faqs', faqRoutes);
 
 // ✅ Default API welcome route
 app.get('/', (req, res) => {
@@ -91,7 +98,11 @@ app.get('/', (req, res) => {
       gorders: '/api/gorders',
       users: '/api/users',
       roles: '/api/roles',
-      staff: '/api/staff'
+      staff: '/api/staff',
+      amenities: '/api/amenities',
+      policies: '/api/policies',
+      locations: '/api/locations',
+      faqs: '/api/faqs'
     }
   });
 });

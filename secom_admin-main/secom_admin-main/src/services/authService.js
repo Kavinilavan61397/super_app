@@ -144,8 +144,6 @@ export const authService = {
       localStorage.removeItem(API_CONFIG.STORAGE_KEYS.AUTH_TOKEN);
       localStorage.removeItem(API_CONFIG.STORAGE_KEYS.USER_DATA);
       localStorage.removeItem(API_CONFIG.STORAGE_KEYS.TOKEN_EXPIRATION);
-      localStorage.removeItem('OnlineShop-accessToken');
-      localStorage.removeItem('OnlineShop-tokenExpiration');
     }
   },
 

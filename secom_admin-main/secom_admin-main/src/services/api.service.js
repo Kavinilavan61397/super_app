@@ -14,7 +14,7 @@ const api = axios.create({
 // Add request interceptor
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem(API_CONFIG.AUTH_TOKEN_KEY);
+    const token = localStorage.getItem(API_CONFIG.STORAGE_KEYS.AUTH_TOKEN);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -29,10 +29,10 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       // Only redirect to login if not already on login page and token exists
-      const token = localStorage.getItem(API_CONFIG.AUTH_TOKEN_KEY);
+      const token = localStorage.getItem(API_CONFIG.STORAGE_KEYS.AUTH_TOKEN);
       if (token && !window.location.pathname.includes('/auth/sign-in')) {
-        localStorage.removeItem(API_CONFIG.AUTH_TOKEN_KEY);
-        localStorage.removeItem(API_CONFIG.USER_DATA_KEY);
+        localStorage.removeItem(API_CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+        localStorage.removeItem(API_CONFIG.STORAGE_KEYS.USER_DATA);
         window.location.href = '/auth/sign-in';
       }
     }
@@ -92,7 +92,7 @@ export const apiService = {
   // File upload
   async uploadFile(endpoint, formData) {
     try {
-      const token = localStorage.getItem(API_CONFIG.AUTH_TOKEN_KEY);
+      const token = localStorage.getItem(API_CONFIG.STORAGE_KEYS.AUTH_TOKEN);
       const response = await api.post(endpoint, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',

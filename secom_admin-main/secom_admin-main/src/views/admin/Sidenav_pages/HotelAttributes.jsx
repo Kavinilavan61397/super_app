@@ -1,72 +1,70 @@
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
-import { FaEdit, FaTrashAlt, FaPlus, FaEllipsisV } from 'react-icons/fa';
-import * as Yup from 'yup';
-import { useForm, Controller } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import { FaSpinner } from 'react-icons/fa';
-import { FiSearch } from 'react-icons/fi';
-import { TokenExpiration } from 'views/auth/TokenExpiration ';
-import 'react-toastify/dist/ReactToastify.css';
-import { toast, ToastContainer } from 'react-toastify';
 import Navbar from 'components/navbar';
+import Card from 'components/card';
+import { FiSearch, FiEdit, FiTrash2, FiMoreVertical } from 'react-icons/fi';
+import { FaPlus } from 'react-icons/fa';
+import { useForm, Controller } from 'react-hook-form';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { TokenExpiration } from 'views/auth/TokenExpiration ';
+import axios from 'axios';
+import API_CONFIG from '../../../config/api.config';
+
+// Create axios instance with auth interceptor
+const api = axios.create({
+  baseURL: API_CONFIG.BASE_URL,
+  headers: {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+  },
+});
+
+// Add auth token to requests
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem(API_CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 function HotelAttributes() {
     const [tableData, setTableData] = useState([]);
-    const [openAddModal, setOpenAddModal] = useState(false);
-    const [openEditModal, setOpenEditModal] = useState(false);
-    const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-    const [imagePreview, setImagePreview] = useState(null);
-    const [selectedBrand, setSelectedBrand] = useState(null);
-    const [brandName, setBrandName] = useState('');
-    const [brandImage, setBrandImage] = useState(null);
-    const [selectedRows, setSelectedRows] = useState([]);
-    const [openDropdown, setOpenDropdown] = useState(null);
-    const [rowIdToDelete, setRowIdToDelete] = useState(null);
-    const [loading, setLoading] = useState(false);
+    const [filteredData, setFilteredData] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const [totalItems, setTotalItems] = useState(0);
-    const [isDeleting, setIsDeleting] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
-    const [filteredData, setFilteredData] = useState([]);
+    const [openAddModal, setOpenAddModal] = useState(false);
+    const [openEditModal, setOpenEditModal] = useState(false);
+    const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+    const [selectedBrand, setSelectedBrand] = useState(null);
+    const [rowIdToDelete, setRowIdToDelete] = useState(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [imagePreview, setImagePreview] = useState(null);
+    const [brandImage, setBrandImage] = useState(null);
+    const [selectedRows, setSelectedRows] = useState([]);
+    const [openDropdown, setOpenDropdown] = useState(null);
 
-
-    const handleSearch = (event) => {
-        setSearchQuery(event.target.value);
-    };
-
-    const validationSchemaAdd = Yup.object({
-        amenity_name: Yup.string().required('Name is required'),
-        amenity_logo: Yup.mixed()
-            .required('Logo is required')
-            .test('fileType', 'Only image files are allowed', (value) => {
-                return value && value instanceof File && value.type.startsWith('image/');
-            }),
-    });
-
-    const validationSchemaEdit = Yup.object({
-        // brandName: Yup.string().required('Brand Name is required'),
-    });
-
-    const { reset, control, handleSubmit, setValue, getValues, formState: { errors } } = useForm({
-        resolver: yupResolver(openAddModal ? validationSchemaAdd : validationSchemaEdit),
+    const { control, handleSubmit, reset, setValue, getValues, formState: { errors } } = useForm({
         defaultValues: {
-            amenity_name: selectedBrand?.amenity_name || '',
-            amenity_logo: selectedBrand?.amenity_logo || null,
+            amenity_name: '',
+            amenity_logo: null,
         },
     });
 
     const fetchBrandData = async () => {
         try {
-            const response = await axios.get('https://yrpitsolutions.com/tourism_dup_api/api/admin/get_amenities');
-            const data = response.data.data;
-            console.log(response.data.data);
-            setTableData(data); // Store the full data
-            setFilteredData(data); // Show all data initially
-            setTotalItems(data.length); // Set total items for pagination
+            const response = await api.get('/api/amenities');
+            const data = response.data.data || response.data;
+            console.log('Amenities data:', data);
+            setTableData(data);
+            setFilteredData(data);
+            setTotalItems(data.length);
         } catch (error) {
-            console.error('Error fetching data:', error);
+            console.error('Error fetching amenities:', error);
+            toast.error('Failed to fetch amenities');
         }
     };
 
@@ -76,15 +74,15 @@ function HotelAttributes() {
 
     useEffect(() => {
         if (searchQuery.trim() === '') {
-            setFilteredData(tableData); // Reset to full data if no search query
-            setTotalItems(tableData.length); // Reset total items
+            setFilteredData(tableData);
+            setTotalItems(tableData.length);
         } else {
             const filtered = tableData.filter(brand =>
-                brand.amenity_name.toLowerCase().includes(searchQuery.toLowerCase())
+                brand.name && brand.name.toLowerCase().includes(searchQuery.toLowerCase())
             );
-            setFilteredData(filtered); // Apply filtering
-            setTotalItems(filtered.length); // Update the number of filtered items
-            setCurrentPage(1); // Reset to page 1 when the search query changes
+            setFilteredData(filtered);
+            setTotalItems(filtered.length);
+            setCurrentPage(1);
         }
     }, [searchQuery, tableData]);
 
@@ -103,7 +101,7 @@ function HotelAttributes() {
     const getPaginatedData = () => {
         const start = (currentPage - 1) * itemsPerPage;
         const end = start + itemsPerPage;
-        return filteredData.slice(start, end);  // Paginate after filtering
+        return filteredData.slice(start, end);
     };
 
     const handleImageSaveChange = (e) => {
@@ -124,7 +122,7 @@ function HotelAttributes() {
             reader.readAsDataURL(file);
             setValue('amenity_logo', file);
         } else {
-            setImagePreview(selectedBrand?.photo || null);
+            setImagePreview(selectedBrand?.icon || null);
             setValue('amenity_logo', null);
         }
     };
@@ -132,233 +130,102 @@ function HotelAttributes() {
     const [error, setError] = useState(null);
 
     const handleAddBrand = () => {
-        const brandName = getValues('amenity_logo');
         toast.dismiss();
         setSelectedBrand(null);
         setImagePreview(null);
         setValue('amenity_logo', '');
         reset({
-            amenity_name: '',
-            amenity_logo: null,
+            name: '',
+            icon: null,
         });
         setOpenAddModal(true);
     };
 
-
     const handleFormSubmit = async (data) => {
-        const amenity_name = data.amenity_name;
-        const existingBrand = getPaginatedData().find(brand => brand.amenity_name.toLowerCase() === amenity_name.toLowerCase());
+        const name = data.name;
+        const existingBrand = getPaginatedData().find(brand => brand.name && brand.name.toLowerCase() === name.toLowerCase());
 
-        // if (existingBrand) {
-        //     toast.error("This brand already exists. Provide different name.", {
-        //         autoClose: 3000,
-        //         hideProgressBar: true,
-        //         closeOnClick: true,
-        //         pauseOnHover: true,
-        //         draggable: true,
-        //         progress: undefined,
-        //     });
-        //     return; // Prevent form submission if the brand name already exists
-        // }
-
-        if (!data.amenity_logo || !(data.amenity_logo instanceof File)) {
-            setError("Logo is required ");
+        if (!data.icon || !(data.icon instanceof File)) {
+            setError("Icon is required");
             return;
         }
 
         const formData = new FormData();
-        formData.append('amenity_name', data.amenity_name);
-        formData.append('amenity_logo', data.amenity_logo);
+        formData.append('name', data.name);
+        formData.append('icon', data.icon);
         setLoading(true);
 
         try {
-            const accessToken = localStorage.getItem('tourism_token');
-            const url = 'https://yrpitsolutions.com/tourism_dup_api/api/admin/save_amenities';
-
-            setTimeout(async () => {
-                try {
-                    await axios.post(url, formData, {
-                        headers: { Authorization: `Bearer ${accessToken}` }
-                    });
-
-                    toast.success("Attribute added successfully!", {
-                        autoClose: 3000,
-                        hideProgressBar: true,
-                        closeOnClick: true,
-                        pauseOnHover: true,
-                        draggable: true,
-                        progress: undefined,
-                    });
-
-                    fetchBrandData();
-                    setOpenAddModal(false);
-                    setBrandImage(null);
-                    reset();
-                } catch (error) {
-                    console.error('Error submitting form:', error);
-                    toast.error("Failed to add Atrribute. Please try again.", {
-                        autoClose: 3000,
-                        hideProgressBar: true,
-                        closeOnClick: true,
-                        pauseOnHover: true,
-                        draggable: true,
-                        progress: undefined,
-                    });
-                } finally {
-                    setLoading(false);
-                }
-            }, 2000);
-        } catch (error) {
-            setLoading(false);
-            console.error('Error preparing form data:', error);
-            toast.error("Error preparing form data. Please try again.", {
-                autoClose: 3000,
-                hideProgressBar: true,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
+            await api.post('/api/amenities', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
             });
+
+            toast.success("Amenity added successfully!");
+            fetchBrandData();
+            setOpenAddModal(false);
+            setBrandImage(null);
+            reset();
+        } catch (error) {
+            console.error('Error submitting form:', error);
+            toast.error("Failed to add amenity. Please try again.");
+        } finally {
+            setLoading(false);
         }
     };
 
-
     const handleEditRow = (brand) => {
         setSelectedBrand(brand);
-        setValue('amenity_name', brand.amenity_name);
-        setImagePreview(brand.amenity_logo || null);
+        setValue('name', brand.name);
+        setImagePreview(brand.icon || null);
         setOpenEditModal(true);
     };
 
     const handleFormUpdate = async (data) => {
         setLoading(true);
 
-        const existingBrand = getPaginatedData().find(brand => brand.amenity_name.toLowerCase() === data.amenity_name.trim().toLowerCase());
-
-        // if (existingBrand && existingBrand.id !== selectedBrand.id) {
-        //     toast.error("This brand name is already taken. Please choose a different name.", {
-        //         autoClose: 3000,
-        //         hideProgressBar: true,
-        //         closeOnClick: true,
-        //         pauseOnHover: true,
-        //         draggable: true,
-        //         progress: undefined,
-        //         className: 'bg-[#ff0000] text-white', // Error background color for the toast
-        //     });
-        //     setLoading(false);
-        //     return; // Prevent the update if brand name already exists
-        // }
+        const existingBrand = getPaginatedData().find(brand => brand.name && brand.name.toLowerCase() === data.name.trim().toLowerCase());
 
         const formData = new FormData();
-        formData.append('_method', 'PUT');
-        formData.append('amenity_name', data.amenity_name.trim() || selectedBrand.amenity_name);
-
-        // Add the new image if it's present, otherwise remove it
-        if (data.amenity_logo && data.amenity_logo instanceof File) {
-            formData.append('amenity_logo', data.amenity_logo);
-        } else if (!data.amenity_logo) {
-            formData.delete('amenity_logo');
+        formData.append('name', data.name.trim() || selectedBrand.name);
+        
+        if (data.icon instanceof File) {
+            formData.append('icon', data.icon);
         }
 
         try {
-            const accessToken = localStorage.getItem('tourism_token');
-            const url = `https://yrpitsolutions.com/tourism_dup_api/api/admin/update_amenities_by_id/${selectedBrand.id}`;
-
-            setTimeout(async () => {
-                try {
-                    await axios.post(url, formData, {
-                        headers: { Authorization: `Bearer ${accessToken}` },
-                    });
-
-                    // Success toast for updating the brand
-                    toast.success("Atributes updated successfully!", {
-                        autoClose: 3000,
-                        hideProgressBar: true,
-                        closeOnClick: true,
-                        pauseOnHover: true,
-                        draggable: true,
-                        progress: undefined,
-                        className: 'bg-[#4318ff] text-white', // Success background color for the toast
-                    });
-
-                    // Fetch brand data and close the modal
-                    fetchBrandData();
-                    setOpenEditModal(false);
-                    setBrandImage(null);
-                    reset();
-                } catch (error) {
-                    console.error('Error updating form:', error);
-
-                    // Error toast if update fails
-                    toast.error("Failed to update Attribute. Please try again.", {
-                        autoClose: 3000,
-                        hideProgressBar: true,
-                        closeOnClick: true,
-                        pauseOnHover: true,
-                        draggable: true,
-                        progress: undefined,
-                        className: 'bg-[#ff0000] text-white', // Error background color for the toast
-                    });
-                } finally {
-                    setLoading(false);
-                }
-            }, 2000);
-        } catch (error) {
-            setLoading(false);
-            console.error('Error preparing form data:', error);
-
-            // Error toast if preparing the form data fails
-            toast.error("Error preparing form data. Please try again.", {
-                autoClose: 3000,
-                hideProgressBar: true,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                className: 'bg-[#ff0000] text-white', // Error background color for the toast
+            await api.put(`/api/amenities/${selectedBrand.id}`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
             });
+
+            toast.success("Amenity updated successfully!");
+            fetchBrandData();
+            setOpenEditModal(false);
+            setSelectedBrand(null);
+            reset();
+        } catch (error) {
+            console.error('Error updating amenity:', error);
+            toast.error("Failed to update amenity. Please try again.");
+        } finally {
+            setLoading(false);
         }
     };
-
 
     const handleDeleteRow = (id) => {
         setRowIdToDelete(id);
         setOpenDeleteDialog(true);
     };
 
-
     const handleDeleteConfirmation = async () => {
         setIsDeleting(true);
         try {
-            const accessToken = localStorage.getItem('tourism_token');
-            await axios.delete(`https://yrpitsolutions.com/tourism_dup_api/api/admin/delete_amenities_by_id/${rowIdToDelete}`, {
-                headers: { Authorization: `Bearer ${accessToken}` },
-            });
+            await api.delete(`/api/amenities/${rowIdToDelete}`);
 
-            // Success Toast
-            toast.success("Banner deleted successfully!", {
-                autoClose: 3000,
-                hideProgressBar: true,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-            });
-
+            toast.success("Amenity deleted successfully!");
             fetchBrandData();
             setOpenDeleteDialog(false);
         } catch (error) {
-            console.error('Error deleting banner:', error);
-
-            // Error Toast
-            toast.error("Error deleting banner. Please try again.", {
-                autoClose: 3000,
-                hideProgressBar: true,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-            });
+            console.error('Error deleting amenity:', error);
+            toast.error("Error deleting amenity. Please try again.");
         } finally {
             setIsDeleting(false);
         }
@@ -367,42 +234,20 @@ function HotelAttributes() {
     const handleCancelDelete = () => {
         setOpenDeleteDialog(false);
     };
+
     const handleBulkDelete = async () => {
         setLoading(true);
         try {
-            const accessToken = localStorage.getItem('tourism_token');
             for (let id of selectedRows) {
-                await axios.delete(`https://yrpitsolutions.com/tourism_dup_api/api/admin/delete_amenities_by_id/${id}`, {
-                    headers: { Authorization: `Bearer ${accessToken}` },
-                });
+                await api.delete(`/api/amenities/${id}`);
             }
 
-            // Success Toast for bulk delete
-            toast.success("Banners deleted successfully!", {
-                autoClose: 3000,
-                hideProgressBar: true,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-            });
-
-            // Refresh data and clear selection
-            window.location.reload();
-            await fetchBrandData(); // Refresh the data
-            setSelectedRows([]); // Clear selection after bulk delete
+            toast.success("Amenities deleted successfully!");
+            await fetchBrandData();
+            setSelectedRows([]);
         } catch (error) {
-            console.error('Error deleting selected banners:', error);
-
-            // Error Toast for bulk delete
-            toast.error("Error deleting selected banners. Please try again.", {
-                autoClose: 3000,
-                hideProgressBar: true,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-            });
+            console.error('Error deleting selected amenities:', error);
+            toast.error("Error deleting selected amenities. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -431,31 +276,29 @@ function HotelAttributes() {
         };
     }, []);
 
-    // Functions to open and close modals
     const closeCreateModal = () => {
         setOpenAddModal(false);
-        reset(); // Reset the form data and errors
+        reset();
     };
 
     const handleOpenEditModal = () => {
         setOpenEditModal(true);
-        reset(); // Reset the form data and errors
+        reset();
     };
 
     const closeEditModal = () => {
         setOpenEditModal(false);
-        reset(); // Reset the form data and errors
+        reset();
     };
 
     return (
         <div className="min-h-screen pt-6">
-                <Navbar brandText={"Hotel Attributes"}/>
+            <Navbar brandText={"Hotel Attributes"}/>
             <TokenExpiration />
             <ToastContainer />
             <div className="w-full mx-auto">
                 <span className="flex mt-4 items-center w-full gap-6">
-                    {/* Search bar */}
-                    <div className="relative flex  flex-grow items-center justify-around gap-2 rounded-full bg-white px-2 py-3 shadow-xl shadow-shadow-500 dark:!bg-navy-800 dark:shadow-none">
+                    <div className="relative flex flex-grow items-center justify-around gap-2 rounded-full bg-white px-2 py-3 shadow-xl shadow-shadow-500 dark:!bg-navy-800 dark:shadow-none">
                         <div className="flex h-full w-full items-center rounded-full text-navy-700 dark:bg-navy-900 dark:text-white">
                             <p className="pl-3 pr-2 text-xl">
                                 <FiSearch className="h-4 w-4 text-gray-400 dark:text-white" />
@@ -463,17 +306,16 @@ function HotelAttributes() {
                             <input
                                 type="text"
                                 placeholder="Search by Name..."
-                                onChange={(e) => setSearchQuery(e.target.value)} // Directly set the search query
+                                onChange={(e) => setSearchQuery(e.target.value)}
                                 value={searchQuery}
-                                className="block  w-full rounded-full text-base font-medium text-navy-700 outline-none placeholder:!text-gray-400 dark:bg-navy-900 dark:text-white dark:placeholder:!text-white"
+                                className="block w-full rounded-full text-base font-medium text-navy-700 outline-none placeholder:!text-gray-400 dark:bg-navy-900 dark:text-white dark:placeholder:!text-white"
                             />
                         </div>
                     </div>
 
-
                     <button
                         onClick={handleAddBrand}
-                        className="bg-[#4318ff] text-white px-6 py-2  rounded-full text-lg font-medium flex items-center ml-auto"
+                        className="bg-[#4318ff] text-white px-6 py-2 rounded-full text-lg font-medium flex items-center ml-auto"
                     >
                         <FaPlus className="mr-2" /> Add Hotel Attributes
                     </button>
@@ -492,26 +334,26 @@ function HotelAttributes() {
 
                             <div className="mb-6">
                                 <label className="block text-lg text-gray-600 font-medium mb-2">
-                                 Logo <span className="text-red-500 ">*</span>
+                                    Name <span className="text-red-500">*</span>
                                 </label>
                                 <Controller
-                                    name="amenity_name"
+                                    name="name"
                                     control={control}
                                     render={({ field }) => (
                                         <input
                                             type="text"
-                                            placeholder="Enter Brand Name"
+                                            placeholder="Enter Amenity Name"
                                             className="w-full border border-gray-300 rounded-md px-4 py-3 text-gray-800 focus:outline-none"
                                             {...field}
                                         />
                                     )}
                                 />
-                                {errors.amenity_name && <p className="text-red-500 text-sm">{errors.amenity_name.message}</p>}
+                                {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
                             </div>
 
                             <div className="mb-6">
                                 <label className="block text-lg text-gray-600 font-medium mb-2">
-                                    Icon <span className="text-red-500 ">*</span>
+                                    Icon <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="file"
@@ -519,29 +361,29 @@ function HotelAttributes() {
                                     onChange={handleImageSaveChange}
                                     className="w-full border border-gray-300 rounded-md px-4 py-3 text-gray-800 focus:outline-none"
                                 />
-                                {errors.amenity_logo && <p className="text-red-500 text-sm">{errors.amenity_logo.message}</p>}
+                                {imagePreview && (
+                                    <div className="mt-2">
+                                        <img src={imagePreview} alt="Preview" className="w-20 h-20 object-cover rounded" />
+                                    </div>
+                                )}
+                                {error && <p className="text-red-500 text-sm">{error}</p>}
                             </div>
 
-                            <div className="flex justify-end space-x-4 mt-4">
+                            <div className="flex justify-end gap-4">
                                 <button
+                                    type="button"
                                     onClick={closeCreateModal}
-                                    className="bg-gray-300 text-gray-800 px-6 py-3 rounded-md"
+                                    className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
                                 >
                                     Cancel
                                 </button>
-
                                 <button
+                                    type="button"
                                     onClick={handleSubmit(handleFormSubmit)}
                                     disabled={loading}
-                                    className="relative bg-[#4318ff] text-white px-6 py-3 rounded-lg flex items-center ml-auto max-w-xs"
+                                    className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
                                 >
-                                    {loading ? (
-                                        <div className="absolute inset-0 flex items-center justify-center w-full h-full">
-                                            <div className="w-6 h-6 border-4 border-t-transparent border-white rounded-full animate-spin"></div>
-                                        </div>
-                                    ) : (
-                                        'Create'
-                                    )}
+                                    {loading ? 'Adding...' : 'Add Amenity'}
                                 </button>
                             </div>
                         </div>
@@ -561,27 +403,26 @@ function HotelAttributes() {
 
                             <div className="mb-6">
                                 <label className="block text-lg text-gray-600 font-medium mb-2">
-                                     Name <span className="text-red-500 ">*</span>
+                                    Name <span className="text-red-500">*</span>
                                 </label>
                                 <Controller
-                                    name="amenity_name"
+                                    name="name"
                                     control={control}
-                                    defaultValue={selectedBrand?.brand_name || ''}
                                     render={({ field }) => (
                                         <input
                                             type="text"
-                                            placeholder="Enter Name"
+                                            placeholder="Enter Amenity Name"
                                             className="w-full border border-gray-300 rounded-md px-4 py-3 text-gray-800 focus:outline-none"
                                             {...field}
                                         />
                                     )}
                                 />
-                                {errors.amenity_name && <p className="text-red-500 text-sm">{errors.amenity_name.message}</p>}
+                                {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
                             </div>
 
                             <div className="mb-6">
                                 <label className="block text-lg text-gray-600 font-medium mb-2">
-                                    Icon <span className="text-red-500 ">*</span>
+                                    Icon
                                 </label>
                                 <input
                                     type="file"
@@ -589,223 +430,188 @@ function HotelAttributes() {
                                     onChange={handleImageChange}
                                     className="w-full border border-gray-300 rounded-md px-4 py-3 text-gray-800 focus:outline-none"
                                 />
-                                {errors.amenity_logo && <p className="text-red-500 text-sm">{errors.amenity_logo.message}</p>}
+                                {imagePreview && (
+                                    <div className="mt-2">
+                                        <img src={imagePreview} alt="Preview" className="w-20 h-20 object-cover rounded" />
+                                    </div>
+                                )}
                             </div>
 
-                            <div className="flex justify-end space-x-4 mt-4">
+                            <div className="flex justify-end gap-4">
                                 <button
+                                    type="button"
                                     onClick={closeEditModal}
-                                    className="bg-gray-300 text-gray-800 px-6 py-3 rounded-md"
+                                    className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
                                 >
                                     Cancel
                                 </button>
-
                                 <button
+                                    type="button"
                                     onClick={handleSubmit(handleFormUpdate)}
                                     disabled={loading}
-                                    className="relative bg-[#4318ff] text-white px-6 py-3 rounded-lg flex items-center ml-auto max-w-xs"
+                                    className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
                                 >
-                                    {loading ? (
-                                        <div className="absolute inset-0 flex items-center justify-center">
-                                            <div className="w-6 h-6 border-4 border-t-transparent border-white rounded-full animate-spin"></div>
-                                        </div>
-                                    ) : (
-                                        'Save Changes'
-                                    )}
+                                    {loading ? 'Updating...' : 'Update Amenity'}
                                 </button>
                             </div>
                         </div>
                     </div>
                 )}
 
-
-
-
-                {/* Table */}
-                <div className="mt-8 bg-white shadow-lg rounded-lg p-6">
-                    <table className="w-full table-auto">
-                        <thead>
-                            <tr className="text-gray-600">
-                                <th className="px-6 py-4 text-left">
-                                    <div className="flex justify-between items-center">
-                                        <input
-                                            type="checkbox"
-                                            checked={selectedRows.length === getPaginatedData().length && getPaginatedData().length > 0}
-                                            onChange={() => {
-                                                if (selectedRows.length === getPaginatedData().length) {
-                                                    setSelectedRows([]);
-                                                } else {
-                                                    setSelectedRows(getPaginatedData().map((row) => row.id));
-                                                }
-                                            }}
-                                            disabled={getPaginatedData().length === 0}  // Disable checkbox when no data is available
-                                        />
-                                    </div>
-                                </th>
-                                <th className="px-6 py-4 text-left">Icon</th>
-                                <th className="px-6 py-4 text-left">Name</th>
-                                <th className="px-6 py-4 text-right">Actions</th>
-                                <th className="">
-                                    {selectedRows.length > 0 && (
-                                        <button
-                                            onClick={handleBulkDelete}
-                                            className={`text-gray-600 hover:text-red-600 text-xl flex items-center ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                            disabled={loading}
-                                        >
-                                            {loading ? (
-                                                <div className="relative">
-                                                    <div className="w-6 h-6 border-4 border-t-transparent border-red-600 rounded-full animate-spin"></div>
-                                                </div>
-                                            ) : (
-                                                <FaTrashAlt />
-                                            )}
-                                        </button>
-                                    )}
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {getPaginatedData().length > 0 ? (
-                                getPaginatedData().map((brand) => (
-                                    <tr key={brand.id} className="border-t">
-                                        <td className="px-6 py-4">
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedRows.includes(brand.id)}
-                                                onChange={() => handleRowSelection(brand.id)}
-                                            />
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <img
-                                                src={brand.amenity_logo || '/default-image.png'}
-                                                alt={brand.amenity_name}
-                                                className="w-12 h-12 object-cover rounded-full"
-                                            />
-                                        </td>
-                                        <td className="px-6 py-4">{brand.amenity_name}</td>
-                                        <td className="text-right group relative">
-                                            <div className="flex justify-end items-center space-x-2">
-                                                {/* Ellipsis icon */}
-                                                <button
-                                                    onClick={() => setOpenDropdown(openDropdown === brand.id ? null : brand.id)}
-                                                    className="text-gray-600 hover:text-gray-900"
-                                                >
-                                                    <FaEllipsisV />
-                                                </button>
-                                                {/* Edit and Delete icons visible on hover, aligned left */}
-                                                <div className="absolute right-auto left-40 flex space-x-6 opacity-0 group-hover:opacity-100 group-hover:flex transition-all duration-200">
-                                                    <button
-                                                        onClick={() => {
-                                                            handleEditRow(brand);
-                                                        }}
-                                                        className="text-navy-700 hover:bg-gray-200"
-                                                    >
-                                                        <FaEdit className="text-black" />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => {
-                                                            handleDeleteRow(brand.id);
-                                                        }}
-                                                        className="text-red-600 hover:bg-gray-200"
-                                                    >
-                                                        <FaTrashAlt className="mr-2" />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan="4" className="px-6 py-4 text-center text-gray-500">
-                                        No data found
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-
-            </div>
-
-            {/* Pagination */}
-            <div className="flex justify-between items-center mt-4">
-                <div className="flex items-center">
-                    <span className="mr-2">Show</span>
-                    <select
-                        value={itemsPerPage}
-                        onChange={(e) => setItemsPerPage(Number(e.target.value))}
-                        className="border border-gray-300 px-4 py-2 rounded-md"
-                    >
-                        {[10, 20, 50, 100].map((option) => (
-                            <option key={option} value={option}>
-                                {option}
-                            </option>
-                        ))}
-                    </select>
-                    <span className="ml-2">entries</span>
-                </div>
-
-                <div className="flex space-x-4">
-                    {/* Showing Item Range */}
-
-                    <button
-                        onClick={() => handlePageChange(currentPage - 1)}
-                        disabled={currentPage === 1}
-                        className={`${currentPage === 1
-                            ? 'bg-[#4318ff] text-white opacity-50 cursor-not-allowed'
-                            : 'bg-[#4318ff] text-white hover:bg-[#3700b3]'
-                            } px-6 py-2 rounded-[20px]`}
-                    >
-                        Back
-                    </button>
-                    <span className="text-gray-600 mt-2">
-                        {` ${(currentPage - 1) * itemsPerPage + 1} to ${Math.min(currentPage * itemsPerPage, totalItems)} of ${totalItems} items`}
-                    </span>
-
-                    <button
-                        onClick={() => handlePageChange(currentPage + 1)}
-                        disabled={currentPage === totalPages}
-                        className={`${currentPage === totalPages || totalItems === 0
-                            ? 'bg-[#4318ff] text-white opacity-50 cursor-not-allowed'
-                            : 'bg-[#4318ff] text-white hover:bg-[#3700b3]'
-                            } px-6 py-2 rounded-[20px]`}
-                    >
-                        Next
-                    </button>
-                </div>
-            </div>
-
-            {/* Delete Confirmation Dialog */}
-            {openDeleteDialog && (
-                <div className="fixed inset-0 flex items-center justify-center z-20 bg-gray-500 bg-opacity-50">
-                    <div className="bg-white p-6 rounded-md shadow-lg w-1/3">
-                        <h2 className="text-xl font-semibold mb-4">Are you sure you want to delete this Attribute?</h2>
-                        <div className="flex justify-end">
-                            <button
-                                onClick={handleCancelDelete}
-                                className="px-4 py-2 mr-4 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-100"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleDeleteConfirmation}
-                                className="px-4 py-2 text-white bg-red-600 rounded-md hover:bg-red-700 flex items-center justify-center"
-                                disabled={isDeleting}
-                            >
-                                {isDeleting ? (
-                                    <FaSpinner className="animate-spin mr-2" />
-                                ) : (
-                                    'Delete'
-                                )}
-                                {isDeleting ? 'Deleting...' : ''}
-                            </button>
+                {openDeleteDialog && (
+                    <div className="fixed inset-0 flex items-center justify-center z-50 bg-gray-900 bg-opacity-50">
+                        <div className="bg-white rounded-lg shadow-2xl p-8 max-w-md w-full mx-4">
+                            <h2 className="text-2xl font-semibold text-gray-800 mb-4">Confirm Delete</h2>
+                            <p className="text-gray-600 mb-6">Are you sure you want to delete this amenity? This action cannot be undone.</p>
+                            <div className="flex justify-end gap-4">
+                                <button
+                                    onClick={handleCancelDelete}
+                                    className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleDeleteConfirmation}
+                                    disabled={isDeleting}
+                                    className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
+                                >
+                                    {isDeleting ? 'Deleting...' : 'Delete'}
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )}
 
+                <div className="mt-6">
+                    <Card extra="w-full">
+                        <div className="flex flex-col">
+                            <div className="overflow-x-auto">
+                                <table className="w-full">
+                                    <thead>
+                                        <tr className="border-b border-gray-200">
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                <input
+                                                    type="checkbox"
+                                                    onChange={(e) => {
+                                                        if (e.target.checked) {
+                                                            setSelectedRows(getPaginatedData().map(row => row.id));
+                                                        } else {
+                                                            setSelectedRows([]);
+                                                        }
+                                                    }}
+                                                    checked={selectedRows.length === getPaginatedData().length && getPaginatedData().length > 0}
+                                                />
+                                            </th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Icon</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="bg-white divide-y divide-gray-200">
+                                        {getPaginatedData().map((brand) => (
+                                            <tr key={brand.id} className="hover:bg-gray-50">
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedRows.includes(brand.id)}
+                                                        onChange={() => handleRowSelection(brand.id)}
+                                                    />
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    {brand.icon && (
+                                                        <img
+                                                            src={`${API_CONFIG.BASE_URL}${brand.icon}`}
+                                                            alt={brand.name}
+                                                            className="w-10 h-10 object-cover rounded"
+                                                        />
+                                                    )}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                    {brand.name}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                                        brand.status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                                    }`}>
+                                                        {brand.status ? 'Active' : 'Inactive'}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                    <div className="flex items-center space-x-2">
+                                                        <button
+                                                            onClick={() => handleEditRow(brand)}
+                                                            className="text-indigo-600 hover:text-indigo-900"
+                                                        >
+                                                            <FiEdit className="h-4 w-4" />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDeleteRow(brand.id)}
+                                                            className="text-red-600 hover:text-red-900"
+                                                        >
+                                                            <FiTrash2 className="h-4 w-4" />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {selectedRows.length > 0 && (
+                                <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                                    <button
+                                        onClick={handleBulkDelete}
+                                        disabled={loading}
+                                        className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
+                                    >
+                                        {loading ? 'Deleting...' : `Delete Selected (${selectedRows.length})`}
+                                    </button>
+                                </div>
+                            )}
+
+                            <div className="mt-4 flex items-center justify-between">
+                                <div className="flex items-center space-x-2">
+                                    <span className="text-sm text-gray-700">Show:</span>
+                                    <select
+                                        value={itemsPerPage}
+                                        onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                                        className="border border-gray-300 rounded-md px-2 py-1 text-sm"
+                                    >
+                                        <option value={5}>5</option>
+                                        <option value={10}>10</option>
+                                        <option value={20}>20</option>
+                                        <option value={50}>50</option>
+                                    </select>
+                                    <span className="text-sm text-gray-700">entries</span>
+                                </div>
+
+                                <div className="flex items-center space-x-2">
+                                    <button
+                                        onClick={() => handlePageChange(currentPage - 1)}
+                                        disabled={currentPage === 1}
+                                        className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50"
+                                    >
+                                        Previous
+                                    </button>
+                                    <span className="text-sm text-gray-700">
+                                        Page {currentPage} of {totalPages}
+                                    </span>
+                                    <button
+                                        onClick={() => handlePageChange(currentPage + 1)}
+                                        disabled={currentPage === totalPages}
+                                        className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50"
+                                    >
+                                        Next
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </Card>
+                </div>
+            </div>
+        </div>
     );
 }
 

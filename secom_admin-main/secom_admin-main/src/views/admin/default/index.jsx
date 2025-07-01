@@ -22,14 +22,15 @@ import tableDataCheck from "./variables/tableDataCheck.json";
 import tableDataComplex from "./variables/tableDataComplex.json";
 
 import { useNavigate } from "react-router-dom";
+import API_CONFIG from "../../../config/api.config";
 
     const Dashboard = () => {
       const navigate = useNavigate();
     
       useEffect(() => {
         const checkTokenExpiration = () => {
-          const token = localStorage.getItem("OnlineShop-accessToken");
-          const expirationTime = localStorage.getItem("OnlineShop-tokenExpiration");
+          const token = localStorage.getItem(API_CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+          const expirationTime = localStorage.getItem(API_CONFIG.STORAGE_KEYS.TOKEN_EXPIRATION);
     
           if (!token) {
             navigate("/");
@@ -37,8 +38,8 @@ import { useNavigate } from "react-router-dom";
           }
     
           if (expirationTime && Date.now() > expirationTime) {
-            localStorage.removeItem("OnlineShop-accessToken");
-            localStorage.removeItem("OnlineShop-tokenExpiration");
+            localStorage.removeItem(API_CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+            localStorage.removeItem(API_CONFIG.STORAGE_KEYS.TOKEN_EXPIRATION);
             navigate("/"); 
           }
         };

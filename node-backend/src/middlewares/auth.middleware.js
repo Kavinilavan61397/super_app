@@ -26,7 +26,7 @@ exports.protect = async (req, res, next) => {
       if (!user) {
         return res.status(401).json({
           success: false,
-          message: 'User not found'
+          message: 'Not authorized to access this route'
         });
       }
 
@@ -56,13 +56,13 @@ exports.protect = async (req, res, next) => {
   }
 };
 
-// Authorize certain roles
+// Case-insensitive role check
 exports.authorize = (...roles) => {
   return (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
-      return res.status(403).json({
+    if (!roles.map(r => r.toLowerCase()).includes(req.user.role.toLowerCase())) {
+      return res.status(401).json({
         success: false,
-        message: `User role ${req.user.role} is not authorized to access this route`
+        message: 'Not authorized to access this route'
       });
     }
     next();

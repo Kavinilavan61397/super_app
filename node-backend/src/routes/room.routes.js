@@ -1,22 +1,16 @@
-'use strict';
-
 const express = require('express');
 const router = express.Router();
-const roomController = require('../controllers/roomController');
+const roomController = require('../controllers/room.controller');
 
-// GET all rooms
+// List all rooms (optionally by hotel)
 router.get('/', roomController.getAllRooms);
-
-// GET room by ID
+// Get room by ID
 router.get('/:id', roomController.getRoomById);
-
-// POST create a new room
+// Create room
 router.post('/', roomController.createRoom);
-
-// PUT update a room
+// Update room
 router.put('/:id', roomController.updateRoom);
-
-// DELETE a room
+// Delete room
 router.delete('/:id', roomController.deleteRoom);
 
 module.exports = router; 

@@ -1,3 +1,5 @@
+// DEPRECATED: This file is no longer used. Please use the modular Hotel module in views/admin/Hotel instead.
+// export default function AllHotel() { ... }
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { FaEdit, FaTrashAlt, FaPlus, FaEllipsisV } from 'react-icons/fa';
@@ -13,6 +15,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { toast, ToastContainer } from 'react-toastify';
 import Navbar from 'components/navbar';
 import { FaChevronDown } from 'react-icons/fa';
+import API_CONFIG from '../../../config/api.config';
 
 function AllHotel() {
     const navigate = useNavigate();
@@ -79,7 +82,7 @@ function AllHotel() {
 
     const fetchAttributes = async () => {
         try {
-            const response = await fetch("https://yrpitsolutions.com/tourism_dup_api/api/admin/get_amenities");
+            const response = await fetch(`${API_CONFIG.BASE_URL}/admin/get_amenities`);
             const data = await response.json();
 
             if (data && data.data) {
@@ -116,7 +119,7 @@ function AllHotel() {
     useEffect(() => {
         const fetchCategoryData = async () => {
             try {
-                const response = await axios.get('https://yrpitsolutions.com/tourism_dup_api/api/admin/get_policy');
+                const response = await axios.get(`${API_CONFIG.BASE_URL}/admin/get_policy`);
                 console.log('Hotel Policy fetched:', response.data);
                 setPolicy(response.data);
             } catch (error) {
@@ -164,7 +167,7 @@ function AllHotel() {
         const fetchTags = async () => {
             console.log("Fetching hotel FAQ data...");
             try {
-                const response = await axios.get('https://yrpitsolutions.com/tourism_dup_api/api/admin/get_faq');
+                const response = await axios.get(`${API_CONFIG.BASE_URL}/admin/get_faq`);
                 console.log('Hotel FAQs fetched:', response.data);
                 setTags(response.data);
                 setLoading(false); // Set loading to false after data is fetched
@@ -207,7 +210,7 @@ function AllHotel() {
     useEffect(() => {
         const fetchSubCategoryData = async () => {
             try {
-                const response = await axios.get('https://yrpitsolutions.com/tourism_dup_api/api/admin/get_location');
+                const response = await axios.get(`${API_CONFIG.BASE_URL}/admin/get_location`);
                 console.log('Location fetched:', response.data);
                 setSubCategories(response?.data);
             } catch (error) {
@@ -223,7 +226,7 @@ function AllHotel() {
 
     const fetchProducts = async () => {
         try {
-            const response = await axios.get('https://yrpitsolutions.com/tourism_dup_api/api/admin/hotels');
+            const response = await axios.get(`${API_CONFIG.BASE_URL}/admin/hotels`);
             // console.log("aaaaaaaaaaaaaaaaaaa", response.data.data);
             setTableData(response.data.data);
             setTotalItems(response.data.length);
@@ -328,7 +331,7 @@ function AllHotel() {
             }
 
             const response = await axios.post(
-                "https://yrpitsolutions.com/tourism_dup_api/api/admin/hotels",
+                `${API_CONFIG.BASE_URL}/admin/hotels`,
                 formData,
                 {
                     headers: {
@@ -482,7 +485,7 @@ function AllHotel() {
 
             // Send the PUT request to update the hotel
             const response = await axios.put(
-                `https://yrpitsolutions.com/tourism_dup_api/api/admin/hotels/${selectedProduct.id}`,
+                `${API_CONFIG.BASE_URL}/admin/hotels/${selectedProduct.id}`,
                 formData,
                 {
                     headers: {
@@ -629,7 +632,7 @@ function AllHotel() {
                 return;
             }
 
-            await axios.delete(`https://yrpitsolutions.com/tourism_dup_api/api/admin/hotels/${rowIdToDelete}`, {
+            await axios.delete(`${API_CONFIG.BASE_URL}/admin/hotels/${rowIdToDelete}`, {
                 headers: { Authorization: `Bearer ${accessToken}` },
             });
 
@@ -683,7 +686,7 @@ function AllHotel() {
 
             // Loop through selected rows and delete each product
             for (let id of selectedRows) {
-                await axios.delete(`https://yrpitsolutions.com/tourism_dup_api/api/admin/hotels/${id}`, {
+                await axios.delete(`${API_CONFIG.BASE_URL}/admin/hotels/${id}`, {
                     headers: { Authorization: `Bearer ${accessToken}` },
                 });
             }
@@ -1573,10 +1576,10 @@ function AllHotel() {
                                             <div style={{ marginTop: '10px' }}>
                                                 {images.map((file, index) => (
                                                     <div key={index} className="flex items-center justify-between my-2">
-                                                        {/* <img
+                                                        <img
                                                             src={URL.createObjectURL(file)}
                                                             alt={file.name}
-                                                            className="w-10 h-10 object-cover rounded-md" /> */}
+                                                            className="w-10 h-10 object-cover rounded-md" />
                                                         <div className="flex items-center">
                                                             <button
                                                                 onClick={() => handleRemoveImage(index)}
@@ -1916,4 +1919,4 @@ function AllHotel() {
     );
 }
 
-export default AllHotel;
+// export default AllHotel;

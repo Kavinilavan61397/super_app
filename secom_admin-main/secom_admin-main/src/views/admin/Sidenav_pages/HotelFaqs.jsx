@@ -1,224 +1,171 @@
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
-import { FaEdit, FaTrashAlt, FaPlus, FaEllipsisV } from 'react-icons/fa';
-import * as Yup from 'yup';
-import { useForm, Controller } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import { FaSpinner } from 'react-icons/fa';
-import { FiSearch } from 'react-icons/fi';
-import { TokenExpiration } from 'views/auth/TokenExpiration ';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
-import 'react-toastify/dist/ReactToastify.css';
-import { toast, ToastContainer } from 'react-toastify';
 import Navbar from 'components/navbar';
+import Card from 'components/card';
 
+import { FiSearch, FiEdit, FiTrash2, FiMoreVertical } from 'react-icons/fi';
+import { FaPlus } from 'react-icons/fa';
+import { useForm, Controller } from 'react-hook-form';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { TokenExpiration } from 'views/auth/TokenExpiration ';
+import axios from 'axios';
+import API_CONFIG from '../../../config/api.config';
 
+// Create axios instance with auth interceptor
+const api = axios.create({
+  baseURL: API_CONFIG.BASE_URL,
+  headers: {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+  },
+});
+
+// Add auth token to requests
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem(API_CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 function HotelFaqs() {
     const [tableData, setTableData] = useState([]);
-    const [openAddModal, setOpenAddModal] = useState(false);
-    const [openEditModal, setOpenEditModal] = useState(false);
-    const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-    const [imagePreview, setImagePreview] = useState(null);
-    const [selectedQuestion, setselectedQuestion] = useState(null);
-    const [question, setquestion] = useState('');
-    const [answer, setanswer] = useState(null);
-    const [selectedRows, setSelectedRows] = useState([]);
-    const [openDropdown, setOpenDropdown] = useState(null);
-    const [rowIdToDelete, setRowIdToDelete] = useState(null);
-    const [loading, setLoading] = useState(false);
+    const [filteredData, setFilteredData] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const [totalItems, setTotalItems] = useState(0);
-    const [isDeleting, setIsDeleting] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
-    const [filteredData, setFilteredData] = useState([]);
+    const [openAddModal, setOpenAddModal] = useState(false);
+    const [openEditModal, setOpenEditModal] = useState(false);
+    const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+    const [selectedQuestion, setselectedQuestion] = useState(null);
+    const [rowIdToDelete, setRowIdToDelete] = useState(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [imagePreview, setImagePreview] = useState(null);
+    const [selectedRows, setSelectedRows] = useState([]);
+    const [openDropdown, setOpenDropdown] = useState(null);
+    const [answer, setanswer] = useState('');
 
-    const validationSchemaAdd = Yup.object({
-        faq_title: Yup.string().required('Name is required'),
-        faq_description: Yup.string().required('Description is required'),
-
-    });
-
-    const validationSchemaEdit = Yup.object({
-        faq_title: Yup.string().required('Name is required'),
-        faq_description: Yup.string().required('Description is required'),
-    });
-
-    const { register, reset, control, handleSubmit, setValue, formState: { errors } } = useForm({
-        resolver: yupResolver(openAddModal ? validationSchemaAdd : validationSchemaEdit),
+    const { control, handleSubmit, reset, setValue, getValues, formState: { errors } } = useForm({
         defaultValues: {
-            faq_title: selectedQuestion?.faq_title || '',
-            faq_description: selectedQuestion?.faq_description || ''
-        }
+            title: '',
+            description: '',
+        },
     });
-
 
     const fetchFaqData = async () => {
         try {
-            const response = await axios.get('https://yrpitsolutions.com/tourism_dup_api/api/admin/get_faq');
-            let data = response.data;
-
-
-            if (searchQuery.trim() !== '') {
-                data = data.filter((faq) =>
-                    faq.faq_title.toLowerCase().includes(searchQuery.toLowerCase())
-                );
-            }
+            const response = await api.get('/api/faqs');
+            const data = response.data.data || response.data;
+            console.log('FAQs data:', data);
+            setTableData(data);
             setFilteredData(data);
             setTotalItems(data.length);
         } catch (error) {
-            console.error('Error fetching data:', error);
+            console.error('Error fetching FAQs:', error);
+            toast.error('Failed to fetch FAQs');
         }
     };
 
     useEffect(() => {
         fetchFaqData();
-    }, [itemsPerPage, currentPage, searchQuery]);
+    }, []);
 
     useEffect(() => {
         if (searchQuery.trim() === '') {
-
             setFilteredData(tableData);
             setTotalItems(tableData.length);
         } else {
-
             const filtered = tableData.filter((faq) =>
-                faq.faq_title.toLowerCase().includes(searchQuery.toLowerCase())
+                faq.title && faq.title.toLowerCase().includes(searchQuery.toLowerCase())
             );
             setFilteredData(filtered);
             setTotalItems(filtered.length);
+            setCurrentPage(1);
         }
     }, [searchQuery, tableData]);
 
-
-    // Handle page change
     const handlePageChange = (page) => {
-        if (page < 1 || page > totalPages) return;
-        setCurrentPage(page);
+        if (page >= 1 && page <= totalPages) {
+            setCurrentPage(page);
+        }
     };
 
     const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
     useEffect(() => {
-        if (searchQuery) {
-            const filtered = tableData.filter((user) =>
-                user.name.toLowerCase().includes(searchQuery.toLowerCase()) // Filter by name
-            );
-            setFilteredData(filtered);
-            setTotalItems(filtered.length);
-            setCurrentPage(1); // Reset to first page when search query changes
-        } else {
-            setFilteredData(tableData); // If no search query, show all users
-            setTotalItems(tableData.length);
-        }
-    }, [searchQuery, tableData]);
+        setCurrentPage(1);
+    }, [itemsPerPage, searchQuery]);
 
-    useEffect(() => {
-        fetchFaqData();
-    }, [itemsPerPage]);
-
-    const handleAnswerChange = (value) => {
-        setanswer(value);
+    const getPaginatedData = () => {
+        const start = (currentPage - 1) * itemsPerPage;
+        const end = start + itemsPerPage;
+        return filteredData.slice(start, end);
     };
 
     const [error, setError] = useState(null);
+    
     const handleFormSubmit = async (data) => {
         setLoading(true);
         const formData = new FormData();
-        formData.append('faq_title', data.faq_title);
-        formData.append('faq_description', data.faq_description);
+        formData.append('title', data.title);
+        formData.append('description', data.description);
     
         try {
-            const accessToken = localStorage.getItem('tourism_token');
-            const response = await axios.post(
-                'https://yrpitsolutions.com/tourism_dup_api/api/admin/save_faq',
-                formData,
-                {
-                    headers: {
-                        Authorization: `Bearer ${accessToken}`,
-                        'Content-Type': 'multipart/form-data',
-                    },
-                }
-            );
+            await api.post('/api/faqs', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
             
-            if (response.status === 200) {
-                setOpenAddModal(false);
-                fetchFaqData();
-                toast.success('FAQ added successfully!', {
-                    progress: undefined, // Hide the progress bar
-                    hideProgressBar: true,
-                });
-            }
+            setOpenAddModal(false);
+            fetchFaqData();
+            toast.success('FAQ added successfully!');
         } catch (error) {
             console.error('Error saving FAQ:', error);
-            toast.error('Error saving FAQ!', {
-                progress: undefined, // Hide the progress bar
-                hideProgressBar: true,
-            });
+            toast.error('Error saving FAQ!');
         } finally {
             setLoading(false);
         }
     };
     
-    // Update Form (Edit FAQ)
     const handleFormUpdate = async (data) => {
         setLoading(true);
     
         const formData = new FormData();
-        formData.append('faq_title', data.faq_title);
-        formData.append('faq_description', data.faq_description);
-        formData.append('_method', 'PUT');
+        formData.append('title', data.title);
+        formData.append('description', data.description);
     
         try {
-            const accessToken = localStorage.getItem('tourism_token');
-    
-            const response = await axios({
-                method: 'POST',
-                url: `https://yrpitsolutions.com/tourism_dup_api/api/admin/update_faq_by_id/${selectedQuestion.id}`, // URL with selected FAQ id
-                data: formData,
-                headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                    'Content-Type': 'multipart/form-data',
-                },
+            await api.put(`/api/faqs/${selectedQuestion.id}`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
             });
     
-            if (response.status === 200) {
-                setOpenEditModal(false);
-                fetchFaqData();
-                toast.success('FAQ updated successfully!', {
-                    progress: undefined, // Hide the progress bar
-                    hideProgressBar: true,
-                });
-            }
+            setOpenEditModal(false);
+            fetchFaqData();
+            toast.success('FAQ updated successfully!');
         } catch (error) {
             console.error('Error updating FAQ:', error);
-            toast.error('Error updating FAQ!', {
-                progress: undefined, // Hide the progress bar
-                hideProgressBar: true,
-            });
+            toast.error('Error updating FAQ!');
         } finally {
             setLoading(false);
         }
     };
 
-
-    const handleAddfaq = () => {
+    const handleAddFaq = () => {
         setselectedQuestion(null);
-        setValue('faq_title', '');
-        setValue('faq_description', '');
+        setValue('title', '');
+        setValue('description', '');
         setImagePreview(null);
         setOpenAddModal(true);
     };
 
     const handleEditRow = (faq) => {
         setselectedQuestion(faq);
-        setValue('faq_title', faq.faq_title);
-        setanswer('faq_description', faq.faq_description);
+        setValue('title', faq.title);
+        setValue('description', faq.description);
         setOpenEditModal(true);
     };
-
 
     const handleDeleteRow = (id) => {
         setRowIdToDelete(id);
@@ -228,31 +175,14 @@ function HotelFaqs() {
     const handleDeleteConfirmation = async () => {
         setIsDeleting(true);
         try {
-            const accessToken = localStorage.getItem('tourism_token');
-            
-            // Perform the delete request
-            await axios.delete(`https://yrpitsolutions.com/tourism_dup_api/api/admin/delete_faq_by_id/${rowIdToDelete}`, {
-                headers: { Authorization: `Bearer ${accessToken}` },
-            });
+            await api.delete(`/api/faqs/${rowIdToDelete}`);
     
-            // Refresh FAQ data and close the delete dialog
             fetchFaqData();
             setOpenDeleteDialog(false);
-    
-            // Show success toast
-            toast.success('FAQ deleted successfully!', {
-                progress: undefined,  // Hide progress bar
-                hideProgressBar: true,
-            });
-    
+            toast.success('FAQ deleted successfully!');
         } catch (error) {
             console.error('Error deleting FAQ:', error);
-    
-            // Show error toast
-            toast.error('Error deleting FAQ!', {
-                progress: undefined,  // Hide progress bar
-                hideProgressBar: true,
-            });
+            toast.error('Error deleting FAQ!');
         } finally {
             setIsDeleting(false);
         }
@@ -261,37 +191,20 @@ function HotelFaqs() {
     const handleCancelDelete = () => {
         setOpenDeleteDialog(false);
     };
+
     const handleBulkDelete = async () => {
         setLoading(true);
         try {
-            const accessToken = localStorage.getItem('tourism_token');
-    
-            // Iterate through selected rows and delete each FAQ
             for (let id of selectedRows) {
-                await axios.delete(`https://yrpitsolutions.com/tourism_dup_api/api/admin/delete_faq_by_id/${id}`, {
-                    headers: { Authorization: `Bearer ${accessToken}` },
-                });
+                await api.delete(`/api/faqs/${id}`);
             }
-    
-            // Refresh data and reset state
+
             await fetchFaqData();
-            setSelectedRows([]); // Clear selection
-            window.location.reload(); // Optionally refresh the page
-    
-            // Show success toast after bulk delete is complete
-            toast.success('Selected FAQs deleted successfully!', {
-                progress: undefined, // Hide the progress bar
-                hideProgressBar: true,
-            });
-    
+            setSelectedRows([]);
+            toast.success('Selected FAQs deleted successfully!');
         } catch (error) {
             console.error('Error deleting selected FAQs:', error);
-    
-            // Show error toast if something goes wrong
-            toast.error('Error deleting selected FAQs!', {
-                progress: undefined, // Hide the progress bar
-                hideProgressBar: true,
-            });
+            toast.error('Error deleting selected FAQs!');
         } finally {
             setLoading(false);
         }
@@ -305,15 +218,7 @@ function HotelFaqs() {
         );
     };
 
-    // Get paginated data
-    const getPaginatedData = () => {
-        const start = (currentPage - 1) * itemsPerPage;
-        const end = start + itemsPerPage;
-        return filteredData.slice(start, end);
-    };
     const dropdownRef = useRef(null);
-
-
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -330,390 +235,334 @@ function HotelFaqs() {
 
     const handleCloseAddModal = () => {
         setOpenAddModal(false);
-        setanswer(null);
         reset();
     };
 
     const handleCloseEditModal = () => {
         setOpenEditModal(false);
-        setanswer(null);
         reset();
     };
 
-    useEffect(() => {
-        if (selectedQuestion) {
-            setValue('faq_title', selectedQuestion.faq_title); // Prefill question
-            setValue('faq_description', selectedQuestion.faq_description); // Prefill answer
-        }
-    }, [selectedQuestion, setValue]);
-
     return (
-        <div className=" min-h-screen pt-6">
-             <Navbar brandText={"Hotel FAQ"} />
+        <div className="min-h-screen pt-6">
+            <Navbar brandText={"Hotel FAQs"}/>
             <TokenExpiration />
-            <ToastContainer/>
+            <ToastContainer />
             <div className="w-full mx-auto">
                 <span className="flex mt-4 items-center w-full gap-6">
-                    {/* Search bar */}
-                    <div className="relative flex  flex-grow items-center justify-around gap-2 rounded-full bg-white px-2 py-3 shadow-xl shadow-shadow-500 dark:!bg-navy-800 dark:shadow-none">
+                    <div className="relative flex flex-grow items-center justify-around gap-2 rounded-full bg-white px-2 py-3 shadow-xl shadow-shadow-500 dark:!bg-navy-800 dark:shadow-none">
                         <div className="flex h-full w-full items-center rounded-full text-navy-700 dark:bg-navy-900 dark:text-white">
                             <p className="pl-3 pr-2 text-xl">
                                 <FiSearch className="h-4 w-4 text-gray-400 dark:text-white" />
                             </p>
                             <input
                                 type="text"
-                                placeholder="Search by Name..."
-                                value={searchQuery}
+                                placeholder="Search by Title..."
                                 onChange={(e) => setSearchQuery(e.target.value)}
+                                value={searchQuery}
                                 className="block w-full rounded-full text-base font-medium text-navy-700 outline-none placeholder:!text-gray-400 dark:bg-navy-900 dark:text-white dark:placeholder:!text-white"
                             />
                         </div>
                     </div>
 
                     <button
-                        onClick={handleAddfaq}
+                        onClick={handleAddFaq}
                         className="bg-[#4318ff] text-white px-6 py-2 rounded-full text-lg font-medium flex items-center ml-auto"
                     >
-                        <FaPlus className="mr-2" /> Add a FAQ
+                        <FaPlus className="mr-2" /> Add Hotel FAQ
                     </button>
                 </span>
 
-
-                {/* Add Modal */}
                 {openAddModal && (
-                    <div className="fixed inset-0 flex items-center justify-center z-50 bg-gray-900 bg-opacity-50">
-                        <div className="bg-white rounded-lg shadow-2xl p-8 w-[70%] max-w-3xl">
-                            <h3 className="text-2xl font-semibold text-gray-800 mb-6">Add a FAQ</h3>
-                            <form onSubmit={handleSubmit(handleFormSubmit)}>
-                                {/* Question Input */}
-                                <div className="mb-6">
-                                    <label htmlFor="question" className="block text-lg text-gray-600 font-medium mb-2">
-                                    Name  <span className="text-red-500 ">*</span>
-                                    </label>
-                                    <input
-                                        name="faq_title"
-                                        type="text"
-                                        id="faq_title"
-                                        {...register('faq_title')}
-                                        className="w-full border border-gray-300 rounded-md px-4 py-3 text-gray-800 focus:outline-none"
-                                        placeholder="Enter Name "
-                                    />
-                                    {errors.faq_title && <p className="text-red-500 text-sm mt-2">{errors.faq_title.message}</p>}
-                                </div>
+                    <div
+                        className="fixed inset-0 flex items-center justify-center z-50 bg-gray-900 bg-opacity-50"
+                        onClick={handleCloseAddModal}
+                    >
+                        <div
+                            className="bg-white rounded-lg shadow-2xl p-8"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <h2 className="text-2xl font-semibold text-gray-800 mb-6">Add Hotel FAQ</h2>
 
-                                {/* Answer Input (React Quill) */}
-                                <div className="mb-6">
-                                    <label htmlFor="answer" className="block text-xl text-gray-600 font-medium mb-2">
-                                    Description  <span className="text-red-500 ">*</span>
-                                    </label>
-                                    <Controller
-                                        name="faq_description"
-                                        control={control} // control from react-hook-form
-                                        render={({ field }) => (
-                                            <ReactQuill
-                                                {...field} // This spreads the field value and onChange into ReactQuill
-                                                value={field.value || ""} // Ensure it doesn't break if the value is undefined
-                                                onChange={field.onChange} // This will automatically update the form state
-                                                className="w-full rounded-lg h-[200px] focus:ring-2 focus:ring-blue-500 focus:outline-none transition duration-200"
-                                                placeholder="Enter Description"
-                                            />
-                                        )}
-                                    />
-                                    {errors.faq_description && <p className="text-red-500 text-sm mt-2">{errors.faq_description.message}</p>}
-                                </div>
-
-                                <div className="flex justify-end gap-4 mt-16">
-                                    <button
-                                        type="button"
-                                        onClick={handleCloseAddModal}
-                                        className="bg-gray-300 text-gray-800 px-6 py-3 rounded-md hover:bg-gray-400 transition-all"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        onClick={handleSubmit(handleFormSubmit)}
-                                        disabled={loading}
-                                        className="relative bg-[#4318ff] text-white px-6 py-3 rounded-lg hover:bg-[#322bbf] transition-all"
-                                    >
-                                        {loading ? (
-                                            <div className="absolute inset-0 flex items-center justify-center w-full h-full">
-                                                <div className="w-6 h-6 border-4 border-t-transparent border-white rounded-full animate-spin"></div>
-                                            </div>
-                                        ) : (
-                                            'Create'
-                                        )}
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                )}
-
-
-                {/* Edit Modal */}
-                {openEditModal && selectedQuestion && (
-                    <div className="fixed inset-0 flex items-center justify-center z-50 bg-gray-900 bg-opacity-50">
-                        <div className="bg-white rounded-lg shadow-2xl p-8 w-[70%] max-w-3xl">
-                            <h3 className="text-3xl font-semibold text-gray-800 mb-6">Edit FAQ</h3>
-                            <form onSubmit={handleSubmit(handleFormUpdate)}>
-                                {/* Question Input */}
-                                <div className="mb-6">
-                                    <label htmlFor="question" className="block text-xl text-gray-600 font-medium mb-2">
-                                    Name  <span className="text-red-500 ">*</span>
-                                    </label>
-                                    <input
-                                        name="faq_title"
-                                        type="text"
-                                        id="faq_title"
-                                        {...register('faq_title')}
-                                        // defaultValue={selectedfaq_title?.faq_title || ''}  
-                                        className="w-full px-5 py-4 text-lg rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none transition duration-200"
-                                        placeholder="Enter Name"
-                                    />
-
-                                    {errors.faq_title && <p className="text-red-500 text-sm mt-2">{errors.faq_title.message}</p>}
-                                </div>
-
-                                {/* Answer Input (React Quill) */}
-                                <div className="mb-6">
-                                    <label htmlFor="answer" className="block text-xl text-gray-600 font-medium mb-2">
-                                    Description  <span className="text-red-500 ">*</span>
-                                    </label>
-                                    <Controller
-                                        name="faq_description"
-                                        control={control}
-                                        render={({ field }) => (
-                                            <ReactQuill
-                                                {...field}
-                                                onChange={field.onChange}
-                                                className="w-full rounded-lg h-[200px] focus:ring-2 focus:ring-blue-500 focus:outline-none transition duration-200"
-                                                placeholder="Enter Description "
-                                            />
-                                        )}
-                                    />
-                                    {errors.faq_description && <p className="text-red-500 text-sm mt-2">{errors.faq_description.message}</p>}
-                                </div>
-
-
-                                {/* Buttons */}
-                                <div className="flex justify-end gap-4 mt-16">
-                                    <button
-                                        type="button"
-                                        onClick={handleCloseEditModal}
-                                        className="bg-gray-300 text-gray-800 px-6 py-3 rounded-md hover:bg-gray-400 transition-all"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        onClick={handleSubmit(handleFormUpdate)}
-                                        disabled={loading}
-                                        className="relative bg-[#4318ff] text-white px-6 py-3 rounded-lg hover:bg-[#322bbf] transition-all"
-                                    >
-                                        {loading ? (
-                                            <div className="absolute inset-0 flex items-center justify-center w-full h-full">
-                                                <div className="w-6 h-6 border-4 border-t-transparent border-white rounded-full animate-spin"></div>
-                                            </div>
-                                        ) : (
-                                            'Save Changes'
-                                        )}
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                )}
-
-
-                {/* Table */}
-                <div className="mt-8 bg-white shadow-lg rounded-lg p-6">
-                    <table className="w-full table-auto">
-                        <thead>
-                            <tr className="text-gray-600">
-                                <th className="px-6 py-4 text-left">
-                                    <div className="flex justify-between items-center">
+                            <div className="mb-6">
+                                <label className="block text-lg text-gray-600 font-medium mb-2">
+                                    Question <span className="text-red-500">*</span>
+                                </label>
+                                <Controller
+                                    name="title"
+                                    control={control}
+                                    render={({ field }) => (
                                         <input
-                                            type="checkbox"
-                                            // checked={selectedRows.length === getPaginatedData().length}
-                                            checked={false} 
-                                            onChange={() => {
-                                                if (selectedRows.length === getPaginatedData().length) {
-                                                    setSelectedRows([]);
-                                                } else {
-                                                    setSelectedRows(getPaginatedData().map((row) => row.id));
-                                                }
-                                            }}
+                                            type="text"
+                                            placeholder="Enter Question"
+                                            className="w-full border border-gray-300 rounded-md px-4 py-3 text-gray-800 focus:outline-none"
+                                            {...field}
                                         />
-                                    </div>
-                                </th>
-                                {/* <th className="px-6 py-4 text-left">Image</th> */}
-                                <th className="px-6 py-4 text-left">Name </th>
-                                <th className="px-6 py-4 text-left">Description  </th>
-                                <th className="">
-                                    {selectedRows.length > 0 && (
-                                        <button
-                                            onClick={handleBulkDelete}
-                                            className={`text-gray-600 hover:text-red-600 text-xl flex items-center ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                            disabled={loading}
-                                        >
-                                            {loading ? (
-                                                <div className="relative">
-                                                    <div className="w-6 h-6 border-4 border-t-transparent border-red-600 rounded-full animate-spin"></div>
-                                                </div>
-                                            ) : (
-                                                <FaTrashAlt />
-                                            )}
-                                        </button>
                                     )}
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {getPaginatedData().length === 0 ? (
-                                <tr>
-                                    <td colSpan="4" className="text-center py-4 text-gray-500">
-                                        No Faq data found
-                                    </td>
-                                </tr>
-                            ) : (
-                                getPaginatedData().map((faq) => (
-                                    <tr key={faq.id} className="border-t">
-                                        <td className="px-6 py-4">
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedRows.includes(faq.id)}
-                                                onChange={() => handleRowSelection(faq.id)}
-                                            />
-                                        </td>
-                                        {/* <td className="px-6 py-4">
-                                            <img
-                                                src={faq.photo || '/default-image.png'}
-                                                alt={faq.faq_name}
-                                                className="w-12 h-12 object-cover rounded-full"
-                                            />
-                                        </td> */}
-                                        <td className="px-6 py-4">{faq.faq_title}</td>
-                                        <td className="px-6 py-4" dangerouslySetInnerHTML={{ __html: faq.faq_description }}></td>
-                                        <td className="text-right">
-                                            <div className="relative inline-block group">
-                                                <button
-                                                    onClick={() => setOpenDropdown(openDropdown === faq.id ? null : faq.id)}
-                                                    className="text-gray-600 hover:text-gray-900"
-                                                >
-                                                    <FaEllipsisV />
-                                                </button>
-                                                <div
-                                                    className="absolute right-10 flex space-x-2 opacity-0 group-hover:opacity-100 group-hover:flex transition-all duration-200  " style={{marginTop:"-30px"}}
-                                                >
-                                                    <div
-                                                        onClick={() => {
-                                                            handleEditRow(faq);
-                                                            setOpenDropdown(null);
-                                                        }}
-                                                        className="flex items-center px-4 py-2 text-navy-700 cursor-pointer"
-                                                    >
-                                                        <FaEdit className="mr-2 text-black" />
-                                                    </div>
-                                                    <div
-                                                        onClick={() => {
-                                                            handleDeleteRow(faq.id);
-                                                            setOpenDropdown(null);
-                                                        }}
-                                                        className="flex items-center px-4 py-2 text-red-600  cursor-pointer"
-                                                    >
-                                                        <FaTrashAlt className="mr-2" />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                                />
+                                {errors.title && <p className="text-red-500 text-sm">{errors.title.message}</p>}
+                            </div>
 
+                            <div className="mb-6">
+                                <label className="block text-lg text-gray-600 font-medium mb-2">
+                                    Answer <span className="text-red-500">*</span>
+                                </label>
+                                <Controller
+                                    name="description"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <textarea
+                                            placeholder="Enter Answer"
+                                            rows={4}
+                                            className="w-full border border-gray-300 rounded-md px-4 py-3 text-gray-800 focus:outline-none"
+                                            {...field}
+                                        />
+                                    )}
+                                />
+                                {errors.description && <p className="text-red-500 text-sm">{errors.description.message}</p>}
+                            </div>
 
-            </div>
-
-            {/* Pagination */}
-            <div className="flex justify-between items-center mt-4">
-                <div className="flex items-center">
-                    <span className="mr-2">Show</span>
-                    <select
-                        value={itemsPerPage}
-                        onChange={(e) => setItemsPerPage(Number(e.target.value))}
-                        className="border border-gray-300 px-4 py-2 rounded-md"
-                    >
-                        {[5, 10, 20, 50, 100].map((option) => (
-                            <option key={option} value={option}>
-                                {option}
-                            </option>
-                        ))}
-                    </select>
-                    <span className="ml-2">entries</span>
-                </div>
-
-                <div className="flex space-x-4">
-                    {/* Showing Item Range */}
-                    <button
-                        onClick={() => handlePageChange(currentPage - 1)}
-                        disabled={currentPage === 1}
-                        className={`${currentPage === 1
-                            ? 'bg-[#4318ff] text-white opacity-50 cursor-not-allowed'
-                            : 'bg-[#4318ff] text-white hover:bg-[#3700b3]'
-                            } px-6 py-2 rounded-[20px]`}
-                    >
-                        Back
-                    </button>
-                    <span className="text-gray-600 mt-2">
-                        {` ${(currentPage - 1) * itemsPerPage + 1} to ${Math.min(currentPage * itemsPerPage, totalItems)} of ${totalItems} items`}
-                    </span>
-
-                    <button
-                        onClick={() => handlePageChange(currentPage + 1)}
-                        disabled={currentPage === totalPages}
-                        className={`${currentPage === totalPages || totalItems === 0
-                            ? 'bg-[#4318ff] text-white opacity-50 cursor-not-allowed'
-                            : 'bg-[#4318ff] text-white hover:bg-[#3700b3]'} px-6 py-2 rounded-[20px]`}
-                    >
-                        Next
-                    </button>
-                </div>
-            </div>
-
-            {/* Delete Confirmation Dialog */}
-            {openDeleteDialog && (
-                <div className="fixed inset-0 flex items-center justify-center z-20 bg-gray-500 bg-opacity-50">
-                    <div className="bg-white p-6 rounded-md shadow-lg w-1/3">
-                        <h2 className="text-xl font-semibold mb-4">Are you sure you want to delete this FAQ?</h2>
-                        <div className="flex justify-end">
-                            <button
-                                onClick={handleCancelDelete}
-                                className="px-4 py-2 mr-4 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-100"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleDeleteConfirmation}
-                                className="px-4 py-2 text-white bg-red-600 rounded-md hover:bg-red-700 flex items-center justify-center"
-                                disabled={isDeleting}
-                            >
-                                {isDeleting ? (
-                                    <FaSpinner className="animate-spin mr-2" />
-                                ) : (
-                                    'Delete'
-                                )}
-                                {isDeleting ? 'Deleting...' : ''}
-                            </button>
+                            <div className="flex justify-end gap-4">
+                                <button
+                                    type="button"
+                                    onClick={handleCloseAddModal}
+                                    className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleSubmit(handleFormSubmit)}
+                                    disabled={loading}
+                                    className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                                >
+                                    {loading ? 'Adding...' : 'Add FAQ'}
+                                </button>
+                            </div>
                         </div>
                     </div>
+                )}
+
+                {openEditModal && (
+                    <div
+                        className="fixed inset-0 flex items-center justify-center z-50 bg-gray-900 bg-opacity-50"
+                        onClick={handleCloseEditModal}
+                    >
+                        <div
+                            className="bg-white rounded-lg shadow-2xl p-8"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <h2 className="text-2xl font-semibold text-gray-800 mb-6">Edit Hotel FAQ</h2>
+
+                            <div className="mb-6">
+                                <label className="block text-lg text-gray-600 font-medium mb-2">
+                                    Question <span className="text-red-500">*</span>
+                                </label>
+                                <Controller
+                                    name="title"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <input
+                                            type="text"
+                                            placeholder="Enter Question"
+                                            className="w-full border border-gray-300 rounded-md px-4 py-3 text-gray-800 focus:outline-none"
+                                            {...field}
+                                        />
+                                    )}
+                                />
+                                {errors.title && <p className="text-red-500 text-sm">{errors.title.message}</p>}
+                            </div>
+
+                            <div className="mb-6">
+                                <label className="block text-lg text-gray-600 font-medium mb-2">
+                                    Answer <span className="text-red-500">*</span>
+                                </label>
+                                <Controller
+                                    name="description"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <textarea
+                                            placeholder="Enter Answer"
+                                            rows={4}
+                                            className="w-full border border-gray-300 rounded-md px-4 py-3 text-gray-800 focus:outline-none"
+                                            {...field}
+                                        />
+                                    )}
+                                />
+                                {errors.description && <p className="text-red-500 text-sm">{errors.description.message}</p>}
+                            </div>
+
+                            <div className="flex justify-end gap-4">
+                                <button
+                                    type="button"
+                                    onClick={handleCloseEditModal}
+                                    className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleSubmit(handleFormUpdate)}
+                                    disabled={loading}
+                                    className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                                >
+                                    {loading ? 'Updating...' : 'Update FAQ'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {openDeleteDialog && (
+                    <div className="fixed inset-0 flex items-center justify-center z-50 bg-gray-900 bg-opacity-50">
+                        <div className="bg-white rounded-lg shadow-2xl p-8 max-w-md w-full mx-4">
+                            <h2 className="text-2xl font-semibold text-gray-800 mb-4">Confirm Delete</h2>
+                            <p className="text-gray-600 mb-6">Are you sure you want to delete this FAQ? This action cannot be undone.</p>
+                            <div className="flex justify-end gap-4">
+                                <button
+                                    onClick={handleCancelDelete}
+                                    className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleDeleteConfirmation}
+                                    disabled={isDeleting}
+                                    className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
+                                >
+                                    {isDeleting ? 'Deleting...' : 'Delete'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                <div className="mt-6">
+                    <Card extra="w-full">
+                        <div className="flex flex-col">
+                            <div className="overflow-x-auto">
+                                <table className="w-full">
+                                    <thead>
+                                        <tr className="border-b border-gray-200">
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                <input
+                                                    type="checkbox"
+                                                    onChange={(e) => {
+                                                        if (e.target.checked) {
+                                                            setSelectedRows(getPaginatedData().map(row => row.id));
+                                                        } else {
+                                                            setSelectedRows([]);
+                                                        }
+                                                    }}
+                                                    checked={selectedRows.length === getPaginatedData().length && getPaginatedData().length > 0}
+                                                />
+                                            </th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Question</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Answer</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="bg-white divide-y divide-gray-200">
+                                        {getPaginatedData().map((faq) => (
+                                            <tr key={faq.id} className="hover:bg-gray-50">
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedRows.includes(faq.id)}
+                                                        onChange={() => handleRowSelection(faq.id)}
+                                                    />
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                    {faq.title}
+                                                </td>
+                                                <td className="px-6 py-4 text-sm text-gray-500">
+                                                    <div className="max-w-xs truncate">
+                                                        {faq.description}
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                                        faq.status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                                    }`}>
+                                                        {faq.status ? 'Active' : 'Inactive'}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                    <div className="flex items-center space-x-2">
+                                                        <button
+                                                            onClick={() => handleEditRow(faq)}
+                                                            className="text-indigo-600 hover:text-indigo-900"
+                                                        >
+                                                            <FiEdit className="h-4 w-4" />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDeleteRow(faq.id)}
+                                                            className="text-red-600 hover:text-red-900"
+                                                        >
+                                                            <FiTrash2 className="h-4 w-4" />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {selectedRows.length > 0 && (
+                                <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                                    <button
+                                        onClick={handleBulkDelete}
+                                        disabled={loading}
+                                        className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
+                                    >
+                                        {loading ? 'Deleting...' : `Delete Selected (${selectedRows.length})`}
+                                    </button>
+                                </div>
+                            )}
+
+                            <div className="mt-4 flex items-center justify-between">
+                                <div className="flex items-center space-x-2">
+                                    <span className="text-sm text-gray-700">Show:</span>
+                                    <select
+                                        value={itemsPerPage}
+                                        onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                                        className="border border-gray-300 rounded-md px-2 py-1 text-sm"
+                                    >
+                                        <option value={5}>5</option>
+                                        <option value={10}>10</option>
+                                        <option value={20}>20</option>
+                                        <option value={50}>50</option>
+                                    </select>
+                                    <span className="text-sm text-gray-700">entries</span>
+                                </div>
+
+                                <div className="flex items-center space-x-2">
+                                    <button
+                                        onClick={() => handlePageChange(currentPage - 1)}
+                                        disabled={currentPage === 1}
+                                        className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50"
+                                    >
+                                        Previous
+                                    </button>
+                                    <span className="text-sm text-gray-700">
+                                        Page {currentPage} of {totalPages}
+                                    </span>
+                                    <button
+                                        onClick={() => handlePageChange(currentPage + 1)}
+                                        disabled={currentPage === totalPages}
+                                        className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50"
+                                    >
+                                        Next
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </Card>
                 </div>
-            )}
+            </div>
         </div>
-
-
-
-
     );
 }
 

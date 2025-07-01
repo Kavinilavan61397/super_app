@@ -22,14 +22,16 @@ const Dish = require('./dish')(sequelize, Sequelize.DataTypes);
 const TaxiDriver = require('./taxidriver')(sequelize, Sequelize.DataTypes);
 const TaxiVehicle = require('./taxivehicle')(sequelize, Sequelize.DataTypes);
 const TaxiRide = require('./taxiride')(sequelize, Sequelize.DataTypes);
-const Hotel = require('./hotel')(sequelize, Sequelize.DataTypes);
-const Room = require('./room')(sequelize, Sequelize.DataTypes);
+const Hotel = require('./hotel');
+const Room = require('./room');
 const Booking = require('./booking')(sequelize, Sequelize.DataTypes);
 const ProductAttribute = require('./ProductAttribute')(sequelize, Sequelize.DataTypes);
 const GCartItem = require('./gcart_items')(sequelize, Sequelize.DataTypes);
 const Gwhishlist = require('./gwhishlist')(sequelize, Sequelize.DataTypes);
 const Role = require('./Role');
 const Staff = require('./Staff');
+const Policy = require('./Policy');
+const Location = require('./Location');
 
 // --- Associations ---
 
@@ -106,6 +108,14 @@ OTP.belongsTo(User, { foreignKey: 'user_id', as: 'user', onDelete: 'CASCADE', on
 if (User.associate) User.associate({ Staff });
 if (Staff.associate) Staff.associate({ User });
 
+// Register associations for Hotel and Room
+if (Hotel.associate) Hotel.associate({ Room, Policy, Location });
+if (Room.associate) Room.associate({ Hotel });
+
+// Register associations for Policy and Location
+if (Policy.associate) Policy.associate({ Hotel });
+if (Location.associate) Location.associate({ Hotel });
+
 // Export all models
 module.exports = {
   sequelize,
@@ -134,5 +144,7 @@ module.exports = {
   Gwhishlist,
   ProductAttribute,
   Role,
-  Staff
+  Staff,
+  Policy,
+  Location
 };

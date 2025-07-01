@@ -1,127 +1,108 @@
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
-import { FaEdit, FaTrashAlt, FaPlus, FaEllipsisV } from 'react-icons/fa';
-import * as Yup from 'yup';
-import { useForm, Controller } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import { FaSpinner } from 'react-icons/fa';
-import { FiSearch } from 'react-icons/fi';
-import { TokenExpiration } from 'views/auth/TokenExpiration ';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
-import 'react-toastify/dist/ReactToastify.css';
-import { toast, ToastContainer } from 'react-toastify';
 import Navbar from 'components/navbar';
+import Card from 'components/card';
 
+import { FiSearch, FiEdit, FiTrash2, FiMoreVertical } from 'react-icons/fi';
+import { FaPlus } from 'react-icons/fa';
+import { useForm, Controller } from 'react-hook-form';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { TokenExpiration } from 'views/auth/TokenExpiration ';
+import axios from 'axios';
+import API_CONFIG from '../../../config/api.config';
 
+// Create axios instance with auth interceptor
+const api = axios.create({
+  baseURL: API_CONFIG.BASE_URL,
+  headers: {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+  },
+});
+
+// Add auth token to requests
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem(API_CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 function HotelPolicy() {
     const [tableData, setTableData] = useState([]);
-    const [openAddModal, setOpenAddModal] = useState(false);
-    const [openEditModal, setOpenEditModal] = useState(false);
-    const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-    const [imagePreview, setImagePreview] = useState(null);
-    const [selectedQuestion, setselectedQuestion] = useState(null);
-    const [question, setquestion] = useState('');
-    const [answer, setanswer] = useState(null);
-    const [selectedRows, setSelectedRows] = useState([]);
-    const [openDropdown, setOpenDropdown] = useState(null);
-    const [rowIdToDelete, setRowIdToDelete] = useState(null);
-    const [loading, setLoading] = useState(false);
+    const [filteredData, setFilteredData] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const [totalItems, setTotalItems] = useState(0);
-    const [isDeleting, setIsDeleting] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
-    const [filteredData, setFilteredData] = useState([]);
+    const [openAddModal, setOpenAddModal] = useState(false);
+    const [openEditModal, setOpenEditModal] = useState(false);
+    const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+    const [selectedQuestion, setselectedQuestion] = useState(null);
+    const [rowIdToDelete, setRowIdToDelete] = useState(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [imagePreview, setImagePreview] = useState(null);
+    const [selectedRows, setSelectedRows] = useState([]);
+    const [openDropdown, setOpenDropdown] = useState(null);
+    const [answer, setanswer] = useState('');
 
-    const validationSchemaAdd = Yup.object({
-        // question: Yup.string().required('Question Name is required'),
-        // answer: Yup.string().required('answer Name is required'),
-
-    });
-
-    const validationSchemaEdit = Yup.object({
-        // question: Yup.string().required('Question Name is required'),
-        // answer: Yup.string().required('answer Name is required'),
-    });
-
-    const { register, reset, control, handleSubmit, setValue, formState: { errors } } = useForm({
-        resolver: yupResolver(openAddModal ? validationSchemaAdd : validationSchemaEdit),
+    const { control, handleSubmit, reset, setValue, getValues, formState: { errors } } = useForm({
         defaultValues: {
-            // question: selectedQuestion?.question || '',
-            // answer: selectedQuestion?.answer || ''
-        }
+            title: '',
+            description: '',
+        },
     });
 
-
-    const fetchFaqData = async () => {
+    const fetchPolicyData = async () => {
         try {
-            const response = await axios.get('https://yrpitsolutions.com/tourism_dup_api/api/admin/get_policy');
-            let data = response.data;
-            console.log(response.data);
-
-
-            if (searchQuery.trim() !== '') {
-                data = data.filter((faq) =>
-                    faq.policy_title.toLowerCase().includes(searchQuery.toLowerCase())
-                );
-            }
+            const response = await api.get('/api/policies');
+            const data = response.data.data || response.data;
+            console.log('Policies data:', data);
+            setTableData(data);
             setFilteredData(data);
             setTotalItems(data.length);
         } catch (error) {
-            console.error('Error fetching data:', error);
+            console.error('Error fetching policies:', error);
+            toast.error('Failed to fetch policies');
         }
     };
 
     useEffect(() => {
-        fetchFaqData();
-    }, [itemsPerPage, currentPage, searchQuery]);
+        fetchPolicyData();
+    }, []);
 
     useEffect(() => {
         if (searchQuery.trim() === '') {
-
             setFilteredData(tableData);
             setTotalItems(tableData.length);
         } else {
-
-            const filtered = tableData.filter((faq) =>
-                faq.policy_title.toLowerCase().includes(searchQuery.toLowerCase())
+            const filtered = tableData.filter((policy) =>
+                policy.title && policy.title.toLowerCase().includes(searchQuery.toLowerCase())
             );
             setFilteredData(filtered);
             setTotalItems(filtered.length);
+            setCurrentPage(1);
         }
     }, [searchQuery, tableData]);
 
-
-    // Handle page change
     const handlePageChange = (page) => {
-        if (page < 1 || page > totalPages) return;
-        setCurrentPage(page);
+        if (page >= 1 && page <= totalPages) {
+            setCurrentPage(page);
+        }
     };
 
     const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
     useEffect(() => {
-        if (searchQuery) {
-            const filtered = tableData.filter((faq) =>
-                faq.policy_title.toLowerCase().includes(searchQuery.toLowerCase()) // Filter by name
-            );
-            setFilteredData(filtered);
-            setTotalItems(filtered.length);
-            setCurrentPage(1); // Reset to first page when search query changes
-        } else {
-            setFilteredData(tableData); // If no search query, show all users
-            setTotalItems(tableData.length);
-        }
-    }, [searchQuery, tableData]);
+        setCurrentPage(1);
+    }, [itemsPerPage, searchQuery]);
 
-    useEffect(() => {
-        fetchFaqData();
-    }, [itemsPerPage]);
-
-    const handleAnswerChange = (value) => {
-        setanswer(value);
+    const getPaginatedData = () => {
+        const start = (currentPage - 1) * itemsPerPage;
+        const end = start + itemsPerPage;
+        return filteredData.slice(start, end);
     };
 
     const [error, setError] = useState(null);
@@ -129,98 +110,62 @@ function HotelPolicy() {
     const handleFormSubmit = async (data) => {
         setLoading(true);
         const formData = new FormData();
-        formData.append('policy_title', data.policy_title);
-        formData.append('policy_description', data.policy_description);
+        formData.append('title', data.title);
+        formData.append('description', data.description);
 
         try {
-            const accessToken = localStorage.getItem('tourism_token');
-            const response = await axios.post(
-                'https://yrpitsolutions.com/tourism_dup_api/api/admin/save_policy',
-                formData,
-                {
-                    headers: {
-                        Authorization: `Bearer ${accessToken}`,
-                        'Content-Type': 'multipart/form-data',
-                    },
-                }
-            );
+            await api.post('/api/policies', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
 
-            if (response.status === 200) {
-                setOpenAddModal(false);
-                fetchFaqData();
-                toast.success('Hotel Policy added successfully!', {
-                    progress: undefined, // Hide the progress bar
-                    hideProgressBar: true,
-                });
-            }
+            setOpenAddModal(false);
+            fetchPolicyData();
+            toast.success('Hotel Policy added successfully!');
         } catch (error) {
             console.error('Error saving Hotel Policy:', error);
-            toast.error('Error saving Hotel Policy!', {
-                progress: undefined, // Hide the progress bar
-                hideProgressBar: true,
-            });
+            toast.error('Error saving Hotel Policy!');
         } finally {
             setLoading(false);
         }
     };
 
-    // Update Form (Edit FAQ)
     const handleFormUpdate = async (data) => {
         setLoading(true);
 
         const formData = new FormData();
-        formData.append('policy_title', data.policy_title);
-        formData.append('policy_description', data.policy_description);
-        formData.append('_method', 'PUT');
+        formData.append('title', data.title);
+        formData.append('description', data.description);
 
         try {
-            const accessToken = localStorage.getItem('tourism_token');
-
-            const response = await axios({
-                method: 'POST',
-                url: `https://yrpitsolutions.com/tourism_dup_api/api/admin/update_policy_by_id/${selectedQuestion.id}`, // URL with selected FAQ id
-                data: formData,
-                headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                    'Content-Type': 'multipart/form-data',
-                },
+            await api.put(`/api/policies/${selectedQuestion.id}`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
             });
 
-            if (response.status === 200) {
-                setOpenEditModal(false);
-                fetchFaqData();
-                toast.success('Hotel Policy updated successfully!', {
-                    progress: undefined, // Hide the progress bar
-                    hideProgressBar: true,
-                });
-            }
+            setOpenEditModal(false);
+            fetchPolicyData();
+            toast.success('Hotel Policy updated successfully!');
         } catch (error) {
             console.error('Error updating Hotel Policy:', error);
-            toast.error('Error updating Hotel Policy!', {
-                progress: undefined, // Hide the progress bar
-                hideProgressBar: true,
-            });
+            toast.error('Error updating Hotel Policy!');
         } finally {
             setLoading(false);
         }
     };
 
-
-    const handleAddfaq = () => {
+    const handleAddPolicy = () => {
         setselectedQuestion(null);
-        setValue('policy_title', '');
-        setValue('policy_description', '');
+        setValue('title', '');
+        setValue('description', '');
         setImagePreview(null);
         setOpenAddModal(true);
     };
 
-    const handleEditRow = (faq) => {
-        setselectedQuestion(faq);
-        setValue('policy_title', faq.policy_title);
-        setanswer('policy_description', faq.policy_description);
+    const handleEditRow = (policy) => {
+        setselectedQuestion(policy);
+        setValue('title', policy.title);
+        setValue('description', policy.description);
         setOpenEditModal(true);
     };
-
 
     const handleDeleteRow = (id) => {
         setRowIdToDelete(id);
@@ -230,31 +175,14 @@ function HotelPolicy() {
     const handleDeleteConfirmation = async () => {
         setIsDeleting(true);
         try {
-            const accessToken = localStorage.getItem('tourism_token');
+            await api.delete(`/api/policies/${rowIdToDelete}`);
 
-            // Perform the delete request
-            await axios.delete(`https://yrpitsolutions.com/tourism_dup_api/api/admin/delete_policy_by_id/${rowIdToDelete}`, {
-                headers: { Authorization: `Bearer ${accessToken}` },
-            });
-
-            // Refresh FAQ data and close the delete dialog
-            fetchFaqData();
+            fetchPolicyData();
             setOpenDeleteDialog(false);
-
-            // Show success toast
-            toast.success('FAQ deleted successfully!', {
-                progress: undefined,  // Hide progress bar
-                hideProgressBar: true,
-            });
-
+            toast.success('Policy deleted successfully!');
         } catch (error) {
             console.error('Error deleting Hotel Policy:', error);
-
-            // Show error toast
-            toast.error('Error deleting Hotel Policy!', {
-                progress: undefined,  // Hide progress bar
-                hideProgressBar: true,
-            });
+            toast.error('Error deleting Hotel Policy!');
         } finally {
             setIsDeleting(false);
         }
@@ -263,37 +191,20 @@ function HotelPolicy() {
     const handleCancelDelete = () => {
         setOpenDeleteDialog(false);
     };
+
     const handleBulkDelete = async () => {
         setLoading(true);
         try {
-            const accessToken = localStorage.getItem('tourism_token');
-
-            // Iterate through selected rows and delete each FAQ
             for (let id of selectedRows) {
-                await axios.delete(`https://yrpitsolutions.com/tourism_dup_api/api/admin/delete_policy_by_id/${id}`, {
-                    headers: { Authorization: `Bearer ${accessToken}` },
-                });
+                await api.delete(`/api/policies/${id}`);
             }
 
-            // Refresh data and reset state
-            await fetchFaqData();
-            setSelectedRows([]); // Clear selection
-            window.location.reload(); // Optionally refresh the page
-
-            // Show success toast after bulk delete is complete
-            toast.success('Selected Hotel Policy deleted successfully!', {
-                progress: undefined, // Hide the progress bar
-                hideProgressBar: true,
-            });
-
+            toast.success('Policies deleted successfully!');
+            await fetchPolicyData();
+            setSelectedRows([]);
         } catch (error) {
-            console.error('Error deleting selected Hotel Policy:', error);
-
-            // Show error toast if something goes wrong
-            toast.error('Error deleting selected Hotel Policy!', {
-                progress: undefined, // Hide the progress bar
-                hideProgressBar: true,
-            });
+            console.error('Error deleting selected policies:', error);
+            toast.error('Error deleting selected policies!');
         } finally {
             setLoading(false);
         }
@@ -307,15 +218,7 @@ function HotelPolicy() {
         );
     };
 
-    // Get paginated data
-    const getPaginatedData = () => {
-        const start = (currentPage - 1) * itemsPerPage;
-        const end = start + itemsPerPage;
-        return filteredData.slice(start, end);
-    };
     const dropdownRef = useRef(null);
-
-
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -332,383 +235,334 @@ function HotelPolicy() {
 
     const handleCloseAddModal = () => {
         setOpenAddModal(false);
-        setanswer(null);
         reset();
     };
 
     const handleCloseEditModal = () => {
         setOpenEditModal(false);
-        setanswer(null);
         reset();
     };
 
-    useEffect(() => {
-        if (selectedQuestion) {
-            setValue('policy_title', selectedQuestion.policy_title); // Prefill question
-            setValue('policy_description', selectedQuestion.policy_description); // Prefill answer
-        }
-    }, [selectedQuestion, setValue]);
-
-
     return (
-        <div className=" min-h-screen pt-6">
-            <Navbar brandText={"Hotel Policy"} />
+        <div className="min-h-screen pt-6">
+            <Navbar brandText={"Hotel Policy"}/>
             <TokenExpiration />
             <ToastContainer />
             <div className="w-full mx-auto">
                 <span className="flex mt-4 items-center w-full gap-6">
-                    {/* Search bar */}
-                    <div className="relative flex  flex-grow items-center justify-around gap-2 rounded-full bg-white px-2 py-3 shadow-xl shadow-shadow-500 dark:!bg-navy-800 dark:shadow-none">
+                    <div className="relative flex flex-grow items-center justify-around gap-2 rounded-full bg-white px-2 py-3 shadow-xl shadow-shadow-500 dark:!bg-navy-800 dark:shadow-none">
                         <div className="flex h-full w-full items-center rounded-full text-navy-700 dark:bg-navy-900 dark:text-white">
                             <p className="pl-3 pr-2 text-xl">
                                 <FiSearch className="h-4 w-4 text-gray-400 dark:text-white" />
                             </p>
                             <input
                                 type="text"
-                                placeholder="Search by Name..."
-                                value={searchQuery}
+                                placeholder="Search by Title..."
                                 onChange={(e) => setSearchQuery(e.target.value)}
+                                value={searchQuery}
                                 className="block w-full rounded-full text-base font-medium text-navy-700 outline-none placeholder:!text-gray-400 dark:bg-navy-900 dark:text-white dark:placeholder:!text-white"
                             />
                         </div>
                     </div>
 
                     <button
-                        onClick={handleAddfaq}
+                        onClick={handleAddPolicy}
                         className="bg-[#4318ff] text-white px-6 py-2 rounded-full text-lg font-medium flex items-center ml-auto"
                     >
                         <FaPlus className="mr-2" /> Add Hotel Policy
                     </button>
                 </span>
 
-
-
-
-
-                {/* Add Modal */}
                 {openAddModal && (
-                    <div className="fixed inset-0 flex items-center justify-center z-50 bg-gray-900 bg-opacity-50">
-                        <div className="bg-white rounded-lg shadow-2xl p-8 w-[70%] max-w-3xl">
-                            <h3 className="text-2xl font-semibold text-gray-800 mb-6">Add Hotel Policy</h3>
-                            <form onSubmit={handleSubmit(handleFormSubmit)}>
-                                {/* Question Input */}
-                                <div className="mb-6">
-                                    <label htmlFor="question" className="block text-lg text-gray-600 font-medium mb-2">
-                                        Name <span className="text-red-500 ">*</span>
-                                    </label>
-                                    <input
-                                        name="policy_title"
-                                        type="text"
-                                        id="policy_title"
-                                        {...register('policy_title')}
-                                        className="w-full border border-gray-300 rounded-md px-4 py-3 text-gray-800 focus:outline-none"
-                                        placeholder="Enter the Policy Title"
-                                    />
-                                    {errors.policy_title && <p className="text-red-500 text-sm mt-2">{errors.policy_title.message}</p>}
-                                </div>
+                    <div
+                        className="fixed inset-0 flex items-center justify-center z-50 bg-gray-900 bg-opacity-50"
+                        onClick={handleCloseAddModal}
+                    >
+                        <div
+                            className="bg-white rounded-lg shadow-2xl p-8"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <h2 className="text-2xl font-semibold text-gray-800 mb-6">Add Hotel Policy</h2>
 
-                                {/* Answer Input (React Quill) */}
-                                <div className="mb-6">
-                                    <label htmlFor="answer" className="block text-xl text-gray-600 font-medium mb-2">
-                                        Description <span className="text-red-500 ">*</span>
-                                    </label>
-                                    <Controller
-                                        name="policy_description"
-                                        control={control}
-                                        render={({ field }) => (
-                                            <ReactQuill
-                                                {...field} 
-                                                value={field.value || ""}
-                                                onChange={field.onChange} 
-                                                className="w-full rounded-lg h-[200px] focus:ring-2 focus:ring-blue-500 focus:outline-none transition duration-200"
-                                                placeholder="Enter the Policy Description"
-                                            />
-                                        )}
-                                    />
-                                    {errors.policy_description && <p className="text-red-500 text-sm mt-2">{errors.policy_description.message}</p>}
-                                </div>
-
-                                <div className="flex justify-end gap-4 mt-16">
-                                    <button
-                                        type="button"
-                                        onClick={handleCloseAddModal}
-                                        className="bg-gray-300 text-gray-800 px-6 py-3 rounded-md hover:bg-gray-400 transition-all"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        onClick={handleSubmit(handleFormSubmit)}
-                                        disabled={loading}
-                                        className="relative bg-[#4318ff] text-white px-6 py-3 rounded-lg hover:bg-[#322bbf] transition-all"
-                                    >
-                                        {loading ? (
-                                            <div className="absolute inset-0 flex items-center justify-center w-full h-full">
-                                                <div className="w-6 h-6 border-4 border-t-transparent border-white rounded-full animate-spin"></div>
-                                            </div>
-                                        ) : (
-                                            'Create'
-                                        )}
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                )}
-
-
-                {/* Edit Modal */}
-                {openEditModal && selectedQuestion && (
-                    <div className="fixed inset-0 flex items-center justify-center z-50 bg-gray-900 bg-opacity-50">
-                        <div className="bg-white rounded-lg shadow-2xl p-8 w-[70%] max-w-3xl">
-                            <h3 className="text-3xl font-semibold text-gray-800 mb-6">Edit Hotel Policy</h3>
-                            <form onSubmit={handleSubmit(handleFormUpdate)}>
-                                {/* Question Input */}
-                                <div className="mb-6">
-                                    <label htmlFor="question" className="block text-xl text-gray-600 font-medium mb-2">
-                                        Name <span className="text-red-500 ">*</span>
-                                    </label>
-                                    <input
-                                        name="policy_title"
-                                        type="text"
-                                        id="policy_title"
-                                        {...register('policy_title')}
-                                        // defaultValue={selectedpolicy_title?.policy_title || ''}  
-                                        className="w-full px-5 py-4 text-lg rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none transition duration-200"
-                                        placeholder="Enter the Policy Title"
-                                    />
-
-                                    {errors.policy_title && <p className="text-red-500 text-sm mt-2">{errors.policy_title.message}</p>}
-                                </div>
-
-                                {/* Answer Input (React Quill) */}
-                                <div className="mb-6">
-                                    <label htmlFor="answer" className="block text-xl text-gray-600 font-medium mb-2">
-                                        Description <span className="text-red-500 ">*</span>
-                                    </label>
-                                    <Controller
-                                        name="policy_description"
-                                        control={control}
-                                        render={({ field }) => (
-                                            <ReactQuill
-                                                {...field}
-                                                value={field.value || ""}
-                                                onChange={field.onChange}
-                                                className="w-full rounded-lg h-[200px] focus:ring-2 focus:ring-blue-500 focus:outline-none transition duration-200"
-                                                placeholder="Enter the Policy Description"
-                                            />
-                                        )}
-                                    />
-                                    {errors.policy_description && <p className="text-red-500 text-sm mt-2">{errors.policy_description.message}</p>}
-                                </div>
-
-
-                                {/* Buttons */}
-                                <div className="flex justify-end gap-4 mt-16">
-                                    <button
-                                        type="button"
-                                        onClick={handleCloseEditModal}
-                                        className="bg-gray-300 text-gray-800 px-6 py-3 rounded-md hover:bg-gray-400 transition-all"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        onClick={handleSubmit(handleFormUpdate)}
-                                        disabled={loading}
-                                        className="relative bg-[#4318ff] text-white px-6 py-3 rounded-lg hover:bg-[#322bbf] transition-all"
-                                    >
-                                        {loading ? (
-                                            <div className="absolute inset-0 flex items-center justify-center w-full h-full">
-                                                <div className="w-6 h-6 border-4 border-t-transparent border-white rounded-full animate-spin"></div>
-                                            </div>
-                                        ) : (
-                                            'Save Changes'
-                                        )}
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                )}
-
-
-                {/* Table */}
-                <div className="mt-8 bg-white shadow-lg rounded-lg p-6">
-                    <table className="w-full table-auto">
-                        <thead>
-                            <tr className="text-gray-600">
-                                <th className="px-6 py-4 text-left">
-                                    <div className="flex justify-between items-center">
+                            <div className="mb-6">
+                                <label className="block text-lg text-gray-600 font-medium mb-2">
+                                    Title <span className="text-red-500">*</span>
+                                </label>
+                                <Controller
+                                    name="title"
+                                    control={control}
+                                    render={({ field }) => (
                                         <input
-                                            type="checkbox"
-                                            // checked={selectedRows.length === getPaginatedData().length}
-                                            checked={false}
-                                            onChange={() => {
-                                                if (selectedRows.length === getPaginatedData().length) {
-                                                    setSelectedRows([]);
-                                                } else {
-                                                    setSelectedRows(getPaginatedData().map((row) => row.id));
-                                                }
-                                            }}
+                                            type="text"
+                                            placeholder="Enter Policy Title"
+                                            className="w-full border border-gray-300 rounded-md px-4 py-3 text-gray-800 focus:outline-none"
+                                            {...field}
                                         />
-                                    </div>
-                                </th>
-                                {/* <th className="px-6 py-4 text-left">Image</th> */}
-                                <th className="px-6 py-4 text-left">Name</th>
-                                <th className="px-6 py-4 text-left">Description</th>
-                                <th className="px-6 py-4 text-left">Actions</th>
-                                <th className="">
-                                    {selectedRows.length > 0 && (
-                                        <button
-                                            onClick={handleBulkDelete}
-                                            className={`text-gray-600 hover:text-red-600 text-xl flex items-center ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                            disabled={loading}
-                                        >
-                                            {loading ? (
-                                                <div className="relative">
-                                                    <div className="w-6 h-6 border-4 border-t-transparent border-red-600 rounded-full animate-spin"></div>
-                                                </div>
-                                            ) : (
-                                                <FaTrashAlt />
-                                            )}
-                                        </button>
                                     )}
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {getPaginatedData().length === 0 ? (
-                                <tr>
-                                    <td colSpan="4" className="text-center py-4 text-gray-500">
-                                        No Hotel Policy found
-                                    </td>
-                                </tr>
-                            ) : (
-                                getPaginatedData().map((faq) => (
-                                    <tr key={faq.id} className="border-t">
-                                        <td className="px-6 py-4">
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedRows.includes(faq.id)}
-                                                onChange={() => handleRowSelection(faq.id)}
-                                            />
-                                        </td>
-                                        <td className="px-6 py-4">{faq.policy_title}</td>
-                                        <td className="px-6 py-4" dangerouslySetInnerHTML={{ __html: faq.policy_description }}></td>
-                                       <td className="text-right group relative">
-                                            <div className="flex justify-end items-center space-x-2">
-                                                {/* Ellipsis icon */}
-                                                <button
-                                                    onClick={() => setOpenDropdown(openDropdown === faq.id ? null : faq.id)}
-                                                    className="text-gray-600 hover:text-gray-900"
-                                                >
-                                                    <FaEllipsisV />
-                                                </button>
-                                                {/* Edit and Delete icons visible on hover, aligned left */}
-                                                <div className="absolute right-auto left-0 flex space-x-6 opacity-0 group-hover:opacity-100 group-hover:flex transition-all duration-200">
-                                                    <button
-                                                        onClick={() => {
-                                                            handleEditRow(faq);
-                                                        }}
-                                                        className="text-navy-700 hover:bg-gray-200"
-                                                    >
-                                                        <FaEdit className="text-black" />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => {
-                                                            handleDeleteRow(faq.id);
-                                                        }}
-                                                        className="text-red-600 hover:bg-gray-200"
-                                                    >
-                                                        <FaTrashAlt className="mr-2" />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                                />
+                                {errors.title && <p className="text-red-500 text-sm">{errors.title.message}</p>}
+                            </div>
 
-            </div>
+                            <div className="mb-6">
+                                <label className="block text-lg text-gray-600 font-medium mb-2">
+                                    Description <span className="text-red-500">*</span>
+                                </label>
+                                <Controller
+                                    name="description"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <textarea
+                                            placeholder="Enter Policy Description"
+                                            rows={4}
+                                            className="w-full border border-gray-300 rounded-md px-4 py-3 text-gray-800 focus:outline-none"
+                                            {...field}
+                                        />
+                                    )}
+                                />
+                                {errors.description && <p className="text-red-500 text-sm">{errors.description.message}</p>}
+                            </div>
 
-            {/* Pagination */}
-            <div className="flex justify-between items-center mt-4">
-                <div className="flex items-center">
-                    <span className="mr-2">Show</span>
-                    <select
-                        value={itemsPerPage}
-                        onChange={(e) => setItemsPerPage(Number(e.target.value))}
-                        className="border border-gray-300 px-4 py-2 rounded-md"
-                    >
-                        {[5, 10, 20, 50, 100].map((option) => (
-                            <option key={option} value={option}>
-                                {option}
-                            </option>
-                        ))}
-                    </select>
-                    <span className="ml-2">entries</span>
-                </div>
-
-                <div className="flex space-x-4">
-                    {/* Showing Item Range */}
-                    <button
-                        onClick={() => handlePageChange(currentPage - 1)}
-                        disabled={currentPage === 1}
-                        className={`${currentPage === 1
-                            ? 'bg-[#4318ff] text-white opacity-50 cursor-not-allowed'
-                            : 'bg-[#4318ff] text-white hover:bg-[#3700b3]'
-                            } px-6 py-2 rounded-[20px]`}
-                    >
-                        Back
-                    </button>
-                    <span className="text-gray-600 mt-2">
-                        {` ${(currentPage - 1) * itemsPerPage + 1} to ${Math.min(currentPage * itemsPerPage, totalItems)} of ${totalItems} items`}
-                    </span>
-
-                    <button
-                        onClick={() => handlePageChange(currentPage + 1)}
-                        disabled={currentPage === totalPages}
-                        className={`${currentPage === totalPages || totalItems === 0
-                            ? 'bg-[#4318ff] text-white opacity-50 cursor-not-allowed'
-                            : 'bg-[#4318ff] text-white hover:bg-[#3700b3]'} px-6 py-2 rounded-[20px]`}
-                    >
-                        Next
-                    </button>
-                </div>
-            </div>
-
-            {/* Delete Confirmation Dialog */}
-            {openDeleteDialog && (
-                <div className="fixed inset-0 flex items-center justify-center z-20 bg-gray-500 bg-opacity-50">
-                    <div className="bg-white p-6 rounded-md shadow-lg w-1/3">
-                        <h2 className="text-xl font-semibold mb-4">Are you sure you want to delete this Policy?</h2>
-                        <div className="flex justify-end">
-                            <button
-                                onClick={handleCancelDelete}
-                                className="px-4 py-2 mr-4 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-100"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleDeleteConfirmation}
-                                className="px-4 py-2 text-white bg-red-600 rounded-md hover:bg-red-700 flex items-center justify-center"
-                                disabled={isDeleting}
-                            >
-                                {isDeleting ? (
-                                    <FaSpinner className="animate-spin mr-2" />
-                                ) : (
-                                    'Delete'
-                                )}
-                                {isDeleting ? 'Deleting...' : ''}
-                            </button>
+                            <div className="flex justify-end gap-4">
+                                <button
+                                    type="button"
+                                    onClick={handleCloseAddModal}
+                                    className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleSubmit(handleFormSubmit)}
+                                    disabled={loading}
+                                    className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                                >
+                                    {loading ? 'Adding...' : 'Add Policy'}
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )}
 
+                {openEditModal && (
+                    <div
+                        className="fixed inset-0 flex items-center justify-center z-50 bg-gray-900 bg-opacity-50"
+                        onClick={handleCloseEditModal}
+                    >
+                        <div
+                            className="bg-white rounded-lg shadow-2xl p-8"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <h2 className="text-2xl font-semibold text-gray-800 mb-6">Edit Hotel Policy</h2>
+
+                            <div className="mb-6">
+                                <label className="block text-lg text-gray-600 font-medium mb-2">
+                                    Title <span className="text-red-500">*</span>
+                                </label>
+                                <Controller
+                                    name="title"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <input
+                                            type="text"
+                                            placeholder="Enter Policy Title"
+                                            className="w-full border border-gray-300 rounded-md px-4 py-3 text-gray-800 focus:outline-none"
+                                            {...field}
+                                        />
+                                    )}
+                                />
+                                {errors.title && <p className="text-red-500 text-sm">{errors.title.message}</p>}
+                            </div>
+
+                            <div className="mb-6">
+                                <label className="block text-lg text-gray-600 font-medium mb-2">
+                                    Description <span className="text-red-500">*</span>
+                                </label>
+                                <Controller
+                                    name="description"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <textarea
+                                            placeholder="Enter Policy Description"
+                                            rows={4}
+                                            className="w-full border border-gray-300 rounded-md px-4 py-3 text-gray-800 focus:outline-none"
+                                            {...field}
+                                        />
+                                    )}
+                                />
+                                {errors.description && <p className="text-red-500 text-sm">{errors.description.message}</p>}
+                            </div>
+
+                            <div className="flex justify-end gap-4">
+                                <button
+                                    type="button"
+                                    onClick={handleCloseEditModal}
+                                    className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleSubmit(handleFormUpdate)}
+                                    disabled={loading}
+                                    className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                                >
+                                    {loading ? 'Updating...' : 'Update Policy'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {openDeleteDialog && (
+                    <div className="fixed inset-0 flex items-center justify-center z-50 bg-gray-900 bg-opacity-50">
+                        <div className="bg-white rounded-lg shadow-2xl p-8 max-w-md w-full mx-4">
+                            <h2 className="text-2xl font-semibold text-gray-800 mb-4">Confirm Delete</h2>
+                            <p className="text-gray-600 mb-6">Are you sure you want to delete this policy? This action cannot be undone.</p>
+                            <div className="flex justify-end gap-4">
+                                <button
+                                    onClick={handleCancelDelete}
+                                    className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleDeleteConfirmation}
+                                    disabled={isDeleting}
+                                    className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
+                                >
+                                    {isDeleting ? 'Deleting...' : 'Delete'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                <div className="mt-6">
+                    <Card extra="w-full">
+                        <div className="flex flex-col">
+                            <div className="overflow-x-auto">
+                                <table className="w-full">
+                                    <thead>
+                                        <tr className="border-b border-gray-200">
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                <input
+                                                    type="checkbox"
+                                                    onChange={(e) => {
+                                                        if (e.target.checked) {
+                                                            setSelectedRows(getPaginatedData().map(row => row.id));
+                                                        } else {
+                                                            setSelectedRows([]);
+                                                        }
+                                                    }}
+                                                    checked={selectedRows.length === getPaginatedData().length && getPaginatedData().length > 0}
+                                                />
+                                            </th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="bg-white divide-y divide-gray-200">
+                                        {getPaginatedData().map((policy) => (
+                                            <tr key={policy.id} className="hover:bg-gray-50">
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedRows.includes(policy.id)}
+                                                        onChange={() => handleRowSelection(policy.id)}
+                                                    />
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                    {policy.title}
+                                                </td>
+                                                <td className="px-6 py-4 text-sm text-gray-500">
+                                                    <div className="max-w-xs truncate">
+                                                        {policy.description}
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                                        policy.status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                                    }`}>
+                                                        {policy.status ? 'Active' : 'Inactive'}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                    <div className="flex items-center space-x-2">
+                                                        <button
+                                                            onClick={() => handleEditRow(policy)}
+                                                            className="text-indigo-600 hover:text-indigo-900"
+                                                        >
+                                                            <FiEdit className="h-4 w-4" />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDeleteRow(policy.id)}
+                                                            className="text-red-600 hover:text-red-900"
+                                                        >
+                                                            <FiTrash2 className="h-4 w-4" />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {selectedRows.length > 0 && (
+                                <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                                    <button
+                                        onClick={handleBulkDelete}
+                                        disabled={loading}
+                                        className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
+                                    >
+                                        {loading ? 'Deleting...' : `Delete Selected (${selectedRows.length})`}
+                                    </button>
+                                </div>
+                            )}
+
+                            <div className="mt-4 flex items-center justify-between">
+                                <div className="flex items-center space-x-2">
+                                    <span className="text-sm text-gray-700">Show:</span>
+                                    <select
+                                        value={itemsPerPage}
+                                        onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                                        className="border border-gray-300 rounded-md px-2 py-1 text-sm"
+                                    >
+                                        <option value={5}>5</option>
+                                        <option value={10}>10</option>
+                                        <option value={20}>20</option>
+                                        <option value={50}>50</option>
+                                    </select>
+                                    <span className="text-sm text-gray-700">entries</span>
+                                </div>
+
+                                <div className="flex items-center space-x-2">
+                                    <button
+                                        onClick={() => handlePageChange(currentPage - 1)}
+                                        disabled={currentPage === 1}
+                                        className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50"
+                                    >
+                                        Previous
+                                    </button>
+                                    <span className="text-sm text-gray-700">
+                                        Page {currentPage} of {totalPages}
+                                    </span>
+                                    <button
+                                        onClick={() => handlePageChange(currentPage + 1)}
+                                        disabled={currentPage === totalPages}
+                                        className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50"
+                                    >
+                                        Next
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </Card>
+                </div>
+            </div>
+        </div>
     );
 }
 

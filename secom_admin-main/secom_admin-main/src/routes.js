@@ -76,7 +76,7 @@ import RolePermission from "views/admin/Sidenav_pages/RolePermission";
 import Toppings from "views/admin/Sidenav_pages/Toppings";
 import HotelAttributes from "views/admin/Sidenav_pages/HotelAttributes";
 import HotelPolicy from "views/admin/Sidenav_pages/HotelPolicy";
-import AllHotel from "views/admin/Sidenav_pages/AllHotel";
+import Hotel from "views/admin/Hotel";
 import HotelFaqs from "views/admin/Sidenav_pages/HotelFaqs";
 import ManageRooms from "views/admin/Sidenav_pages/ManageRooms";
 import AvailableRooms from "views/admin/Sidenav_pages/AvailableRooms";
@@ -92,6 +92,7 @@ import RestoCategoryTable from "views/admin/Sidenav_pages/RestoCategoryTable";
 import RestoCategoryForm from "views/admin/Sidenav_pages/RestoCategoryForm";
 import RestaurantTable from "views/admin/Sidenav_pages/RestaurantTable";
 import DishTable from "views/admin/Sidenav_pages/DishTable";
+import adminRoutes from './routes/admin.routes.js';
 
 const routes = [
   ...authRoutes,
@@ -259,7 +260,7 @@ const routes = [
         layout: "/admin",
         icon: <MdLocationCity className="h-6 w-6" />,
         path: "allhotel",
-        component: <AllHotel />,
+        component: <Hotel />,
       },
       {
         name: "Hotel Attributes",
@@ -310,13 +311,13 @@ const routes = [
         path: "staff",
         component: <Staff />,
       },
-      {
-        name: "Permissions",
-        layout: "/admin",
-        path: "rolepermission",
-        icon: <MdLock className="h-6 w-6" />,
-        component: <RolePermission />,
-      },
+      // {
+      //   name: "Permissions",
+      //   layout: "/admin",
+      //   path: "rolepermission",
+      //   icon: <MdLock className="h-6 w-6" />,
+      //   component: <RolePermission />,
+      // },
     ]
   },
   {

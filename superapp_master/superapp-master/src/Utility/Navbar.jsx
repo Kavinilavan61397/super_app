@@ -8,14 +8,42 @@ import SetPassword from '../Auth/SetPassword';
 import Login from '../Auth/Login';
 import HomeScreen from '../Pages/HomeScreen';
 import HomeC from '../Clothes/Pages/HomeC';
-import MenClothings from '../Clothes/Categories/MensWear/MenClothings';
+import MenUniforms from '../Clothes/Categories/Menuniforms';
 import Vegetables from '../Clothes/Categories/Vegetables';
 import Fruits from '../Clothes/Categories/Fruits';
 import WomenUniforms from '../Clothes/Categories/Womenuniforms';
 import Fruitdetail from '../Clothes/Categories/Fruitdetail';
-import Homeappliances from '../Clothes/Categories/Homeappliances';
-import Nykaa from '../Clothes/Cosmetics/Nykaa';
-import Cosmetics from '../Clothes/Categories/Cosmetics';
+// import Homeappliances from '../Clothes/Categories/Homeappliances';
+import Lipstick from '../Clothes/Cosmetics/Lipstick';
+import WomensClothing from '../Clothes/Categories/WomensWear/womensclothing';
+import Kurti from '../Clothes/Categories/WomensWear/Kurti';
+import Maxidress from '../Clothes/Categories/WomensWear/Maxidress';
+import Tops from '../Clothes/Categories/WomensWear/Tops';
+import Leggin from '../Clothes/Categories/WomensWear/Leggin';  
+import Jean from '../Clothes/Categories/WomensWear/Jean'; 
+import Saree from '../Clothes/Categories/WomensWear/Saree';
+import Tshirt from '../Clothes/Categories/WomensWear/Tshirt';
+import Trackpantwomen from '../Clothes/Categories/WomensWear/Trackpantwomen';
+import Womenfootwear from '../Clothes/Categories/WomensWear/womenfootwear';
+import Womenseasonaldress from '../Clothes/Categories/WomensWear/Womenseasonaldress';
+import Palazzopant from '../Clothes/Categories/WomensWear/Palazzopant';
+import Cosmetic from '../Clothes/Cosmetics/Cosmetic';    
+// import Login from '../Clothes/Cosmetics/login';
+import Conditioner from '../Clothes/Cosmetics/Conditioner';
+import Shampoo from '../Clothes/Cosmetics/Shampoo';
+import Sunscreen from '../Clothes/Cosmetics/Sunscreen';
+import Primer from '../Clothes/Cosmetics/Primer';
+import Foundation from '../Clothes/Cosmetics/Foundation';
+import Luxury from '../Clothes/Cosmetics/Luxury';
+import Eyeshadow from '../Clothes/Cosmetics/Eyeshadow';
+// import ProductDetail from '../Clothes/Cosmetics/Productdetail';
+import CompactPowder from '../Clothes/Cosmetics/Compactpowder';
+import Kajal from '../Clothes/Cosmetics/Kajal';
+import Highlighter from '../Clothes/Cosmetics/Highlighter';
+import Settingspray from '../Clothes/Cosmetics/Settingspray';
+// import EyeLinear from '../Clothes/Cosmetics/Eyelinear';
+// import Cosmetics from '../Clothes/Categories/Cosmetics';
+import Mascara from '../Clothes/Cosmetics/Mascara';
 import DetailPage from '../Clothes/Pages/DetailPage';
 import SingleProductPage from '../Clothes/Pages/SingleProductPage';
 import Address from '../Clothes/Pages/Address';
@@ -76,40 +104,14 @@ import Rooms from '../HotelModule/PagesHotel/Rooms';
 import Favourites from '../HotelModule/PagesHotel/Favoutires';
 import RestaurentPageCategory from '../FoodDilvery/PagesF/RestaurentPageCategory';
 import DishesListBasedOnCategory from '../FoodDilvery/PagesF/DishesListBasedOnCategory';
-import Refrigerators from '../Clothes/Categories/HomeAppliances/Refrigerators';
-import WashingMachines from '../Clothes/Categories/HomeAppliances/WashingMachines';
-import AirConditionersCoolers from '../Clothes/Categories/HomeAppliances/AirConditionersCoolers';
-import KitchenAppliances from '../Clothes/Categories/HomeAppliances/KitchenAppliances';
-import Televisions from '../Clothes/Categories/HomeAppliances/Televisions';
-import FansOther from '../Clothes/Categories/HomeAppliances/FansOther';
-import Tops from '../Clothes/Categories/MensWear/Tops';
-import Bottoms from '../Clothes/Categories/MensWear/Bottoms';
-import Outerwear from '../Clothes/Categories/MensWear/Outerwear';
-import SuitsFormals from '../Clothes/Categories/MensWear/SuitsFormals';
-import UnderwearLoungewear from '../Clothes/Categories/MensWear/UnderwearLoungewear';
-import Footwear from '../Clothes/Categories/MensWear/Footwear';
-import Accessories from '../Clothes/Categories/MensWear/Accessories';
-import SeasonalCollections from '../Clothes/Categories/MensWear/SeasonalCollections';
-import NewArrivals from '../Clothes/Categories/MensWear/NewArrivals';
+// import HomeAppliances from '../Clothes/Categories/Homeappliances';
+import Appliances from '../Clothes/Categories/Homeappliances/Appliances';
+import Refrigerator from '../Clothes/Categories/Homeappliances/Refrigerator';
+import Singledoor from '../Clothes/Categories/Homeappliances/Singledoor';
+import Doubledoor from '../Clothes/Categories/Homeappliances/Doubledoor';
+import Minifridge from '../Clothes/Categories/Homeappliances/Minifridge';
 
-import HomeG from '../Grocery/Pages/HomeG.jsx';
-import AddressG from '../Grocery/Pages/Address';
-import PaymentG from '../Grocery/Pages/Payment';
-import OrderPlacedG from '../Grocery/Pages/OrderPlaced';
-import MyordersG from '../Grocery/Pages/Myorders';
-import InvoiceG from "../Grocery/Pages/Invoice"; // Import the new component
-import MyordersFilterG from '../Grocery/Pages/MyOrdersFilter';
-import CartG from '../Grocery/Pages/Cart';
-import AccountG from '../Grocery/Pages/Account';
-import ProfileG from '../Grocery/Pages/Profile';
-import WishlistG from '../Grocery/Pages/Wishlist';
-import SettingsG from '../Grocery/Pages/Settings';
-import NotificationG from '../Grocery/Pages/Notification';
-import TermsConditionsG from '../Grocery/Pages/TermsConditions';
-import PrivacyPolicyG from '../Grocery/Pages/PrivacyPolicy';
-import AboutG from '../Grocery/Pages/About';
-import EditAllAddressG from '../Grocery/Pages/EditAllAddress';
-import EditAddressValuesG from '../Grocery/Pages/EditAddressValues';
+
 function Navbar() {
     return (
         <BrowserRouter>
@@ -145,50 +147,53 @@ function Navbar() {
                 <Route path='/home-clothes/terms-conditions' element={<TermsConditions />} />
                 <Route path='/home-clothes/privacy-policy' element={<PrivacyPolicy />} />
                 <Route path='/home-clothes/about' element={<About />} />
-                <Route path='/categories/mens-wear' element={<MenClothings/>}/>
-                <Route path='/categories/mens-wear/tops' element={<Tops />} />
-                <Route path='/categories/mens-wear/bottoms' element={<Bottoms />} />
-                <Route path='/categories/mens-wear/outerwear' element={<Outerwear />} />
-                <Route path='/categories/mens-wear/suits-formals' element={<SuitsFormals />} />
-                <Route path='/categories/mens-wear/underwear-loungewear' element={<UnderwearLoungewear />} />
-                <Route path='/categories/mens-wear/footwear' element={<Footwear />} />
-                <Route path='/categories/mens-wear/accessories' element={<Accessories />} />
-                <Route path='/categories/mens-wear/seasonal-collections' element={<SeasonalCollections />} />
-                <Route path='/categories/mens-wear/new-arrivals' element={<NewArrivals />} />
+                <Route path='/Categories/men-uniforms' element={<MenUniforms/>}/>
                 <Route path='/categories/vegetables' element={<Vegetables/>}/>
                 <Route path='/categories/women-uniforms' element={<WomenUniforms />} />
                 <Route path='/categories/fruits' element={<Fruits/>}/>
-                <Route path='/categories/cosmetics' element={<Cosmetics/>}/>
+                {/* <Route path='/categories/cosmetics' element={<Cosmetics/>}/>                         */} 
                 <Route path='/categories/fruitdetail' element={<Fruitdetail/>}/>
-                <Route path='/cosmetics/nykaa ' element={<Nykaa/>}/>
-                <Route path='/categories/homeappliances' element={<Homeappliances/>}/>
-                <Route path="/categories/homeappliances/refrigerators" element={<Refrigerators />} />
-                <Route path="/categories/homeappliances/washing-machines" element={<WashingMachines />} />
-                <Route path="/categories/homeappliances/air-conditioners-coolers" element={<AirConditionersCoolers />} />
-                <Route path="/categories/homeappliances/kitchen-appliances" element={<KitchenAppliances />} />
-                <Route path="/categories/homeappliances/televisions" element={<Televisions />} />
-                <Route path="/categories/homeappliances/fans-other" element={<FansOther />} />
+                {/* <Route path='categories/homeappliances' element={<Homeappliances/>}/> */}
+                 <Route path ='categories/cosmetics' element={<Cosmetic/>}/>        
+                <Route path ='cosmetics/lipstick' element={<Lipstick/>}/>  
+                  <Route path ='cosmetics/foundation' element={<Foundation/>}/>
+                  <Route path ='cosmetics/primer' element={<Primer/>}/>
+                 <Route path ='cosmetics/sunscreen' element={<Sunscreen/>}/> 
+                 <Route path ='cosmetics/shampoo' element ={<Shampoo/>}/> 
+                 <Route path ='cosmetics/conditioner' element={<Conditioner/>}/> 
+                 <Route path ='cosmetics/luxury' element={<Luxury/>}/>
+                 <Route path ='cosmetics/eyeshadow' element={<Eyeshadow/>}/>
+                 <Route path ='cosmetics/compactpowder' element={<CompactPowder/>}/>
+                 <Route path ='cosmetics/kajal' element={<Kajal/>}/>
+                 <Route path ='cosmetics/settingspray' element={<Settingspray/>}/>
+                 <Route path ='cosmetics/highlighter' element={<Highlighter/>}/>
+                 {/* <Route path ='/cosmetics/eyelinear' element={<EyeLinear/>}/> */}
+                 <Route path ='cosmetics/mascara' element={<Mascara/>}/>
+                 {/* <Route path ='cosmetics/productdetail' element={<ProductDetail/>}/> */}
+                  <Route path='/categories' element={<Categories />} />
+                <Route path='/categories/womens-wear' element={<WomensClothing/>} /> 
+                {/* <Route path= '/categories/womens-wear/kurti' element={<Kurti/>}/> */}
+                 {/* <Route path='cosmetics/womens-wear' element={<Womenswear/>}/> */}
+                  <Route path ='/categories/womens-wear/kurti' element={<Kurti/>}/>  
+                  <Route path ='/categories/womens-wear/tops' element={<Tops/>}/>   
+                  <Route path = '/categories/womens-wear/maxidress' element={<Maxidress/>}/> 
+                  <Route path ='/categories/womens-wear/leggin' element={<Leggin/>}/>
+                  <Route path ='/categories/womens-wear/jean' element={<Jean/>}/ >   
+                  <Route path = '/categories/womens-wear/saree' element={<Saree/>}/>   
+                  <Route path = '/categories/womens-wear/tshirt' element={<Tshirt/>}/>  
+                  <Route path = '/categories/womens-wear/trackpantwomen' element={<Trackpantwomen/>}/>  
+                  <Route path = '/categories/womens-wear/womenfootwear' element={<Womenfootwear/>}/> 
+                  <Route path = '/categories/womens-wear/womenseasonaldress' element={<Womenseasonaldress/>}/> 
+                  <Route path ='/categories/womens-wear/palazzopant' element={<Palazzopant/>}/>
+                  <Route path ='/categories/home-appliances' element={<Appliances/>}/>
+                  {/* <Route path ='/categories/home-appliances/appliances ' element={<Appliances/>}/> */}
+                  <Route path ='/categories/home-appliances/refrigerator' element={<Refrigerator/>}/>
+                  <Route path ='/categories/home-appliances/singledoor' element={<Singledoor/>}/>
+                  <Route path ='/categories/home-appliances/doubledoor' element={<Doubledoor/>}/>
+                  <Route path ='/categories/home-appliances/minifridge' element={<Minifridge/>}/>
+                  
 
-                 {/* Groceries */}
-                <Route path='/home-grocery' element={<HomeG />} />
-                <Route path='/home-grocery/address' element={<AddressG />} />
-                <Route path='/home-grocery/edit-all-addresses' element={<EditAllAddressG />} />
-                <Route path='/home-grocery/edit-address-values' element={<EditAddressValuesG />} />
-                <Route path='/home-grocery/payment' element={<PaymentG />} />
-                <Route path='/home-grocery/order' element={<OrderPlacedG />} />
-                <Route path='/home-grocery/order-list' element={<MyordersG />} />
-                <Route path='/home-grocery/invoice/:orderId' element={<InvoiceG />} />
-                <Route path='/home-grocery/order-list-filter' element={<MyordersFilterG />} />
-                <Route path='/home-grocery/cart' element={<CartG />} />
-                <Route path='/home-grocery/account' element={<AccountG />} />
-                <Route path='/home-grocery/profile' element={<ProfileG />} />
-                <Route path='/home-grocery/wishlist' element={<WishlistG />} />
-                <Route path='/home-grocery/settings' element={<SettingsG />} />
-                <Route path='/home-grocery/notification' element={<NotificationG />} />
-                <Route path='/home-grocery/terms-conditions' element={<TermsConditionsG />} />
-                <Route path='/home-grocery/privacy-policy' element={<PrivacyPolicyG />} />
-                <Route path='/home-grocery/about' element={<AboutG />} />
-
+                
                 {/* Food */}
                 <Route path='/home-food' element={<HomeScreenF />} />
                 <Route path='/home-food/detail-page' element={<DetailPageF />} />
@@ -238,11 +243,3 @@ function Navbar() {
     )
 }
 export default Navbar;
-
-
-
-
-
-
-
-

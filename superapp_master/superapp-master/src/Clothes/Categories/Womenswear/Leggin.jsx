@@ -1,261 +1,174 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Footer from '../../../Utility/Footer';
 import ClothesHeader from '../../Header/ClothesHeader';
 import { FaFilter, FaHeart, FaEye, FaChevronDown } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
-// Women's Leggings product data with legging-specific attributes
-const womensLeggingsItems = [
+// Women's leggings product data with legging-specific attributes
+const leggingItems = [
   {
     id: 1,
-    name: 'High-Waist Yoga Leggings',
-    originalPrice: 1800,
-    discountedPrice: 1440,
-    image: 'https://via.placeholder.com/400/FF6347/FFFFFF?text=Yoga+Leggings',
-    description: 'Ultra-soft high-waist leggings designed for yoga and intense workouts.',
-    rating: 4.8,
+    name: 'High-Waist Cotton Leggings',
+    originalPrice: 1200,
+    discountedPrice: 960,
+    image: 'https://via.placeholder.com/400/8B0000/FFFFFF?text=Cotton+Leggings',
+    description: 'Comfortable high-waist cotton leggings, perfect for casual and active wear.',
+    rating: 4.7,
     isBestSeller: true,
     quantity: 1,
     category: "Women's Wear - Leggings",
-    subCategory: 'Active Wear',
-    sizes: ['XS', 'S', 'M', 'L'],
-    brand: 'Lululemon',
-    fabric: 'Spandex Blend',
-    waistType: 'High Rise',
-    fit: 'Compression',
+    subCategory: 'Casual Leggings',
+    brand: 'Fabindia',
+    material: 'Cotton',
+    fit: 'Slim',
+    waistType: 'High-Waist',
     length: 'Full Length',
-    occasion: 'Sportswear',
+    occasion: 'Casual',
   },
   {
     id: 2,
-    name: 'Seamless Ribbed Leggings',
-    originalPrice: 2000,
-    discountedPrice: 1600,
-    image: 'https://via.placeholder.com/400/4682B4/FFFFFF?text=Seamless+Leggings',
-    description: 'Stylish ribbed seamless leggings for gym or everyday comfort.',
-    rating: 4.7,
+    name: 'Printed Ankle-Length Leggings',
+    originalPrice: 1000,
+    discountedPrice: 800,
+    image: 'https://via.placeholder.com/400/008B8B/FFFFFF?text=Printed+Leggings',
+    description: 'Vibrant printed ankle-length leggings, ideal for everyday style.',
+    rating: 4.5,
     isBestSeller: false,
     quantity: 1,
     category: "Women's Wear - Leggings",
-    subCategory: 'Casual Wear',
-    sizes: ['S', 'M', 'L'],
-    brand: 'Gymshark',
-    fabric: 'Nylon Blend',
-    waistType: 'Mid Rise',
-    fit: 'Slim Fit',
+    subCategory: 'Casual Leggings',
+    brand: 'Biba',
+    material: 'Cotton Blend',
+    fit: 'Regular',
+    waistType: 'Mid-Waist',
     length: 'Ankle Length',
     occasion: 'Casual',
   },
   {
     id: 3,
-    name: 'Fleece Lined Winter Leggings',
-    originalPrice: 2500,
-    discountedPrice: 2000,
-    image: 'https://via.placeholder.com/400/8B0000/FFFFFF?text=Fleece+Leggings',
-    description: 'Warm fleece-lined leggings perfect for cold weather activities.',
-    rating: 4.9,
+    name: 'Churidar-Style Leggings',
+    originalPrice: 1500,
+    discountedPrice: 1200,
+    image: 'https://via.placeholder.com/400/4B0082/FFFFFF?text=Churidar+Leggings',
+    description: 'Traditional churidar-style leggings, perfect for ethnic outfits.',
+    rating: 4.8,
     isBestSeller: true,
     quantity: 1,
     category: "Women's Wear - Leggings",
-    subCategory: 'Winter Wear',
-    sizes: ['M', 'L', 'XL'],
-    brand: 'Heat Holders',
-    fabric: 'Fleece',
-    waistType: 'High Rise',
-    fit: 'Regular Fit',
+    subCategory: 'Ethnic Leggings',
+    brand: 'Manyavar',
+    material: 'Viscose',
+    fit: 'Churidar',
+    waistType: 'Mid-Waist',
     length: 'Full Length',
-    occasion: 'Winter',
+    occasion: 'Ethnic',
   },
   {
     id: 4,
-    name: 'Capri Length Workout Leggings',
-    originalPrice: 1500,
-    discountedPrice: 1200,
-    image: 'https://via.placeholder.com/400/32CD32/FFFFFF?text=Capri+Leggings',
-    description: 'Breathable capri leggings ideal for intense summer workouts.',
+    name: 'Activewear Performance Leggings',
+    originalPrice: 1800,
+    discountedPrice: 1440,
+    image: 'https://via.placeholder.com/400/800080/FFFFFF?text=Activewear+Leggings',
+    description: 'Stretchable performance leggings for workouts and active lifestyles.',
     rating: 4.6,
     isBestSeller: false,
     quantity: 1,
     category: "Women's Wear - Leggings",
-    subCategory: 'Active Wear',
-    sizes: ['XS', 'S', 'M'],
-    brand: 'Adidas',
-    fabric: 'Polyester',
-    waistType: 'Mid Rise',
+    subCategory: 'Activewear Leggings',
+    brand: 'W for Women',
+    material: 'Polyester Blend',
     fit: 'Compression',
-    length: 'Capri Length',
-    occasion: 'Sportswear',
+    waistType: 'High-Waist',
+    length: 'Full Length',
+    occasion: 'Activewear',
   },
   {
     id: 5,
-    name: 'Faux Leather Leggings',
-    originalPrice: 3000,
-    discountedPrice: 2400,
-    image: 'https://via.placeholder.com/400/808080/FFFFFF?text=Leather+Leggings',
-    description: 'Chic faux leather leggings for a stylish evening or casual look.',
+    name: 'Linen-Blend Leggings',
+    originalPrice: 1400,
+    discountedPrice: 1120,
+    image: 'https://via.placeholder.com/400/228B22/FFFFFF?text=Linen+Leggings',
+    description: 'Breathable linen-blend leggings for a relaxed and stylish look.',
     rating: 4.5,
-    isBestSeller: true,
-    quantity: 1,
-    category: "Women's Wear - Leggings",
-    subCategory: 'Fashion Leggings',
-    sizes: ['S', 'M', 'L'],
-    brand: 'Zara',
-    fabric: 'PU Leather',
-    waistType: 'High Rise',
-    fit: 'Skinny Fit',
-    length: 'Full Length',
-    occasion: 'Party',
-  },
-  {
-    id: 6,
-    name: 'Printed Athleisure Leggings',
-    originalPrice: 2200,
-    discountedPrice: 1760,
-    image: 'https://via.placeholder.com/400/FFA500/000000?text=Printed+Leggings',
-    description: 'Vibrant printed leggings for athleisure or everyday wear.',
-    rating: 4.4,
     isBestSeller: false,
     quantity: 1,
     category: "Women's Wear - Leggings",
-    subCategory: 'Fashion Leggings',
-    sizes: ['S', 'M', 'L', 'XL'],
-    brand: 'Puma',
-    fabric: 'Spandex Blend',
-    waistType: 'Elastic',
-    fit: 'Regular Fit',
+    subCategory: 'Casual Leggings',
+    brand: 'Anavila',
+    material: 'Linen Blend',
+    fit: 'Regular',
+    waistType: 'Mid-Waist',
     length: 'Ankle Length',
     occasion: 'Casual',
   },
   {
-    id: 7,
-    name: 'Maternity Support Leggings',
-    originalPrice: 2300,
-    discountedPrice: 1840,
-    image: 'https://via.placeholder.com/400/EE82EE/FFFFFF?text=Maternity+Leggings',
-    description: 'Comfortable and supportive maternity leggings for expectant mothers.',
-    rating: 4.7,
-    isBestSeller: false,
-    quantity: 1,
-    category: "Women's Wear - Leggings",
-    subCategory: 'Maternity Wear',
-    sizes: ['S', 'M', 'L', 'XL'],
-    brand: 'Mamaearth',
-    fabric: 'Cotton Stretch',
-    waistType: 'Over-belly',
-    fit: 'Relaxed Fit',
-    length: 'Full Length',
-    occasion: 'Daily Wear',
-  },
-  {
-    id: 8,
-    name: 'Scrunch Butt Lifting Leggings',
-    originalPrice: 2600,
-    discountedPrice: 2080,
-    image: 'https://via.placeholder.com/400/DDA0DD/FFFFFF?text=Scrunch+Leggings',
-    description: 'Contouring leggings with scrunch detail for a flattering lift.',
-    rating: 4.6,
+    id: 6,
+    name: 'Embroidered Festive Leggings',
+    originalPrice: 2000,
+    discountedPrice: 1600,
+    image: 'https://via.placeholder.com/400/FFD700/FFFFFF?text=Embroidered+Leggings',
+    description: 'Festive leggings with intricate embroidery, ideal for special occasions.',
+    rating: 4.9,
     isBestSeller: true,
     quantity: 1,
     category: "Women's Wear - Leggings",
-    subCategory: 'Active Wear',
-    sizes: ['XS', 'S', 'M'],
-    brand: 'Alphalete',
-    fabric: 'Nylon Spandex',
-    waistType: 'High Rise',
-    fit: 'Compression',
-    length: 'Ankle Length',
-    occasion: 'Sportswear',
+    subCategory: 'Festive Leggings',
+    brand: 'BharatSthali',
+    material: 'Silk Blend',
+    fit: 'Slim',
+    waistType: 'High-Waist',
+    length: 'Full Length',
+    occasion: 'Festive',
   },
   {
-    id: 9,
-    name: 'Cotton Basic Leggings',
-    originalPrice: 1200,
-    discountedPrice: 960,
-    image: 'https://via.placeholder.com/400/8FBC8F/FFFFFF?text=Cotton+Leggings',
-    description: 'Everyday cotton basic leggings for comfort and versatility.',
+    id: 7,
+    name: 'Solid Color Viscose Leggings',
+    originalPrice: 1300,
+    discountedPrice: 1040,
+    image: 'https://via.placeholder.com/400/DAA520/FFFFFF?text=Viscose+Leggings',
+    description: 'Versatile solid color leggings, great for casual and semi-formal looks.',
+    rating: 4.4,
+    isBestSeller: false,
+    quantity: 1,
+    category: "Women's Wear - Leggings",
+    subCategory: 'Casual Leggings',
+    brand: 'Global Desi',
+    material: 'Viscose',
+    fit: 'Regular',
+    waistType: 'Mid-Waist',
+    length: 'Ankle Length',
+    occasion: 'Casual',
+  },
+  {
+    id: 8,
+    name: 'Striped Athletic Leggings',
+    originalPrice: 1600,
+    discountedPrice: 1280,
+    image: 'https://via.placeholder.com/400/D2691E/FFFFFF?text=Athletic+Leggings',
+    description: 'Stylish striped athletic leggings, perfect for gym and casual wear.',
     rating: 4.3,
     isBestSeller: false,
     quantity: 1,
     category: "Women's Wear - Leggings",
-    subCategory: 'Casual Wear',
-    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    brand: 'Jockey',
-    fabric: 'Cotton',
-    waistType: 'Mid Rise',
-    fit: 'Regular Fit',
-    length: 'Full Length',
-    occasion: 'Daily Wear',
-  },
-  {
-    id: 10,
-    name: 'Pocket Detail Running Leggings',
-    originalPrice: 2800,
-    discountedPrice: 2240,
-    image: 'https://via.placeholder.com/400/ADD8E6/FFFFFF?text=Pocket+Leggings',
-    description: 'Running leggings with side pockets for phone and essentials.',
-    rating: 4.7,
-    isBestSeller: true,
-    quantity: 1,
-    category: "Women's Wear - Leggings",
-    subCategory: 'Active Wear',
-    sizes: ['S', 'M', 'L'],
-    brand: 'Nike',
-    fabric: 'Polyester Spandex',
-    waistType: 'High Rise',
+    subCategory: 'Activewear Leggings',
+    brand: 'Pantaloons',
+    material: 'Polyester',
     fit: 'Compression',
+    waistType: 'High-Waist',
     length: 'Full Length',
-    occasion: 'Sportswear',
-  },
-  {
-    id: 11,
-    name: 'Mesh Panel Leggings',
-    originalPrice: 2400,
-    discountedPrice: 1920,
-    image: 'https://via.placeholder.com/400/90EE90/FFFFFF?text=Mesh+Leggings',
-    description: 'Athletic leggings with strategic mesh panels for ventilation.',
-    rating: 4.5,
-    isBestSeller: false,
-    quantity: 1,
-    category: "Women's Wear - Leggings",
-    subCategory: 'Active Wear',
-    sizes: ['S', 'M', 'L'],
-    brand: 'Under Armour',
-    fabric: 'Polyester',
-    waistType: 'Mid Rise',
-    fit: 'Slim Fit',
-    length: 'Ankle Length',
-    occasion: 'Sportswear',
-  },
-  {
-    id: 12,
-    name: 'Shimmering Party Leggings',
-    originalPrice: 3500,
-    discountedPrice: 2800,
-    image: 'https://via.placeholder.com/400/BDB76B/FFFFFF?text=Shimmer+Leggings',
-    description: 'Sparkly leggings perfect for parties or festive occasions.',
-    rating: 4.2,
-    isBestSeller: false,
-    quantity: 1,
-    category: "Women's Wear - Leggings",
-    subCategory: 'Fashion Leggings',
-    sizes: ['S', 'M'],
-    brand: 'H&M',
-    fabric: 'Metallic Blend',
-    waistType: 'Elastic',
-    fit: 'Skinny Fit',
-    length: 'Full Length',
-    occasion: 'Party',
+    occasion: 'Activewear',
   },
 ];
 
 const ProductCard = ({ item, onQuickView, addToCart, addToWishlist, cartItems, wishlistItems }) => {
-  const { name, originalPrice, discountedPrice, image, description, brand, sizes, fabric, waistType, fit, length, occasion } = item;
-  const [selectedSize, setSelectedSize] = useState(sizes && sizes.length > 0 ? sizes[0] : null);
+  const { name, originalPrice, discountedPrice, image, description, brand, material, fit, waistType, length, occasion } = item;
 
-  const discountPercentage = Math.round(((originalPrice - discountedPrice) / originalPrice) * 100);
-  const isInCart = cartItems.some((cartItem) => cartItem.id === item.id && cartItem.category === item.category && cartItem.size === selectedSize);
-  const isInWishlist = wishlistItems.some((wishlistItem) => wishlistItem.id === item.id && wishlistItem.category === item.category && wishlistItem.size === selectedSize);
+  const discountPercentage = discountedPrice === originalPrice
+    ? 0
+    : Math.round(((originalPrice - discountedPrice) / originalPrice) * 100);
+  const isInCart = cartItems.some((cartItem) => cartItem.id === item.id && cartItem.category === item.category);
+  const isInWishlist = wishlistItems.some((wishlistItem) => wishlistItem.id === item.id && wishlistItem.category === item.category);
 
   return (
     <div className="group bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100 flex flex-col">
@@ -269,7 +182,7 @@ const ProductCard = ({ item, onQuickView, addToCart, addToWishlist, cartItems, w
         <div className="absolute top-2 right-2 flex space-x-2 group-hover:opacity-100 opacity-0 transition-opacity duration-200 sm:opacity-100">
           <button
             className={`p-2 rounded-full text-white transition-colors duration-200 ${isInWishlist ? 'bg-red-500' : 'bg-gray-700 hover:bg-red-600'}`}
-            onClick={() => addToWishlist(item, 1, selectedSize)}
+            onClick={() => addToWishlist(item, 1)}
             title={isInWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'}
             aria-label={isInWishlist ? `Remove ${name} from wishlist` : `Add ${name} to wishlist`}
           >
@@ -291,41 +204,25 @@ const ProductCard = ({ item, onQuickView, addToCart, addToWishlist, cartItems, w
       <div className="p-3 flex flex-col flex-grow">
         <h3 className="text-sm font-bold text-gray-800 mb-1 line-clamp-2">{name}</h3>
         <p className="text-xs text-gray-600 mb-1">Brand: {brand}</p>
-        <p className="text-xs text-gray-600 mb-1">Fabric: {fabric}</p>
-        <p className="text-xs text-gray-600 mb-1">Waist: {waistType}</p>
+        <p className="text-xs text-gray-600 mb-1">Material: {material}</p>
         <p className="text-xs text-gray-600 mb-1">Fit: {fit}</p>
+        <p className="text-xs text-gray-600 mb-1">Waist Type: {waistType}</p>
         <p className="text-xs text-gray-600 mb-2">Length: {length}</p>
         <p className="text-xs text-gray-600 mb-2">Occasion: {occasion}</p>
 
         <div className="flex items-baseline space-x-2 mb-2 mt-auto">
           <p className="text-sm font-bold text-gray-900">₹{discountedPrice.toFixed(2)}</p>
           <p className="text-xs text-gray-500 line-through">₹{originalPrice.toFixed(2)}</p>
-          <span className="text-xs text-green-600 font-semibold">{discountPercentage}% OFF</span>
+          {discountPercentage > 0 && (
+            <span className="text-xs text-green-600 font-semibold">{discountPercentage}% OFF</span>
+          )}
         </div>
-
-        {sizes && sizes.length > 0 && (
-          <div className="flex items-center space-x-1 mb-3">
-            <span className="text-xs text-gray-700 font-medium">Size:</span>
-            <select
-              className="w-full px-2 py-1 border border-gray-300 rounded text-xs"
-              value={selectedSize}
-              onChange={(e) => setSelectedSize(e.target.value)}
-              aria-label={`Select size for ${name}`}
-            >
-              {sizes.map((sizeOpt) => (
-                <option key={sizeOpt} value={sizeOpt}>
-                  {sizeOpt}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
 
         <button
           className={`w-full text-white text-xs font-semibold py-2 rounded-md transition-colors duration-200 ${
             isInCart ? 'bg-gray-400 cursor-not-allowed' : 'bg-black hover:bg-gray-800'
           }`}
-          onClick={() => addToCart(item, 1, selectedSize)}
+          onClick={() => addToCart(item, 1)}
           disabled={isInCart}
           aria-label={isInCart ? `${name} already in cart` : `Add ${name} to cart`}
         >
@@ -341,7 +238,6 @@ function WomensLeggings() {
   const [wishlistItems, setWishlistItems] = useState([]);
   const [quickView, setQuickView] = useState(null);
   const [quickViewQuantity, setQuickViewQuantity] = useState(1);
-  const [quickViewSize, setQuickViewSize] = useState(null);
   const [sortOption, setSortOption] = useState('default');
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [filterState, setFilterState] = useState({
@@ -349,35 +245,44 @@ function WomensLeggings() {
     brands: [],
     priceRange: null,
     bestSeller: false,
-    sizes: [],
-    fabrics: [],
+    materials: [],
     categories: [],
-    waistTypes: [],
     fits: [],
-    lengths: [],
+    waistTypes: [],
     occasions: [],
     allBrands: false,
   });
+  const [selectedFilterCategory, setSelectedFilterCategory] = useState('categories');
 
-  const allAvailableSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
-  const brands = [...new Set(womensLeggingsItems.map((item) => item.brand))];
-  const allAvailableFabrics = [...new Set(womensLeggingsItems.map((item) => item.fabric))];
-  const allAvailableCategories = [...new Set(womensLeggingsItems.map((item) => item.subCategory))];
-  const allAvailableWaistTypes = [...new Set(womensLeggingsItems.map((item) => item.waistType))];
-  const allAvailableFits = [...new Set(womensLeggingsItems.map((item) => item.fit))];
-  const allAvailableLengths = [...new Set(womensLeggingsItems.map((item) => item.length))];
-  const allAvailableOccasions = [...new Set(womensLeggingsItems.map((item) => item.occasion))];
+  const brands = [...new Set(leggingItems.map((item) => item.brand))];
+  const allAvailableMaterials = [...new Set(leggingItems.map((item) => item.material))];
+  const allAvailableCategories = [...new Set(leggingItems.map((item) => item.subCategory))];
+  const allAvailableFits = [...new Set(leggingItems.map((item) => item.fit))];
+  const allAvailableWaistTypes = [...new Set(leggingItems.map((item) => item.waistType))];
+  const allAvailableOccasions = [...new Set(leggingItems.map((item) => item.occasion))];
 
   const priceRanges = [
     { label: 'All', min: null, max: null },
-    { label: '₹500 - ₹1500', min: 500, max: 1500 },
-    { label: '₹1500 - ₹2500', min: 1500, max: 2500 },
-    { label: '₹2500+', min: 2500, max: Infinity },
+    { label: '₹500 - ₹1000', min: 500, max: 1000 },
+    { label: '₹1000 - ₹2000', min: 1000, max: 2000 },
+    { label: '₹2000+', min: 2000, max: Infinity },
   ];
   const discountRanges = [
     { label: '10% and above', min: 10 },
     { label: '20% and above', min: 20 },
     { label: '30% and above', min: 30 },
+  ];
+
+  const filterCategories = [
+    { id: 'categories', label: 'Categories' },
+    { id: 'discount', label: 'Discount' },
+    { id: 'brands', label: 'Brand' },
+    { id: 'price', label: 'Price' },
+    { id: 'materials', label: 'Material' },
+    { id: 'fits', label: 'Fit' },
+    { id: 'waistTypes', label: 'Waist Type' },
+    { id: 'occasions', label: 'Occasion' },
+    { id: 'offers', label: 'Offers' },
   ];
 
   useEffect(() => {
@@ -393,15 +298,10 @@ function WomensLeggings() {
     }
   }, []);
 
-  const addToCart = (product, quantity = 1, size) => {
-    console.log(`Adding to cart: product=${product?.name}, quantity=${quantity}, size=${size}`);
-    if (!size && product.sizes && product.sizes.length > 0) {
-      alert('Please select a size.');
-      return;
-    }
+  const addToCart = (product, quantity = 1) => {
     const currentCart = JSON.parse(localStorage.getItem('cartItems')) || [];
     const existingItemIndex = currentCart.findIndex(
-      (item) => item.id === product.id && item.category === product.category && item.size === size
+      (item) => item.id === product.id && item.category === product.category
     );
 
     if (existingItemIndex !== -1) {
@@ -410,35 +310,30 @@ function WomensLeggings() {
       );
       localStorage.setItem('cartItems', JSON.stringify(updatedCart));
       setCartItems(updatedCart);
-      alert(`${quantity} of ${product.name} (Size: ${size}) quantity updated in cart!`);
+      alert(`${quantity} of ${product.name} quantity updated in cart!`);
     } else {
-      const updatedCart = [...currentCart, { ...product, quantity: parseInt(quantity), size }];
+      const updatedCart = [...currentCart, { ...product, quantity: parseInt(quantity) }];
       localStorage.setItem('cartItems', JSON.stringify(updatedCart));
       setCartItems(updatedCart);
-      alert(`${parseInt(quantity)} of ${product.name} (Size: ${size}) added to cart!`);
+      alert(`${parseInt(quantity)} of ${product.name} added to cart!`);
     }
   };
 
-  const addToWishlist = (product, quantity = 1, size) => {
-    console.log(`Adding to wishlist: product=${product?.name}, quantity=${quantity}, size=${size}`);
-    if (!size && product.sizes && product.sizes.length > 0) {
-      alert('Please select a size.');
-      return;
-    }
+  const addToWishlist = (product, quantity = 1) => {
     const currentWishlist = JSON.parse(localStorage.getItem('wishlistItems')) || [];
     const isInWishlist = currentWishlist.some(
-      (item) => item.id === product.id && item.category === product.category && item.size === size
+      (item) => item.id === product.id && item.category === product.category
     );
 
     if (isInWishlist) {
       const updatedWishlist = currentWishlist.filter(
-        (item) => !(item.id === product.id && item.category === product.category && item.size === size)
+        (item) => !(item.id === product.id && item.category === product.category)
       );
       localStorage.setItem('wishlistItems', JSON.stringify(updatedWishlist));
       setWishlistItems(updatedWishlist);
       alert(`${product.name} removed from wishlist!`);
     } else {
-      const updatedWishlist = [...currentWishlist, { ...product, quantity: parseInt(quantity), size }];
+      const updatedWishlist = [...currentWishlist, { ...product, quantity: parseInt(quantity) }];
       localStorage.setItem('wishlistItems', JSON.stringify(updatedWishlist));
       setWishlistItems(updatedWishlist);
       alert(`${product.name} added to wishlist!`);
@@ -446,15 +341,12 @@ function WomensLeggings() {
   };
 
   const handleQuickView = (product) => {
-    console.log(`Opening quick view for: ${product.name}, sizes: ${product.sizes}`);
     setQuickView(product);
     setQuickViewQuantity(1);
-    setQuickViewSize(product.sizes && product.sizes.length > 0 ? product.sizes[0] : null);
   };
 
   const handleFilterChange = (key, value) => {
     setFilterState((prev) => {
-      console.log(`Filter change: key=${key}, value=${value}, current state=${JSON.stringify(prev)}`);
       if (key === 'allBrands') {
         const newAllBrands = !prev.allBrands;
         return {
@@ -463,11 +355,10 @@ function WomensLeggings() {
           brands: newAllBrands ? brands : [],
         };
       }
-      if (['discount', 'brands', 'sizes', 'fabrics', 'categories', 'waistTypes', 'fits', 'lengths', 'occasions'].includes(key)) {
+      if (['discount', 'brands', 'materials', 'categories', 'fits', 'waistTypes', 'occasions'].includes(key)) {
         const updatedArray = prev[key].includes(value)
           ? prev[key].filter((item) => item !== value)
           : [...prev[key], value];
-        console.log(`Updated ${key}:`, updatedArray);
         return {
           ...prev,
           [key]: updatedArray,
@@ -487,67 +378,258 @@ function WomensLeggings() {
       brands: [],
       priceRange: null,
       bestSeller: false,
-      sizes: [],
-      fabrics: [],
+      materials: [],
       categories: [],
-      waistTypes: [],
       fits: [],
-      lengths: [],
+      waistTypes: [],
       occasions: [],
       allBrands: false,
     });
-    console.log('Filters cleared, sizes reset to:', []);
     setShowFilterPanel(false);
   };
 
   const applyFilters = () => {
-    console.log('Applying filters, current sizes:', filterState.sizes);
     setShowFilterPanel(false);
   };
 
-  const filteredAndSortedItems = womensLeggingsItems
-    .filter((item) => {
-      const discountPercentage = Math.round(((item.originalPrice - item.discountedPrice) / item.originalPrice) * 100);
-      const matchesDiscount = filterState.discount.length
-        ? filterState.discount.some((min) => discountPercentage >= min)
-        : true;
-      const matchesBrands = filterState.allBrands || !filterState.brands.length
-        ? true
-        : filterState.brands.includes(item.brand);
-      const matchesPrice = filterState.priceRange && filterState.priceRange.min !== null
-        ? item.discountedPrice >= filterState.priceRange.min && item.discountedPrice <= filterState.priceRange.max
-        : true;
-      const matchesBestSeller = filterState.bestSeller ? item.isBestSeller : true;
-      const matchesSize = filterState.sizes.length
-        ? item.sizes && filterState.sizes.some((size) => item.sizes.includes(size))
-        : true;
-      const matchesFabric = filterState.fabrics.length
-        ? filterState.fabrics.includes(item.fabric)
-        : true;
-      const matchesCategory = filterState.categories.length
-        ? filterState.categories.includes(item.subCategory)
-        : true;
-      const matchesWaistType = filterState.waistTypes.length
-        ? filterState.waistTypes.includes(item.waistType)
-        : true;
-      const matchesFit = filterState.fits.length
-        ? filterState.fits.includes(item.fit)
-        : true;
-      const matchesLength = filterState.lengths.length
-        ? filterState.lengths.includes(item.length)
-        : true;
-      const matchesOccasion = filterState.occasions.length
-        ? filterState.occasions.includes(item.occasion)
-        : true;
+  const filteredAndSortedItems = useMemo(() => {
+    return leggingItems
+      .filter((item) => {
+        const discountPercentage = item.discountedPrice === item.originalPrice
+          ? 0
+          : Math.round(((item.originalPrice - item.discountedPrice) / item.originalPrice) * 100);
+        const matchesDiscount = filterState.discount.length
+          ? filterState.discount.some((min) => discountPercentage >= min)
+          : true;
+        const matchesBrands = filterState.allBrands || !filterState.brands.length
+          ? true
+          : filterState.brands.includes(item.brand);
+        const matchesPrice = filterState.priceRange && filterState.priceRange.min !== null
+          ? item.discountedPrice >= filterState.priceRange.min && item.discountedPrice <= filterState.priceRange.max
+          : true;
+        const matchesBestSeller = filterState.bestSeller ? item.isBestSeller : true;
+        const matchesMaterial = filterState.materials.length
+          ? filterState.materials.includes(item.material)
+          : true;
+        const matchesCategory = filterState.categories.length
+          ? filterState.categories.includes(item.subCategory)
+          : true;
+        const matchesFit = filterState.fits.length
+          ? filterState.fits.includes(item.fit)
+          : true;
+        const matchesWaistType = filterState.waistTypes.length
+          ? filterState.waistTypes.includes(item.waistType)
+          : true;
+        const matchesOccasion = filterState.occasions.length
+          ? filterState.occasions.includes(item.occasion)
+          : true;
 
-      return matchesDiscount && matchesBrands && matchesPrice && matchesBestSeller && matchesSize && matchesFabric && matchesCategory && matchesWaistType && matchesFit && matchesLength && matchesOccasion;
-    })
-    .sort((a, b) => {
-      if (sortOption === 'price-low') return a.discountedPrice - b.discountedPrice;
-      if (sortOption === 'price-high') return b.discountedPrice - a.discountedPrice;
-      if (sortOption === 'best-seller') return b.isBestSeller - a.isBestSeller;
-      return 0;
-    });
+        return matchesDiscount && matchesBrands && matchesPrice && matchesBestSeller && matchesMaterial && matchesCategory && matchesFit && matchesWaistType && matchesOccasion;
+      })
+      .sort((a, b) => {
+        if (sortOption === 'price-low') return a.discountedPrice - b.discountedPrice;
+        if (sortOption === 'price-high') return b.discountedPrice - a.discountedPrice;
+        if (sortOption === 'best-seller') return b.isBestSeller - a.isBestSeller;
+        return 0;
+      });
+  }, [filterState, sortOption]);
+
+  const renderFilterContent = () => {
+    switch (selectedFilterCategory) {
+      case 'categories':
+        return (
+          <div className="space-y-2">
+            {allAvailableCategories.map((category) => (
+              <div key={category} className="flex items-center">
+                <input
+                  type="checkbox"
+                  id={`category-${category}`}
+                  checked={filterState.categories.includes(category)}
+                  onChange={() => handleFilterChange('categories', category)}
+                  className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                  aria-label={`Filter by ${category}`}
+                />
+                <label htmlFor={`category-${category}`} className="ml-2 text-sm text-gray-600">
+                  {category}
+                </label>
+              </div>
+            ))}
+          </div>
+        );
+      case 'discount':
+        return (
+          <div className="space-y-2">
+            {discountRanges.map(({ label, min }) => (
+              <div key={min} className="flex items-center">
+                <input
+                  type="checkbox"
+                  id={`discount-${min}`}
+                  checked={filterState.discount.includes(min)}
+                  onChange={() => handleFilterChange('discount', min)}
+                  className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                  aria-label={`Filter by ${label}`}
+                />
+                <label htmlFor={`discount-${min}`} className="ml-2 text-sm text-gray-600">
+                  {label}
+                </label>
+              </div>
+            ))}
+          </div>
+        );
+      case 'brands':
+        return (
+          <div className="space-y-2">
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="brand-all"
+                checked={filterState.allBrands}
+                onChange={() => handleFilterChange('allBrands')}
+                className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                aria-label="Select all brands"
+              />
+              <label htmlFor="brand-all" className="ml-2 text-sm text-gray-600">
+                All
+              </label>
+            </div>
+            {brands.map((brand) => (
+              <div key={brand} className="flex items-center">
+                <input
+                  type="checkbox"
+                  id={`brand-${brand}`}
+                  checked={filterState.brands.includes(brand)}
+                  onChange={() => handleFilterChange('brands', brand)}
+                  className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                  aria-label={`Filter by ${brand}`}
+                />
+                <label htmlFor={`brand-${brand}`} className="ml-2 text-sm text-gray-600">
+                  {brand}
+                </label>
+              </div>
+            ))}
+          </div>
+        );
+      case 'price':
+        return (
+          <select
+            id="price-range"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={(e) => {
+              const selected = priceRanges.find((range) => range.label === e.target.value);
+              handleFilterChange('priceRange', selected.min !== null ? selected : null);
+            }}
+            value={filterState.priceRange ? filterState.priceRange.label : 'All'}
+            aria-label="Select price range"
+          >
+            {priceRanges.map((range) => (
+              <option key={range.label} value={range.label}>
+                {range.label}
+              </option>
+            ))}
+          </select>
+        );
+      case 'materials':
+        return (
+          <div className="space-y-2">
+            {allAvailableMaterials.map((material) => (
+              <div key={material} className="flex items-center">
+                <input
+                  type="checkbox"
+                  id={`material-${material}`}
+                  checked={filterState.materials.includes(material)}
+                  onChange={() => handleFilterChange('materials', material)}
+                  className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                  aria-label={`Filter by ${material}`}
+                />
+                <label htmlFor={`material-${material}`} className="ml-2 text-sm text-gray-600">
+                  {material}
+                </label>
+              </div>
+            ))}
+          </div>
+        );
+      case 'fits':
+        return (
+          <div className="space-y-2">
+            {allAvailableFits.map((fit) => (
+              <div key={fit} className="flex items-center">
+                <input
+                  type="checkbox"
+                  id={`fit-${fit}`}
+                  checked={filterState.fits.includes(fit)}
+                  onChange={() => handleFilterChange('fits', fit)}
+                  className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                  aria-label={`Filter by ${fit}`}
+                />
+                <label htmlFor={`fit-${fit}`} className="ml-2 text-sm text-gray-600">
+                  {fit}
+                </label>
+              </div>
+            ))}
+          </div>
+        );
+      case 'waistTypes':
+        return (
+          <div className="space-y-2">
+            {allAvailableWaistTypes.map((waistType) => (
+              <div key={waistType} className="flex items-center">
+                <input
+                  type="checkbox"
+                  id={`waistType-${waistType}`}
+                  checked={filterState.waistTypes.includes(waistType)}
+                  onChange={() => handleFilterChange('waistTypes', waistType)}
+                  className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                  aria-label={`Filter by ${waistType}`}
+                />
+                <label htmlFor={`waistType-${waistType}`} className="ml-2 text-sm text-gray-600">
+                  {waistType}
+                </label>
+              </div>
+            ))}
+          </div>
+        );
+      case 'occasions':
+        return (
+          <div className="space-y-2">
+            {allAvailableOccasions.map((occasion) => (
+              <div key={occasion} className="flex items-center">
+                <input
+                  type="checkbox"
+                  id={`occasion-${occasion}`}
+                  checked={filterState.occasions.includes(occasion)}
+                  onChange={() => handleFilterChange('occasions', occasion)}
+                  className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                  aria-label={`Filter by ${occasion}`}
+                />
+                <label htmlFor={`occasion-${occasion}`} className="ml-2 text-sm text-gray-600">
+                  {occasion}
+                </label>
+              </div>
+            ))}
+          </div>
+        );
+      case 'offers':
+        return (
+          <div className="space-y-2">
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="best-seller"
+                checked={filterState.bestSeller}
+                onChange={() => handleFilterChange('bestSeller', null)}
+                className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                aria-label="Filter by best seller"
+              />
+              <label htmlFor="best-seller" className="ml-2 text-sm text-gray-600">
+                Best Seller
+              </label>
+            </div>
+          </div>
+        );
+      default:
+        return <p className="text-sm text-gray-600">Select a filter category</p>;
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 font-sans">
@@ -607,252 +689,80 @@ function WomensLeggings() {
             {showFilterPanel && (
               <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-end z-50">
                 <motion.aside
-                  className="bg-white w-[80%] max-h-[70vh] p-3 overflow-y-auto"
+                  className="bg-white w-full max-w-[600px] h-full flex flex-col"
                   initial={{ x: '100%' }}
                   animate={{ x: 0 }}
                   exit={{ x: '100%' }}
                   transition={{ type: 'tween', duration: 0.3 }}
                 >
-                  <div className="flex justify-between items-center mb-3">
-                    <h2 className="text-base font-bold text-gray-800">Filters</h2>
-                    <button
-                      className="text-gray-600 hover:text-gray-900"
-                      onClick={() => setShowFilterPanel(false)}
-                      aria-label="Close filter panel"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-
-                  {/* Categories Filter */}
-                  <div className="mb-3">
-                    <h3 className="text-xs font-medium text-gray-800 mb-1">Categories</h3>
-                    {allAvailableCategories.map((category) => (
-                      <div key={category} className="flex items-center mb-1">
-                        <input
-                          type="checkbox"
-                          id={`category-${category}`}
-                          checked={filterState.categories.includes(category)}
-                          onChange={() => handleFilterChange('categories', category)}
-                          className="mr-2 h-4 w-4"
-                          aria-label={`Filter by ${category}`}
-                        />
-                        <label htmlFor={`category-${category}`} className="text-xs text-gray-600">{category}</label>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Discount Filter */}
-                  <div className="mb-3">
-                    <h3 className="text-xs font-medium text-gray-800 mb-1">Discount</h3>
-                    {discountRanges.map(({ label, min }) => (
-                      <div key={min} className="flex items-center mb-1">
-                        <input
-                          type="checkbox"
-                          id={`discount-${min}`}
-                          checked={filterState.discount.includes(min)}
-                          onChange={() => handleFilterChange('discount', min)}
-                          className="mr-2 h-4 w-4"
-                          aria-label={`Filter by ${label}`}
-                        />
-                        <label htmlFor={`discount-${min}`} className="text-xs text-gray-600">{label}</label>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Brand Filter */}
-                  <div className="mb-3">
-                    <h3 className="text-xs font-medium text-gray-800 mb-1">Brand</h3>
-                    <div className="flex items-center mb-1">
-                      <input
-                        type="checkbox"
-                        id="brand-all"
-                        checked={filterState.allBrands}
-                        onChange={() => handleFilterChange('allBrands')}
-                        className="mr-2 h-4 w-4"
-                        aria-label="Select all brands"
-                      />
-                      <label htmlFor="brand-all" className="text-xs text-gray-600">All</label>
+                  {/* Header */}
+                  <div className="flex justify-between items-center p-6 border-b border-gray-200">
+                    <h2 className="text-lg font-bold text-gray-800">Filters</h2>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        className="px-3 py-1 bg-white border border-gray-300 text-gray-700 rounded-md text-sm font-semibold hover:bg-gray-100 transition-colors"
+                        onClick={clearFilters}
+                        aria-label="Clear all filters"
+                      >
+                        Clear All
+                      </button>
+                      <button
+                        type="button"
+                        className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm font-semibold hover:bg-blue-700 transition-colors"
+                        onClick={applyFilters}
+                        aria-label="Apply filters"
+                      >
+                        Apply Filters
+                      </button>
+                      <button
+                        className="text-gray-600 hover:text-gray-800"
+                        onClick={() => setShowFilterPanel(false)}
+                        aria-label="Close filter panel"
+                      >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
                     </div>
-                    {brands.map((brand) => (
-                      <div key={brand} className="flex items-center mb-1">
-                        <input
-                          type="checkbox"
-                          id={`brand-${brand}`}
-                          checked={filterState.brands.includes(brand)}
-                          onChange={() => handleFilterChange('brands', brand)}
-                          className="mr-2 h-4 w-4"
-                          aria-label={`Filter by ${brand}`}
-                        />
-                        <label htmlFor={`brand-${brand}`} className="text-xs text-gray-600">{brand}</label>
-                      </div>
-                    ))}
                   </div>
 
-                  {/* Price Filter */}
-                  <div className="mb-3">
-                    <h3 className="text-xs font-medium text-gray-800 mb-1">Price</h3>
-                    <select
-                      id="price-range"
-                      className="w-full px-2 py-1 rounded-md border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs"
-                      onChange={(e) => {
-                        const selected = priceRanges.find((range) => range.label === e.target.value);
-                        handleFilterChange('priceRange', selected.min !== null ? selected : null);
-                      }}
-                      value={filterState.priceRange ? filterState.priceRange.label : 'All'}
-                      aria-label="Select price range"
-                    >
-                      {priceRanges.map((range) => (
-                        <option key={range.label} value={range.label}>
-                          {range.label}
-                        </option>
+                  {/* Filter Content */}
+                  <div className="flex flex-1 overflow-hidden">
+                    {/* Left Sidebar: Filter Categories */}
+                    <div className="w-[200px] bg-gray-50 border-r border-gray-200 overflow-y-auto">
+                      {filterCategories.map((category) => (
+                        <button
+                          key={category.id}
+                          className={`w-full text-left px-4 py-3 text-sm font-semibold ${
+                            selectedFilterCategory === category.id
+                              ? 'bg-blue-100 text-blue-600'
+                              : 'text-gray-700 hover:bg-gray-100'
+                          } transition-colors duration-200`}
+                          onClick={() => setSelectedFilterCategory(category.id)}
+                          aria-label={`Select ${category.label} filter`}
+                          aria-selected={selectedFilterCategory === category.id}
+                        >
+                          {category.label}
+                        </button>
                       ))}
-                    </select>
-                  </div>
-
-                  {/* Size Filter */}
-                  <div className="mb-3">
-                    <h3 className="text-xs font-medium text-gray-800 mb-1">Size</h3>
-                    {allAvailableSizes.map((size) => (
-                      <div key={size} className="flex items-center mb-1">
-                        <input
-                          type="checkbox"
-                          id={`size-${size}`}
-                          checked={filterState.sizes.includes(size)}
-                          onChange={() => handleFilterChange('sizes', size)}
-                          className="mr-2 h-4 w-4"
-                          aria-label={`Filter by ${size} size`}
-                        />
-                        <label htmlFor={`size-${size}`} className="text-xs text-gray-600">{size}</label>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Fabric Filter */}
-                  <div className="mb-3">
-                    <h3 className="text-xs font-medium text-gray-800 mb-1">Fabric</h3>
-                    {allAvailableFabrics.map((fabric) => (
-                      <div key={fabric} className="flex items-center mb-1">
-                        <input
-                          type="checkbox"
-                          id={`fabric-${fabric}`}
-                          checked={filterState.fabrics.includes(fabric)}
-                          onChange={() => handleFilterChange('fabrics', fabric)}
-                          className="mr-2 h-4 w-4"
-                          aria-label={`Filter by ${fabric} fabric`}
-                        />
-                        <label htmlFor={`fabric-${fabric}`} className="text-xs text-gray-600">{fabric}</label>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Waist Type Filter */}
-                  <div className="mb-3">
-                    <h3 className="text-xs font-medium text-gray-800 mb-1">Waist Type</h3>
-                    {allAvailableWaistTypes.map((waistType) => (
-                      <div key={waistType} className="flex items-center mb-1">
-                        <input
-                          type="checkbox"
-                          id={`waistType-${waistType}`}
-                          checked={filterState.waistTypes.includes(waistType)}
-                          onChange={() => handleFilterChange('waistTypes', waistType)}
-                          className="mr-2 h-4 w-4"
-                          aria-label={`Filter by ${waistType} waist type`}
-                        />
-                        <label htmlFor={`waistType-${waistType}`} className="text-xs text-gray-600">{waistType}</label>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Fit Filter */}
-                  <div className="mb-3">
-                    <h3 className="text-xs font-medium text-gray-800 mb-1">Fit</h3>
-                    {allAvailableFits.map((fit) => (
-                      <div key={fit} className="flex items-center mb-1">
-                        <input
-                          type="checkbox"
-                          id={`fit-${fit}`}
-                          checked={filterState.fits.includes(fit)}
-                          onChange={() => handleFilterChange('fits', fit)}
-                          className="mr-2 h-4 w-4"
-                          aria-label={`Filter by ${fit} fit`}
-                        />
-                        <label htmlFor={`fit-${fit}`} className="text-xs text-gray-600">{fit}</label>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Length Filter */}
-                  <div className="mb-3">
-                    <h3 className="text-xs font-medium text-gray-800 mb-1">Length</h3>
-                    {allAvailableLengths.map((length) => (
-                      <div key={length} className="flex items-center mb-1">
-                        <input
-                          type="checkbox"
-                          id={`length-${length}`}
-                          checked={filterState.lengths.includes(length)}
-                          onChange={() => handleFilterChange('lengths', length)}
-                          className="mr-2 h-4 w-4"
-                          aria-label={`Filter by ${length} length`}
-                        />
-                        <label htmlFor={`length-${length}`} className="text-xs text-gray-600">{length}</label>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Occasion Filter */}
-                  <div className="mb-3">
-                    <h3 className="text-xs font-medium text-gray-800 mb-1">Occasion</h3>
-                    {allAvailableOccasions.map((occasion) => (
-                      <div key={occasion} className="flex items-center mb-1">
-                        <input
-                          type="checkbox"
-                          id={`occasion-${occasion}`}
-                          checked={filterState.occasions.includes(occasion)}
-                          onChange={() => handleFilterChange('occasions', occasion)}
-                          className="mr-2 h-4 w-4"
-                          aria-label={`Filter by ${occasion} occasion`}
-                        />
-                        <label htmlFor={`occasion-${occasion}`} className="text-xs text-gray-600">{occasion}</label>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Best Seller Filter */}
-                  <div className="mb-3">
-                    <h3 className="text-xs font-medium text-gray-800 mb-1">Offers</h3>
-                    <div className="flex items-center mb-1">
-                      <input
-                        type="checkbox"
-                        id="best-seller"
-                        checked={filterState.bestSeller}
-                        onChange={() => handleFilterChange('bestSeller', null)}
-                        className="mr-2 h-4 w-4"
-                        aria-label="Filter by best seller"
-                      />
-                      <label htmlFor="best-seller" className="text-xs text-gray-600">Best Seller</label>
                     </div>
-                  </div>
 
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      className="w-full bg-black text-white py-1 rounded-md hover:bg-gray-800 text-xs font-medium"
-                      onClick={applyFilters}
-                      aria-label="Apply filters"
-                    >
-                      Apply
-                    </button>
-                    <button
-                      type="button"
-                      className="w-full bg-white border border-gray-200 text-gray-800 py-1 rounded-md hover:bg-gray-100 text-xs font-medium"
-                      onClick={clearFilters}
-                      aria-label="Clear filters"
-                    >
-                      Clear
-                    </button>
+                    {/* Right Content: Filter Details */}
+                    <div className="flex-1 p-6 overflow-y-auto">
+                      <h3 className="text-sm font-semibold text-gray-700 mb-4">
+                        {filterCategories.find((cat) => cat.id === selectedFilterCategory)?.label}
+                      </h3>
+                      <motion.div
+                        key={selectedFilterCategory}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        {renderFilterContent()}
+                      </motion.div>
+                    </div>
                   </div>
                 </motion.aside>
               </div>
@@ -913,37 +823,21 @@ function WomensLeggings() {
             />
             <p className="text-xs text-gray-700 mb-1">{quickView.description}</p>
             <p className="text-xs text-gray-500 mb-1">Brand: {quickView.brand}</p>
-            <p className="text-xs text-gray-500 mb-1">Fabric: {quickView.fabric}</p>
-            <p className="text-xs text-gray-500 mb-1">Waist: {quickView.waistType}</p>
+            <p className="text-xs text-gray-500 mb-1">Material: {quickView.material}</p>
             <p className="text-xs text-gray-500 mb-1">Fit: {quickView.fit}</p>
-            <p className="text-xs text-gray-500 mb-1">Length: {quickView.length}</p>
+            <p className="text-xs text-gray-500 mb-1">Waist Type: {quickView.waistType}</p>
+            <p className="text-xs text-gray-500 mb-2">Length: {quickView.length}</p>
             <p className="text-xs text-gray-500 mb-2">Occasion: {quickView.occasion}</p>
 
             <div className="flex items-center space-x-2 mb-2">
               <p className="text-sm font-semibold text-gray-800">₹{quickView.discountedPrice.toFixed(2)}</p>
               <p className="text-xs text-gray-500 line-through">₹{quickView.originalPrice.toFixed(2)}</p>
-              <p className="text-xs text-green-600 font-semibold">
-                {Math.round(((quickView.originalPrice - quickView.discountedPrice) / quickView.originalPrice) * 100)}% OFF
-              </p>
+              {quickView.discountedPrice !== quickView.originalPrice && (
+                <p className="text-xs text-green-600 font-semibold">
+                  {Math.round(((quickView.originalPrice - quickView.discountedPrice) / quickView.originalPrice) * 100)}% OFF
+                </p>
+              )}
             </div>
-            {quickView.sizes && quickView.sizes.length > 0 && (
-              <div className="mb-3">
-                <p className="text-xs font-semibold text-gray-700 mb-1">Size:</p>
-                <select
-                  id="quick-view-size"
-                  className="w-full px-2 py-1 border border-gray-200 rounded text-xs"
-                  value={quickViewSize || ''}
-                  onChange={(e) => setQuickViewSize(e.target.value)}
-                  aria-label={`Select size for ${quickView.name || 'product'}`}
-                >
-                  {quickView.sizes.map((sizeOpt) => (
-                    <option key={sizeOpt} value={sizeOpt}>
-                      {sizeOpt}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
             <div className="flex items-center mb-3">
               <p className="text-xs font-semibold text-gray-700 mr-2">Qty:</p>
               <input
@@ -960,10 +854,9 @@ function WomensLeggings() {
               />
             </div>
             <button
-              type="button"
               className="w-full bg-blue-600 text-white rounded-md py-1 text-xs hover:bg-blue-700 transition-colors"
               onClick={() => {
-                addToCart(quickView, quickViewQuantity, quickViewSize);
+                addToCart(quickView, quickViewQuantity);
                 setQuickView(null);
               }}
               aria-label={`Add ${quickView?.name || 'product'} to cart`}

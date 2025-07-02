@@ -3,21 +3,22 @@ import Footer from '../../../Utility/Footer';
 import ClothesHeader from '../../Header/ClothesHeader';
 import { useNavigate, Link } from 'react-router-dom';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import axios from 'axios';
 
-// Import specific images for categories 
-import Tops from '../../Images/Tops.png';
-import Suits from '../../Images/Suit.png';
-import Footwear from '../../Images/Footwear.png';
-import Outerwear from '../../Images/Outerwear.png';
-import Loungewear from '../../Images/Loungewear.png';
-import SeasonalCollections from '../../Images/SeasonalCollection.png';
-import Bottom from '../../Images/Bottoms.png';
-import NewArrivals from '../../Images/NewArrivals.png';
+// Import specific images for categories - using existing images and placeholders
+import Tops from '../../Images/TShirt.png';
+import Suits from '../../Images/NavyBlueBlazer.png';
+import Footwear from '../../Images/RunningShoes.png';
+import Outerwear from '../../Images/NavyBlueBlazer.png';
+import Loungewear from '../../Images/TrackPants.png';
+import SeasonalCollections from '../../Images/SportsTShirt.png';
+import Bottom from '../../Images/TrackPants.png';
+import NewArrivals from '../../Images/WhiteFormalShirt.jpg';
 
-// Add banner images
-import Banner1 from '../../Images/MensBan1.jpeg';
-import Banner2 from '../../Images/MensBan2.png';
-import Banner3 from '../../Images/MensBan3.png';
+// Add banner images - using existing banner images from HomeScreen
+import Banner1 from '../../../Images/HomeScreen/banner1.svg';
+import Banner2 from '../../../Images/HomeScreen/banner2.svg';
+import Banner3 from '../../../Images/HomeScreen/banner3.svg';
 
 const banners = [
   {
@@ -119,6 +120,7 @@ const CategoryCard = ({ category, onClick }) => {
 function MenClothings() {
   const navigate = useNavigate();
   const [currentBanner, setCurrentBanner] = useState(0);
+  const [cartItems, setCartItems] = useState([]);
 
   // Auto-slide functionality
   useEffect(() => {
@@ -127,6 +129,30 @@ function MenClothings() {
     }, 5000); // Change banner every 5 seconds
 
     return () => clearInterval(timer);
+  }, []);
+
+  // Fetch cart from backend
+  const fetchCart = async () => {
+    try {
+      const cartRes = await axios.get('http://localhost:5000/api/cart', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (cartRes.data && cartRes.data.data && cartRes.data.data.items) {
+        setCartItems(cartRes.data.data.items.map(item => ({
+          ...item.product,
+          quantity: item.quantity,
+          id: item.product_id,
+          cartItemId: item.id
+        })));
+      } else {
+        setCartItems([]);
+      }
+    } catch (e) {
+      setCartItems([]);
+    }
+  };
+  useEffect(() => {
+    fetchCart();
   }, []);
 
   const nextBanner = () => {

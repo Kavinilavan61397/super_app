@@ -120,6 +120,7 @@ function Myorders() {
                 if (response.status === 401) throw { message: 'Unauthorized', status: 401 };
                 if (!response.ok) throw new Error('Failed to fetch orders');
                 const data = await response.json();
+                console.log('API data:',data);
 
                 // Transform backend data to match frontend expectations
                 const transformedOrders = data.map(order => ({

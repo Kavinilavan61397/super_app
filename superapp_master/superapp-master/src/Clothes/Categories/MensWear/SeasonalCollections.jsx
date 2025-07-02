@@ -3,44 +3,42 @@ import Footer from '../../../Utility/Footer';
 import ClothesHeader from '../../Header/ClothesHeader';
 import { FaFilter, FaHeart, FaEye, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 
 // Import images
-import SummerCollectionTShirt from '../../Images/SummerCollectionTShirt.jpg';
-import WinterJacket from '../../Images/SummerCollectionTShirt.jpg';
-import RainCoat from '../../Images/SummerCollectionTShirt.jpg';
-import SummerLinenShirt from '../../Images/SummerCollectionTShirt.jpg';
-import AutumnCardigan from '../../Images/SummerCollectionTShirt.jpg';
-import SpringFloralTShirt from '../../Images/SummerCollectionTShirt.jpg';
-import HolidaySweater from '../../Images/SummerCollectionTShirt.jpg';
-import BeachShorts from '../../Images/SummerCollectionTShirt.jpg';
-import LightweightScarf from '../../Images/SummerCollectionTShirt.jpg';
-import GumBoots from '../../Images/SummerCollectionTShirt.jpg';
-import WindcheaterJacket from '../../Images/SummerCollectionTShirt.jpg';
-import TurtleneckSweater from '../../Images/SummerCollectionTShirt.jpg';
-import HalfZipPullover from '../../Images/SummerCollectionTShirt.jpg';
-import LightBomberJacket from '../../Images/SummerCollectionTShirt.jpg';
-import LightweightHoodie from '../../Images/SummerCollectionTShirt.jpg';
-import PastelPoloTShirt from '../../Images/SummerCollectionTShirt.jpg';
+import SummerTShirt from '../../Images/TShirt.png';
+import WinterJacket from '../../Images/NavyBlueBlazer.png';
+import SpringShirt from '../../Images/WhiteFormalShirt.jpg';
+import AutumnSweater from '../../Images/SportsTShirt.png';
+import SummerShorts from '../../Images/TrackPants.png';
+import WinterBoots from '../../Images/RunningShoes.png';
+import SpringPants from '../../Images/TrackPants.png';
+import AutumnJacket from '../../Images/NavyBlueBlazer.png';
+import SummerSunglasses from '../../Images/TShirt.png';
+import WinterScarf from '../../Images/TShirt.png';
+import SpringShoes from '../../Images/RunningShoes.png';
+import AutumnPants from '../../Images/TrackPants.png';
+import SummerHat from '../../Images/TShirt.png';
+import WinterGloves from '../../Images/TShirt.png';
 
-
-const seasonalItems = [
-  { id: 1, name: 'Summer Collection T-Shirt', originalPrice: 1200, discountedPrice: 899, image: SummerCollectionTShirt, description: 'Light and breathable summer t-shirt.', rating: 4.5, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Seasonal', sizes: ['S', 'M', 'L', 'XL'], brand: 'Tommy Hilfiger' },
-  { id: 2, name: 'Winter Jacket', originalPrice: 3500, discountedPrice: 2800, image: WinterJacket, description: 'Warm and stylish winter jacket.', rating: 4.7, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Seasonal', sizes: ['M', 'L', 'XL'], brand: 'The North Face' },
-  { id: 3, name: 'Rain Coat', originalPrice: 2000, discountedPrice: 1500, image: RainCoat, description: 'Waterproof rain coat for monsoon season.', rating: 4.3, isBestSeller: false, quantity: 1, category: 'Men\'s Wear - Seasonal', sizes: ['S', 'M', 'L'], brand: 'The North Face' },
-  { id: 4, name: 'Summer Linen Shirt', originalPrice: 1500, discountedPrice: 1200, image: SummerLinenShirt, description: 'Lightweight linen shirt for summer.', rating: 4.5, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Seasonal', sizes: ['S', 'M', 'L', 'XL'], brand: 'Tommy Hilfiger' },
-  { id: 5, name: 'Autumn Cardigan', originalPrice: 2200, discountedPrice: 1760, image: AutumnCardigan, description: 'Cozy cardigan for autumn evenings.', rating: 4.4, isBestSeller: false, quantity: 1, category: 'Men\'s Wear - Seasonal', sizes: ['M', 'L', 'XL'], brand: 'Tommy Hilfiger' },
-  { id: 6, name: 'Spring Floral T-shirt', originalPrice: 900, discountedPrice: 720, image: SpringFloralTShirt, description: 'Vibrant floral t-shirt for spring.', rating: 4.0, isBestSeller: false, quantity: 1, category: 'Men\'s Wear - Seasonal', sizes: ['S', 'M', 'L'], brand: 'Tommy Hilfiger' },
-  { id: 7, name: 'Holiday Sweater', originalPrice: 1800, discountedPrice: 1440, image: HolidaySweater, description: 'Festive sweater for the holiday season.', rating: 4.6, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Seasonal', sizes: ['S', 'M', 'L', 'XL'], brand: 'Tommy Hilfiger' },
-  { id: 8, name: 'Beach Shorts', originalPrice: 1000, discountedPrice: 800, image: BeachShorts, description: 'Quick-dry beach shorts for summer.', rating: 4.2, isBestSeller: false, quantity: 1, category: 'Men\'s Wear - Seasonal', sizes: ['28', '30', '32', '34'], brand: 'Levi\'s' },
-  { id: 9, name: 'Lightweight Scarf', originalPrice: 600, discountedPrice: 480, image: LightweightScarf, description: 'Stylish lightweight scarf for various seasons like summer, winter, spring and autumn.', rating: 4.1, isBestSeller: false, quantity: 1, category: 'Men\'s Wear - Seasonal', sizes: ['OS'], brand: 'Tommy Hilfiger' },
-  { id: 10, name: 'GumBoots', originalPrice: 1800, discountedPrice: 1440, image: GumBoots, description: 'Waterproof gum boots for rainy season.', rating: 4.6, isBestSeller: false, quantity: 1, category: 'Men\'s Wear - Seasonal', sizes: ['7', '8', '9', '10', '11'], brand: 'Woodland' },
-  { id: 11, name: 'Windcheater Jacket', originalPrice: 2200, discountedPrice: 1760, image: WindcheaterJacket, description: 'Lightweight windcheater for rainy days.', rating: 4.4, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Seasonal', sizes: ['S', 'M', 'L', 'XL'], brand: 'Columbia' },
-  { id: 12, name: 'Turtleneck Sweater', originalPrice: 2800, discountedPrice: 2240, image: TurtleneckSweater, description: 'Warm turtleneck sweater for winter.', rating: 4.7, isBestSeller: false, quantity: 1, category: 'Men\'s Wear - Seasonal', sizes: ['S', 'M', 'L', 'XL'], brand: 'Van Heusen' },
-  { id: 13, name: 'Half-Zip Pullover', originalPrice: 2000, discountedPrice: 1600, image: HalfZipPullover, description: 'Versatile half-zip pullover for layering in autumn season.', rating: 4.5, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Seasonal', sizes: ['M', 'L', 'XL'], brand: 'Nike' },
-  { id: 14, name: 'Light Bomber Jacket', originalPrice: 3500, discountedPrice: 2800, image: LightBomberJacket, description: 'Stylish bomber jacket for transitional spring and autumn weather.', rating: 4.8, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Seasonal', sizes: ['S', 'M', 'L', 'XL'], brand: 'Levi\'s' },
-  { id: 15, name: 'Lightweight Hoodie', originalPrice: 1500, discountedPrice: 1200, image: LightweightHoodie, description: 'Comfortable lightweight hoodie for cool evenings in spring.', rating: 4.3, isBestSeller: false, quantity: 1, category: 'Men\'s Wear - Seasonal', sizes: ['S', 'M', 'L', 'XL'], brand: 'Puma' },
-  { id: 16, name: 'Pastel Polo T-Shirt', originalPrice: 1200, discountedPrice: 960, image: PastelPoloTShirt, description: 'Soft pastel polo t-shirt for spring.', rating: 4.6, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Seasonal', sizes: ['S', 'M', 'L', 'XL'], brand: 'Ralph Lauren' }
-];
+// Fallback images mapping
+const fallbackImages = {
+  'Summer T-Shirt': SummerTShirt,
+  'Winter Jacket': WinterJacket,
+  'Spring Shirt': SpringShirt,
+  'Autumn Sweater': AutumnSweater,
+  'Summer Shorts': SummerShorts,
+  'Winter Boots': WinterBoots,
+  'Spring Pants': SpringPants,
+  'Autumn Jacket': AutumnJacket,
+  'Summer Sunglasses': SummerSunglasses,
+  'Winter Scarf': WinterScarf,
+  'Spring Shoes': SpringShoes,
+  'Autumn Pants': AutumnPants,
+  'Summer Hat': SummerHat,
+  'Winter Gloves': WinterGloves,
+  'default': SummerTShirt
+};
 
 const ProductCard = ({ name, originalPrice, discountedPrice, image, description, rating, isBestSeller, onQuickView, item, addToCart, addToWishlist, cartItems, wishlistItems }) => {
   const [selectedSize, setSelectedSize] = useState(item.sizes && item.sizes.length > 0 ? item.sizes[0] : 'S');
@@ -73,12 +71,15 @@ const ProductCard = ({ name, originalPrice, discountedPrice, image, description,
             BESTSELLER
           </span>
         )}
+        <span className="absolute top-4 left-4 bg-green-500 text-white text-xs font-semibold px-2 py-1">
+          SEASONAL
+        </span>
       </div>
       
       <div className="p-4 flex flex-col flex-grow">
         <h3 className="text-xl font-bold text-gray-800 mb-1 line-clamp-2">{name}</h3>
         <p className="text-sm text-gray-600 mb-1">{item.brand}</p>
-        <p className="text-sm text-gray-600 mb-2">Seasonal Collection</p>
+        <p className="text-sm text-gray-600 mb-2">Seasonal Collections</p>
         
         <div className="flex items-baseline space-x-2 mb-3 mt-auto">
           <p className="text-base font-bold text-gray-900">₹{discountedPrice.toFixed(2)}</p>
@@ -127,22 +128,110 @@ function SeasonalCollections() {
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(10000);
   const [selectedBrands, setSelectedBrands] = useState([]);
-  const [selectedSeason, setSelectedSeason] = useState('');
+  const [selectedMaterials, setSelectedMaterials] = useState([]);
+  const [selectedTopics, setSelectedTopics] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const filterButtonRef = React.useRef(null);
   const filterPanelRef = React.useRef(null);
 
-  const allAvailableSizes = Array.from(new Set(seasonalItems.flatMap(item => item.sizes)));
+  // Fetch products from backend
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get('http://localhost:5000/api/products/category/name/mens-seasonal-collections');
+        
+        console.log('API Response:', response.data); // Debug log
+        
+        // Transform the data to match the expected format
+        const transformedProducts = response.data.data.map(product => ({
+          id: product.id,
+          name: product.name,
+          originalPrice: parseFloat(product.price),
+          discountedPrice: parseFloat(product.discounted_price || product.price),
+          image: product.photo ? `http://localhost:5000/uploads/${product.photo}` : (fallbackImages[product.name] || fallbackImages.default),
+          description: product.description || 'Product description',
+          rating: product.rating || 4.0,
+          isBestSeller: product.is_bestseller || false,
+          quantity: 1,
+          category: 'Men\'s Wear - Seasonal Collections',
+          sizes: product.sizes ? JSON.parse(product.sizes) : ['S', 'M', 'L', 'XL'],
+          brand: product.brand?.name || 'Brand',
+          material: product.material || 'Cotton',
+          topic: product.topic || 'Seasonal'
+        }));
+        
+        console.log('Transformed products:', transformedProducts); // Debug log
+        
+        setProducts(transformedProducts);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching products:', err);
+        setError('Failed to load products');
+        // Fallback to empty array
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  const allAvailableSizes = Array.from(new Set(products.flatMap(item => item.sizes || [])));
 
   // Extract unique brands from items
-  const allBrands = Array.from(new Set(seasonalItems.flatMap(item => item.brand.split(',').map(b => b.trim()))));
+  const allBrands = Array.from(new Set(products.flatMap(item => (item.brand || '').split(',').map(b => b.trim()))));
+  // Extract unique materials from items
+  const allMaterials = Array.from(new Set(products.map(item => item.material || 'Cotton')));
+  const allTopics = Array.from(new Set(products.map(item => item.topic || 'Summer')));
 
-  const seasonTypes = ['Summer', 'Winter', 'Rainy', 'Autumn', 'Spring'];
+  // Fetch cart from backend
+  const fetchCart = async () => {
+    try {
+      const cartRes = await axios.get('http://localhost:5000/api/cart', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (cartRes.data && cartRes.data.data && cartRes.data.data.items) {
+        setCartItems(cartRes.data.data.items.map(item => ({
+          ...item.product,
+          quantity: item.quantity,
+          id: item.product_id,
+          cartItemId: item.id
+        })));
+      } else {
+        setCartItems([]);
+      }
+    } catch (e) {
+      setCartItems([]);
+    }
+  };
+
+  // Fetch wishlist from backend
+  const fetchWishlist = async () => {
+    try {
+      const res = await axios.get('http://localhost:5000/api/wishlist', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (res.data && res.data.data) {
+        setWishlistItems(res.data.data.map(item => ({
+          ...item.product,
+          id: item.product_id,
+          wishlistItemId: item.id
+        })));
+      } else {
+        setWishlistItems([]);
+      }
+    } catch (e) {
+      setWishlistItems([]);
+    }
+  };
 
   useEffect(() => {
-    const storedCart = JSON.parse(localStorage.getItem('cartItems')) || [];
-    const storedWishlist = JSON.parse(localStorage.getItem('wishlistItems')) || [];
-    setCartItems(storedCart);
-    setWishlistItems(storedWishlist);
+    fetchCart();
+    fetchWishlist();
   }, []);
 
   useEffect(() => {
@@ -161,125 +250,131 @@ function SeasonalCollections() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showFilters]);
 
-  const filteredAndSortedItems = seasonalItems.filter(item => {
-    let showItem = true;
+  const filteredAndSortedItems = products
+    .filter(item => {
+      // Always show items by default
+      let showItem = true;
 
-    if (filterCategorySearch !== '') {
-      showItem = showItem && (
-        item.name.toLowerCase().includes(filterCategorySearch.toLowerCase()) ||
-        item.description.toLowerCase().includes(filterCategorySearch.toLowerCase())
-      );
-    }
-
-    if (minPrice > 0 || maxPrice < 10000) {
-      showItem = showItem && (
-        (minPrice > 0 ? item.discountedPrice >= minPrice : true) &&
-        (maxPrice < 10000 ? item.discountedPrice <= maxPrice : true)
-      );
-    }
-
-    if (selectedSizes.length > 0) {
-      showItem = showItem && selectedSizes.some(size => item.sizes && item.sizes.includes(size));
-    }
-
-    // Brand filter
-    if (selectedBrands.length > 0) {
-      const itemBrands = item.brand.split(',').map(b => b.trim());
-      showItem = showItem && selectedBrands.some(brand => itemBrands.includes(brand));
-    }
-
-    // Season filter
-    if (selectedSeason) {
-      switch (selectedSeason) {
-        case 'Summer':
-          showItem = showItem && (
-            item.name.toLowerCase().includes('summer') ||
-            item.description.toLowerCase().includes('summer') ||
-            item.name.toLowerCase().includes('beach')
-          );
-          break;
-        case 'Winter':
-          showItem = showItem && (
-            item.name.toLowerCase().includes('winter') ||
-            item.description.toLowerCase().includes('winter') ||
-            item.name.toLowerCase().includes('sweater') ||
-            item.name.toLowerCase().includes('turtleneck')
-          );
-          break;
-        case 'Rainy':
-          showItem = showItem && (
-            item.name.toLowerCase().includes('rain') ||
-            item.description.toLowerCase().includes('rain') ||
-            item.name.toLowerCase().includes('gumboot')
-          );
-          break;
-        case 'Autumn':
-          showItem = showItem && (
-            item.name.toLowerCase().includes('autumn') ||
-            item.description.toLowerCase().includes('autumn') ||
-            item.name.toLowerCase().includes('cardigan')
-          );
-          break;
-        case 'Spring':
-          showItem = showItem && (
-            item.name.toLowerCase().includes('spring') ||
-            item.description.toLowerCase().includes('spring') ||
-            item.name.toLowerCase().includes('floral') ||
-            item.name.toLowerCase().includes('pastel')
-          );
-          break;
-        default:
-          break;
+      // Apply search filter if search term exists
+      if (filterCategorySearch !== '') {
+        showItem = showItem && (
+          item.name.toLowerCase().includes(filterCategorySearch.toLowerCase()) ||
+          item.description.toLowerCase().includes(filterCategorySearch.toLowerCase())
+        );
       }
-    }
 
-    return showItem;
-  }).sort((a, b) => {
-    switch (sortOption) {
-      case 'price-low':
-        return a.discountedPrice - b.discountedPrice;
-      case 'price-high':
-        return b.discountedPrice - a.discountedPrice;
-      case 'best-seller':
-        return b.isBestSeller - a.isBestSeller;
-      default:
-        return 0;
-    }
-      });
+      // Apply price range filter only if prices are set
+      if (minPrice > 0 || maxPrice < 999999) {
+        showItem = showItem && (
+          (minPrice > 0 ? item.discountedPrice >= minPrice : true) &&
+          (maxPrice < 999999 ? item.discountedPrice <= maxPrice : true)
+        );
+      }
 
-  const addToCart = (product, quantity = 1, size = 'S') => {
-    const currentCart = JSON.parse(localStorage.getItem('cartItems')) || [];
-    const existingItemIndex = currentCart.findIndex((item) => item.id === product.id && item.category === product.category && item.size === size);
+      // Apply size filter only if sizes are selected
+      if (selectedSizes.length > 0) {
+        showItem = showItem && selectedSizes.some(size => item.sizes && item.sizes.includes(size));
+      }
 
-    if (existingItemIndex !== -1) {
-      const updatedCart = currentCart.map((item, index) =>
-        index === existingItemIndex ? { ...item, quantity: item.quantity + quantity } : item
+      // Brand filter
+      if (selectedBrands.length > 0) {
+        const itemBrands = (item.brand || '').split(',').map(b => b.trim());
+        showItem = showItem && selectedBrands.some(brand => itemBrands.includes(brand));
+      }
+
+      // Material filter
+      if (selectedMaterials.length > 0) {
+        showItem = showItem && selectedMaterials.includes(item.material || 'Cotton');
+      }
+
+      // Topic filter
+      if (selectedTopics.length > 0) {
+        showItem = showItem && selectedTopics.includes(item.topic || 'Summer');
+      }
+
+      return showItem;
+    })
+    .sort((a, b) => {
+      switch (sortOption) {
+        case 'price-low-high':
+          return a.discountedPrice - b.discountedPrice;
+        case 'price-high-low':
+          return b.discountedPrice - a.discountedPrice;
+        case 'name-a-z':
+          return a.name.localeCompare(b.name);
+        case 'name-z-a':
+          return b.name.localeCompare(a.name);
+        case 'rating-high-low':
+          return b.rating - a.rating;
+        default:
+          return 0;
+      }
+    });
+
+  const addToCart = async (product, quantity = 1, size = 'S') => {
+    try {
+      const response = await axios.post(
+        'http://localhost:5000/api/cart/items',
+        {
+          product_id: product.id,
+          quantity,
+          variation_id: null
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          }
+        }
       );
-      localStorage.setItem('cartItems', JSON.stringify(updatedCart));
-      setCartItems(updatedCart);
-      alert(`${quantity} of ${product.name} (Size: ${size}) quantity updated in cart!`);
-    } else {
-      const updatedCart = [...currentCart, { ...product, quantity: parseInt(quantity), size: size }];
-      localStorage.setItem('cartItems', JSON.stringify(updatedCart));
-      setCartItems(updatedCart);
-      alert(`${parseInt(quantity)} of ${product.name} (Size: ${size}) added to cart!`);
+
+      console.log('Item added to cart:', response.data);
+      
+      // Update localStorage for frontend state management
+      const currentCart = JSON.parse(localStorage.getItem('cartItems')) || [];
+      const existingItemIndex = currentCart.findIndex((item) => item.id === product.id && item.category === product.category && item.size === size);
+
+      if (existingItemIndex !== -1) {
+        const updatedCart = currentCart.map((item, index) =>
+          index === existingItemIndex ? { ...item, quantity: item.quantity + quantity } : item
+        );
+        localStorage.setItem('cartItems', JSON.stringify(updatedCart));
+        setCartItems(updatedCart);
+      } else {
+        const updatedCart = [...currentCart, { ...product, quantity: parseInt(quantity), size: size }];
+        localStorage.setItem('cartItems', JSON.stringify(updatedCart));
+        setCartItems(updatedCart);
+      }
+      
+      alert('Added to cart successfully!');
+    } catch (error) {
+      console.error('Error adding to cart:', error.response?.data || error.message);
+      alert('Failed to add to cart');
     }
   };
 
-  const addToWishlist = (product, quantity = 1, size = 'S') => {
-    const currentWishlist = JSON.parse(localStorage.getItem('wishlistItems')) || [];
-    const isInWishlist = currentWishlist.some((item) => item.id === product.id && item.category === product.category && item.size === size);
-
-    if (isInWishlist) {
-      const updatedWishlist = currentWishlist.filter((item) => !(item.id === product.id && item.category === product.category && item.size === size));
-      localStorage.setItem('wishlistItems', JSON.stringify(updatedWishlist));
-      setWishlistItems(updatedWishlist);
-      alert(`${product.name} removed from wishlist!`);
-    } else {
-      const updatedWishlist = [...currentWishlist, { ...product, quantity: parseInt(quantity), size: size }];
-      localStorage.setItem('wishlistItems', JSON.stringify(updatedWishlist));
-      setWishlistItems(updatedWishlist);
-      alert(`${product.name} added to wishlist!`);
+  const addToWishlist = async (product, quantity = 1, size = 'S') => {
+    const isInWishlist = wishlistItems.some(item => item.id === product.id);
+    try {
+      if (isInWishlist) {
+        const item = wishlistItems.find(item => item.id === product.id);
+        await axios.delete(`http://localhost:5000/api/wishlist/${item.wishlistItemId}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+      } else {
+        await axios.post('http://localhost:5000/api/wishlist', {
+          product_id: product.id
+        }, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          }
+        });
+      }
+      await fetchWishlist();
+    } catch (error) {
+      alert('Failed to update wishlist');
+      console.error('addToWishlist error', error);
     }
   };
 
@@ -319,17 +414,17 @@ function SeasonalCollections() {
 
           {/* Quick Season Filter Buttons - single row, scrollable on mobile */}
           <div className="flex flex-nowrap gap-2 mb-4 overflow-x-auto scrollbar-hide justify-center sm:justify-start">
-            {seasonTypes.map(season => (
+            {allTopics.map(topic => (
               <button
-                key={season}
+                key={topic}
                 className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors duration-200 whitespace-nowrap ${
-                  selectedSeason === season
+                  selectedTopics.includes(topic)
                     ? 'bg-blue-500 text-white border-blue-500'
                     : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-100'
                 }`}
-                onClick={() => setSelectedSeason(selectedSeason === season ? '' : season)}
+                onClick={() => setSelectedTopics(selectedTopics.includes(topic) ? selectedTopics.filter(t => t !== topic) : [...selectedTopics, topic])}
               >
-                {season}
+                {topic}
               </button>
             ))}
           </div>
@@ -352,9 +447,11 @@ function SeasonalCollections() {
                   className="appearance-none bg-white border border-gray-300 rounded-md pl-4 pr-10 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="default">Sort By</option>
-                  <option value="price-low">Price: Low to High</option>
-                  <option value="price-high">Price: High to Low</option>
-                  <option value="best-seller">Best Seller</option>
+                  <option value="price-low-high">Price: Low to High</option>
+                  <option value="price-high-low">Price: High to Low</option>
+                  <option value="name-a-z">Name: A-Z</option>
+                  <option value="name-z-a">Name: Z-A</option>
+                  <option value="rating-high-low">Rating: High to Low</option>
                 </select>
                 <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" />
               </div>
@@ -384,21 +481,21 @@ function SeasonalCollections() {
                       onChange={(e) => setFilterCategorySearch(e.target.value)}
                     />
                 </div>
-                {/* Season Filter - moved to top */}
+                {/* Topic Filter - moved to top */}
                 <div className="mb-2 sm:mb-6">
-                  <h3 className="text-sm sm:text-md font-semibold text-gray-700 mb-1 sm:mb-3">Season</h3>
+                  <h3 className="text-sm sm:text-md font-semibold text-gray-700 mb-1 sm:mb-3">Topic</h3>
                   <div className="flex flex-wrap gap-1 sm:gap-2">
-                    {seasonTypes.map(season => (
+                    {allTopics.map(topic => (
                       <button
-                        key={season}
+                        key={topic}
                         className={`px-2 sm:px-3 py-1 border rounded-md text-xs sm:text-sm ${
-                          selectedSeason === season
+                          selectedTopics.includes(topic)
                             ? 'bg-blue-500 text-white border-blue-500'
                             : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'
                         }`}
-                        onClick={() => setSelectedSeason(selectedSeason === season ? '' : season)}
+                        onClick={() => setSelectedTopics(selectedTopics.includes(topic) ? selectedTopics.filter(t => t !== topic) : [...selectedTopics, topic])}
                       >
-                        {season}
+                        {topic}
                       </button>
                     ))}
                   </div>
@@ -445,10 +542,10 @@ function SeasonalCollections() {
                         <button
                           key={size}
                         className={`px-2 sm:px-3 py-1 border rounded-md text-xs sm:text-sm ${
-                            selectedSizes.includes(size)
-                              ? 'bg-blue-500 text-white border-blue-500'
-                              : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'
-                          }`}
+                          selectedSizes.includes(size)
+                            ? 'bg-blue-500 text-white border-blue-500'
+                            : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'
+                        }`}
                           onClick={() => handleSizeFilterChange(size)}
                         >
                           {size}
@@ -477,6 +574,25 @@ function SeasonalCollections() {
                     ))}
                   </div>
                 </div>
+                {/* Material Filter */}
+                <div className="mb-2 sm:mb-6">
+                  <h3 className="text-sm sm:text-md font-semibold text-gray-700 mb-1 sm:mb-3">Material</h3>
+                  <div className="flex flex-wrap gap-1 sm:gap-2">
+                    {allMaterials.map(material => (
+                      <button
+                        key={material}
+                        className={`px-2 sm:px-3 py-1 border rounded-md text-xs sm:text-sm ${
+                          selectedMaterials.includes(material)
+                            ? 'bg-blue-500 text-white border-blue-500'
+                            : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'
+                        }`}
+                        onClick={() => setSelectedMaterials(selectedMaterials.includes(material) ? selectedMaterials.filter(m => m !== material) : [...selectedMaterials, material])}
+                      >
+                        {material}
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 {/* Clear Filters Button */}
                 <div className="mt-2 sm:mt-6">
                   <div className="flex justify-end">
@@ -487,7 +603,8 @@ function SeasonalCollections() {
                         setMaxPrice(10000);
                         setSelectedSizes([]);
                         setSelectedBrands([]);
-                        setSelectedSeason('');
+                        setSelectedMaterials([]);
+                        setSelectedTopics([]);
                         setShowFilters(false);
                         setSortOption('default');
                       }}
@@ -507,7 +624,8 @@ function SeasonalCollections() {
             maxPrice > 0 || 
             selectedSizes.length > 0 ||
             selectedBrands.length > 0 ||
-            selectedSeason) && (
+            selectedMaterials.length > 0 ||
+            selectedTopics.length > 0) && (
             <div className="bg-gray-50 p-4 rounded-lg mb-4">
               <div className="flex flex-wrap gap-2">
                 {filterCategorySearch && filterCategorySearch.length > 0 && (
@@ -557,42 +675,71 @@ function SeasonalCollections() {
                     </button>
                   </span>
                 ))}
-                {selectedSeason && (
-                  <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
-                    {selectedSeason}
+                {selectedMaterials.map(material => (
+                  <span key={material} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
+                    {material}
                     <button
-                      onClick={() => setSelectedSeason('')}
+                      onClick={() => setSelectedMaterials(selectedMaterials.filter(m => m !== material))}
                       className="ml-2 text-blue-700 hover:text-blue-900"
                     >
                       &times;
                     </button>
                   </span>
-                )}
+                ))}
+                {selectedTopics.map(topic => (
+                  <span key={topic} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
+                    {topic}
+                    <button
+                      onClick={() => setSelectedTopics(selectedTopics.filter(t => t !== topic))}
+                      className="ml-2 text-blue-700 hover:text-blue-900"
+                    >
+                      &times;
+                    </button>
+                  </span>
+                ))}
               </div>
             </div>
           )}
 
           {/* Product Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-2">
-                {filteredAndSortedItems.map((item) => (
-                  <ProductCard
-                    key={item.id}
-                    {...item}
-                    onQuickView={handleQuickView}
-                    addToCart={addToCart}
-                    addToWishlist={addToWishlist}
-                    cartItems={cartItems}
-                    wishlistItems={wishlistItems}
-                    item={item}
-                  />
-                ))}
+          {loading ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading products...</p>
               </div>
-
+            </div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <p className="text-red-600 mb-4">{error}</p>
+              <button 
+                onClick={() => window.location.reload()} 
+                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+              >
+                Try Again
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-2">
+              {filteredAndSortedItems.map((item) => (
+                <ProductCard
+                  key={item.id}
+                  {...item}
+                  onQuickView={handleQuickView}
+                  addToCart={addToCart}
+                  addToWishlist={addToWishlist}
+                  cartItems={cartItems}
+                  wishlistItems={wishlistItems}
+                  item={item}
+                />
+              ))}
               {filteredAndSortedItems.length === 0 && (
                 <p className="text-center text-gray-600 mt-8">No items found matching your criteria.</p>
               )}
-          </div>
-              </div>
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Quick View Modal */}
           {quickView && (
@@ -619,7 +766,7 @@ function SeasonalCollections() {
                 <div className="flex flex-col">
                   <h2 className="text-lg sm:text-2xl font-bold text-gray-900 mb-1 sm:mb-2">{quickView.name}</h2>
                   <p className="text-xs sm:text-sm text-gray-600 mb-1">{quickView.brand}</p>
-                  <p className="text-xs sm:text-sm text-gray-600 mb-2">Seasonal Collection</p>
+                  <p className="text-xs sm:text-sm text-gray-600 mb-2">Seasonal Collections</p>
                   <div className="flex items-baseline space-x-2 mb-2 sm:mb-4">
                     <p className="text-base font-bold text-gray-900">₹{quickView.discountedPrice.toFixed(2)}</p>
                     <p className="text-sm text-gray-500 line-through">₹{quickView.originalPrice.toFixed(2)}</p>

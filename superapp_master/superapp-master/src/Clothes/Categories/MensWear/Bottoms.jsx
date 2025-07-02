@@ -3,36 +3,48 @@ import Footer from '../../../Utility/Footer';
 import ClothesHeader from '../../Header/ClothesHeader';
 import { FaFilter, FaHeart, FaEye, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 
 // Import images
-import DenimJeans from '../../Images/FormalTrouser.jpg';
-import ComfortableTrackPants from '../../Images/FormalTrouser.jpg';
-import CargoShorts from '../../Images/FormalTrouser.jpg';
-import JoggerPants from '../../Images/FormalTrouser.jpg';
-import FormalTrousers from '../../Images/FormalTrouser.jpg';
-import AthleticSweatpants from '../../Images/FormalTrouser.jpg';
-import CorduroyPants from '../../Images/FormalTrouser.jpg';
-import RelaxedFitJeans from '../../Images/FormalTrouser.jpg';
-import MeshShorts from '../../Images/FormalTrouser.jpg';
+import Jeans from '../../Images/TrackPants.png';
+import Chinos from '../../Images/TrackPants.png';
+import Shorts from '../../Images/TrackPants.png';
+import TrackPants from '../../Images/TrackPants.png';
+import FormalPants from '../../Images/TrackPants.png';
+import CargoPants from '../../Images/TrackPants.png';
+import Joggers from '../../Images/TrackPants.png';
+import Sweatpants from '../../Images/TrackPants.png';
+import LinenPants from '../../Images/TrackPants.png';
+import DenimShorts from '../../Images/TrackPants.png';
+import SwimShorts from '../../Images/TrackPants.png';
+import AthleticShorts from '../../Images/TrackPants.png';
+import DressPants from '../../Images/TrackPants.png';
+import CorduroyPants from '../../Images/TrackPants.png';
 
-const bottomsItems = [
-  { id: 10, name: 'Slim Fit Denim Jeans', originalPrice: 2000, discountedPrice: 1600, image: DenimJeans, description: 'Classic denim jeans with a slim fit.', rating: 4.5, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Bottoms', sizes: ['28', '30', '32', '34', '36','38'], brand: 'Levi\'s', material: 'Denim', topic: 'Jeans' },
-  { id: 11, name: 'Comfortable Track Pants', originalPrice: 1500, discountedPrice: 1200, image: ComfortableTrackPants, description: 'Soft and comfortable track pants.', rating: 4.0, isBestSeller: false, quantity: 1, category: 'Men\'s Wear - Bottoms', sizes: ['S', 'M', 'L', 'XL'], brand: 'Nike', material: 'Cotton', topic: 'Pants' },
-  { id: 12, name: 'Cargo Shorts', originalPrice: 1100, discountedPrice: 880, image: CargoShorts, description: 'Durable cargo shorts with multiple pockets.', rating: 4.2, isBestSeller: false, quantity: 1, category: 'Men\'s Wear - Bottoms', sizes: ['S', 'M', 'L', 'XL'], brand: 'Adidas', material: 'Cotton', topic: 'Shorts' },
-  { id: 13, name: 'Chinos', originalPrice: 1900, discountedPrice: 1520, image: 'https://images.pexels.com/photos/1018911/pexels-photo-1018911.jpeg?auto=compress&cs=tinysrgb&w=400', description: 'Versatile chinos for a smart casual look.', rating: 4.4, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Bottoms', sizes: ['28', '30', '32', '34'], brand: 'H&M', material: 'Cotton', topic: 'Trousers' },
-  { id: 14, name: 'Jogger Pants', originalPrice: 1400, discountedPrice: 1120, image: JoggerPants, description: 'Comfortable jogger pants with an elastic waist.', rating: 4.1, isBestSeller: false, quantity: 1, category: 'Men\'s Wear - Bottoms', sizes: ['S', 'M', 'L', 'XL', 'XXL'], brand: 'Nike', material: 'Polyester', topic: 'Pants' },
-  { id: 15, name: 'Formal Trousers', originalPrice: 2200, discountedPrice: 1760, image: FormalTrousers, description: 'Elegant formal trousers for business or events.', rating: 4.6, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Bottoms', sizes: ['30', '32', '34', '36'], brand: 'Levi\'s', material: 'Polyester', topic: 'Trousers' },
-  { id: 16, name: 'Athletic Sweatpants', originalPrice: 1300, discountedPrice: 1040, image: AthleticSweatpants, description: 'Soft athletic sweatpants for gym or lounging.', rating: 4.0, isBestSeller: false, quantity: 1, category: 'Men\'s Wear - Bottoms', sizes: ['S', 'M', 'L'], brand: 'Adidas', material: 'Cotton', topic: 'Pants' },
-  { id: 17, name: 'Corduroy Pants', originalPrice: 1700, discountedPrice: 1360, image: CorduroyPants, description: 'Stylish corduroy pants for a vintage look.', rating: 4.3, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Bottoms', sizes: ['28', '30', '32'], brand: 'H&M', material: 'Corduroy', topic: 'Pants' },
-  { id: 18, name: 'Relaxed Fit Jeans', originalPrice: 2100, discountedPrice: 1680, image: RelaxedFitJeans, description: 'Comfortable relaxed fit jeans for everyday wear.', rating: 4.5, isBestSeller: false, quantity: 1, category: 'Men\'s Wear - Bottoms', sizes: ['32', '34', '36', '38'], brand: 'Levi\'s', material: 'Denim', topic: 'Jeans' },
-  { id: 19, name: 'Mesh Shorts', originalPrice: 1200, discountedPrice: 960, image: MeshShorts, description: 'Lightweight mesh shorts for a comfortable fit.', rating: 4.2, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Bottoms', sizes: ['S', 'M', 'L', 'XL'], brand: 'Nike', material: 'Cotton', topic: 'Shorts' }
-];
+// Fallback images mapping
+const fallbackImages = {
+  'Jeans': Jeans,
+  'Chinos': Chinos,
+  'Shorts': Shorts,
+  'Track Pants': TrackPants,
+  'Formal Pants': FormalPants,
+  'Cargo Pants': CargoPants,
+  'Joggers': Joggers,
+  'Sweatpants': Sweatpants,
+  'Linen Pants': LinenPants,
+  'Denim Shorts': DenimShorts,
+  'Swim Shorts': SwimShorts,
+  'Athletic Shorts': AthleticShorts,
+  'Dress Pants': DressPants,
+  'Corduroy Pants': CorduroyPants,
+  'default': Jeans
+};
 
 const ProductCard = ({ name, originalPrice, discountedPrice, image, description, rating, isBestSeller, onQuickView, item, addToCart, addToWishlist, cartItems, wishlistItems }) => {
   const [selectedSize, setSelectedSize] = useState(item.sizes && item.sizes.length > 0 ? item.sizes[0] : 'S');
 
   const isInCart = cartItems.some((cartItem) => cartItem.id === item.id && cartItem.category === item.category && cartItem.size === selectedSize);
-  const isInWishlist = wishlistItems.some((wishlistItem) => wishlistItem.id === item.id && wishlistItem.category === item.category && wishlistItem.size === selectedSize);
+  const isInWishlist = wishlistItems.some((wishlistItem) => wishlistItem.product_id === item.id);
 
   return (
     <div className="group bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100 flex flex-col h-full">
@@ -103,38 +115,118 @@ const ProductCard = ({ name, originalPrice, discountedPrice, image, description,
 function Bottoms() {
   const [sortOption, setSortOption] = useState('default');
   const [showFilters, setShowFilters] = useState(false);
-  const [minPrice, setMinPrice] = useState(0);
-  const [maxPrice, setMaxPrice] = useState(999999);
-  const [selectedSizes, setSelectedSizes] = useState([]);
   const [cartItems, setCartItems] = useState([]);
   const [wishlistItems, setWishlistItems] = useState([]);
   const [quickView, setQuickView] = useState(null);
   const [quickViewQuantity, setQuickViewQuantity] = useState(1);
   const [quickViewSize, setQuickViewSize] = useState('S');
   const [filterCategorySearch, setFilterCategorySearch] = useState('');
+  const [selectedSizes, setSelectedSizes] = useState([]);
+  const [minPrice, setMinPrice] = useState(0);
+  const [maxPrice, setMaxPrice] = useState(10000);
   const [selectedBrands, setSelectedBrands] = useState([]);
   const [selectedMaterials, setSelectedMaterials] = useState([]);
   const [selectedTopics, setSelectedTopics] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const filterButtonRef = React.useRef(null);
   const filterPanelRef = React.useRef(null);
 
-  const allAvailableSizes = Array.from(new Set(bottomsItems.flatMap(item => item.sizes)));
-
-  // Extract unique brands from items
-  const allBrands = Array.from(new Set(bottomsItems.flatMap(item => item.brand.split(',').map(b => b.trim()))));
-  // Extract unique materials from items
-  const allMaterials = Array.from(new Set(bottomsItems.map(item => item.material)));
-  // Extract unique topics from items
-  const allTopics = Array.from(new Set(bottomsItems.map(item => item.topic)));
-
+  // Fetch products from backend
   useEffect(() => {
-    const storedCart = JSON.parse(localStorage.getItem('cartItems')) || [];
-    const storedWishlist = JSON.parse(localStorage.getItem('wishlistItems')) || [];
-    setCartItems(storedCart);
-    setWishlistItems(storedWishlist);
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get('http://localhost:5000/api/products/category/name/mens-bottoms');
+        
+        // Transform the data to match the expected format
+        const transformedProducts = response.data.data.map(product => ({
+          id: product.id,
+          name: product.name,
+          originalPrice: parseFloat(product.price),
+          discountedPrice: parseFloat(product.discounted_price || product.price),
+          image: product.photo ? `http://localhost:5000/uploads/${product.photo}` : (fallbackImages[product.name] || fallbackImages.default),
+          description: product.description || 'Product description',
+          rating: product.rating || 4.0,
+          isBestSeller: product.is_bestseller || false,
+          quantity: 1,
+          category: 'Men\'s Wear - Bottoms',
+          sizes: product.sizes ? JSON.parse(product.sizes) : ['S', 'M', 'L', 'XL'],
+          brand: product.brand?.name || 'Brand',
+          material: product.material || 'Cotton',
+          topic: product.topic || 'Trousers'
+        }));
+        
+        setProducts(transformedProducts);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching products:', err);
+        setError('Failed to load products');
+        // Fallback to empty array
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
   }, []);
 
-  // Close filter dropdown when clicking outside
+  // Fetch wishlist from backend
+  const fetchWishlist = async () => {
+    try {
+      const res = await axios.get('http://localhost:5000/api/wishlist', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (res.data && res.data.data) {
+        setWishlistItems(res.data.data.map(item => ({
+          ...item.product,
+          id: item.product_id,
+          wishlistItemId: item.id
+        })));
+      } else {
+        setWishlistItems([]);
+      }
+    } catch (e) {
+      setWishlistItems([]);
+    }
+  };
+
+  useEffect(() => {
+    fetchCart();
+    fetchWishlist();
+  }, []);
+
+  const allAvailableSizes = Array.from(new Set(products.flatMap(item => item.sizes || [])));
+
+  // Extract unique brands from items
+  const allBrands = Array.from(new Set(products.flatMap(item => (item.brand || '').split(',').map(b => b.trim()))));
+  // Extract unique materials from items
+  const allMaterials = Array.from(new Set(products.map(item => item.material || 'Cotton')));
+  const allTopics = Array.from(new Set(products.map(item => item.topic || 'Pants')));
+
+  // Fetch cart from backend
+  const fetchCart = async () => {
+    try {
+      const cartRes = await axios.get('http://localhost:5000/api/cart', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (cartRes.data && cartRes.data.data && cartRes.data.data.items) {
+        setCartItems(cartRes.data.data.items.map(item => ({
+          ...item.product,
+          quantity: item.quantity,
+          id: item.product_id,
+          cartItemId: item.id
+        })));
+      } else {
+        setCartItems([]);
+      }
+    } catch (e) {
+      setCartItems([]);
+    }
+  };
+
   useEffect(() => {
     if (!showFilters) return;
     function handleClickOutside(event) {
@@ -151,8 +243,9 @@ function Bottoms() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showFilters]);
 
-  const filteredAndSortedItems = bottomsItems
+  const filteredAndSortedItems = products
     .filter(item => {
+      // Always show items by default
       let showItem = true;
 
       // Apply search filter if search term exists
@@ -178,68 +271,103 @@ function Bottoms() {
 
       // Brand filter
       if (selectedBrands.length > 0) {
-        const itemBrands = item.brand.split(',').map(b => b.trim());
+        const itemBrands = (item.brand || '').split(',').map(b => b.trim());
         showItem = showItem && selectedBrands.some(brand => itemBrands.includes(brand));
       }
 
       // Material filter
       if (selectedMaterials.length > 0) {
-        showItem = showItem && selectedMaterials.includes(item.material);
+        showItem = showItem && selectedMaterials.includes(item.material || 'Cotton');
       }
 
       // Topic filter
       if (selectedTopics.length > 0) {
-        showItem = showItem && selectedTopics.includes(item.topic);
+        showItem = showItem && selectedTopics.includes(item.topic || 'Pants');
       }
 
       return showItem;
     })
     .sort((a, b) => {
       switch (sortOption) {
-        case 'price-low':
+        case 'price-low-high':
           return a.discountedPrice - b.discountedPrice;
-        case 'price-high':
+        case 'price-high-low':
           return b.discountedPrice - a.discountedPrice;
-        case 'best-seller':
-          return b.isBestSeller - a.isBestSeller;
+        case 'name-a-z':
+          return a.name.localeCompare(b.name);
+        case 'name-z-a':
+          return b.name.localeCompare(a.name);
+        case 'rating-high-low':
+          return b.rating - a.rating;
         default:
           return 0;
       }
     });
 
-  const addToCart = (product, quantity = 1, size = 'S') => {
-    const currentCart = JSON.parse(localStorage.getItem('cartItems')) || [];
-    const existingItemIndex = currentCart.findIndex((item) => item.id === product.id && item.category === product.category && item.size === size);
-
-    if (existingItemIndex !== -1) {
-      const updatedCart = currentCart.map((item, index) =>
-        index === existingItemIndex ? { ...item, quantity: item.quantity + quantity } : item
+  const addToCart = async (product, quantity = 1, size = 'S') => {
+    try {
+      const response = await axios.post(
+        'http://localhost:5000/api/cart/items',
+        {
+          product_id: product.id,
+          quantity,
+          variation_id: null
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          }
+        }
       );
-      localStorage.setItem('cartItems', JSON.stringify(updatedCart));
-      setCartItems(updatedCart);
-      alert(`${quantity} of ${product.name} (Size: ${size}) quantity updated in cart!`);
-    } else {
-      const updatedCart = [...currentCart, { ...product, quantity: parseInt(quantity), size: size }];
-      localStorage.setItem('cartItems', JSON.stringify(updatedCart));
-      setCartItems(updatedCart);
-      alert(`${parseInt(quantity)} of ${product.name} (Size: ${size}) added to cart!`);
+
+      console.log('Item added to cart:', response.data);
+      
+      // Update localStorage for frontend state management
+      const currentCart = JSON.parse(localStorage.getItem('cartItems')) || [];
+      const existingItemIndex = currentCart.findIndex((item) => item.id === product.id && item.category === product.category && item.size === size);
+
+      if (existingItemIndex !== -1) {
+        const updatedCart = currentCart.map((item, index) =>
+          index === existingItemIndex ? { ...item, quantity: item.quantity + quantity } : item
+        );
+        localStorage.setItem('cartItems', JSON.stringify(updatedCart));
+        setCartItems(updatedCart);
+      } else {
+        const updatedCart = [...currentCart, { ...product, quantity: parseInt(quantity), size: size }];
+        localStorage.setItem('cartItems', JSON.stringify(updatedCart));
+        setCartItems(updatedCart);
+      }
+      
+      alert('Added to cart successfully!');
+    } catch (error) {
+      console.error('Error adding to cart:', error.response?.data || error.message);
+      alert('Failed to add to cart');
     }
   };
 
-  const addToWishlist = (product, quantity = 1, size = 'S') => {
-    const currentWishlist = JSON.parse(localStorage.getItem('wishlistItems')) || [];
-    const isInWishlist = currentWishlist.some((item) => item.id === product.id && item.category === product.category && item.size === size);
-
-    if (isInWishlist) {
-      const updatedWishlist = currentWishlist.filter((item) => !(item.id === product.id && item.category === product.category && item.size === size));
-      localStorage.setItem('wishlistItems', JSON.stringify(updatedWishlist));
-      setWishlistItems(updatedWishlist);
-      alert(`${product.name} removed from wishlist!`);
-    } else {
-      const updatedWishlist = [...currentWishlist, { ...product, quantity: parseInt(quantity), size: size }];
-      localStorage.setItem('wishlistItems', JSON.stringify(updatedWishlist));
-      setWishlistItems(updatedWishlist);
-      alert(`${product.name} added to wishlist!`);
+  const addToWishlist = async (product, quantity = 1, size = 'S') => {
+    const isInWishlist = wishlistItems.some(item => item.id === product.id);
+    try {
+      if (isInWishlist) {
+        const item = wishlistItems.find(item => item.id === product.id);
+        await axios.delete(`http://localhost:5000/api/wishlist/${item.wishlistItemId}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+      } else {
+        await axios.post('http://localhost:5000/api/wishlist', {
+          product_id: product.id
+        }, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          }
+        });
+      }
+      await fetchWishlist();
+    } catch (error) {
+      alert('Failed to update wishlist');
+      console.error('addToWishlist error', error);
     }
   };
 
@@ -256,6 +384,8 @@ function Bottoms() {
         : [...prevSizes, size]
     );
   };
+
+  if (loading) return <div>Loading...</div>;
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 font-sans">
@@ -295,9 +425,11 @@ function Bottoms() {
                   className="appearance-none bg-white border border-gray-300 rounded-md pl-4 pr-10 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="default">Sort By</option>
-                  <option value="price-low">Price: Low to High</option>
-                  <option value="price-high">Price: High to Low</option>
-                  <option value="best-seller">Best Seller</option>
+                  <option value="price-low-high">Price: Low to High</option>
+                  <option value="price-high-low">Price: High to Low</option>
+                  <option value="name-a-z">Name: A-Z</option>
+                  <option value="name-z-a">Name: Z-A</option>
+                  <option value="rating-high-low">Rating: High to Low</option>
                 </select>
                 <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" />
               </div>
@@ -553,23 +685,41 @@ function Bottoms() {
           )}
 
           {/* Product Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-2">
-            {filteredAndSortedItems.map((item) => (
-              <ProductCard
-                key={item.id}
-                {...item}
-                onQuickView={handleQuickView}
-                addToCart={addToCart}
-                addToWishlist={addToWishlist}
-                cartItems={cartItems}
-                wishlistItems={wishlistItems}
-                item={item}
-              />
-            ))}
-          </div>
-
-          {filteredAndSortedItems.length === 0 && (
-            <p className="text-center text-gray-600 mt-8">No items found matching your criteria.</p>
+          {loading ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading products...</p>
+              </div>
+            </div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <p className="text-red-600 mb-4">{error}</p>
+              <button 
+                onClick={() => window.location.reload()} 
+                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+              >
+                Try Again
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-2">
+              {filteredAndSortedItems.map((item) => (
+                <ProductCard
+                  key={item.id}
+                  {...item}
+                  onQuickView={handleQuickView}
+                  addToCart={addToCart}
+                  addToWishlist={addToWishlist}
+                  cartItems={cartItems}
+                  wishlistItems={wishlistItems}
+                  item={item}
+                />
+              ))}
+              {filteredAndSortedItems.length === 0 && (
+                <p className="text-center text-gray-600 mt-8">No items found matching your criteria.</p>
+              )}
+            </div>
           )}
         </div>
       </div>

@@ -6,94 +6,97 @@ import { FaTrash } from 'react-icons/fa';
 
 function WishList() {
   const [wishlistItems, setWishlistItems] = useState([]);
-  const [cartItems, setCartItems] = useState([]);
-
-  useEffect(() => {
-    const storedCart = JSON.parse(localStorage.getItem('cartItems')) || [];
-    const storedWishlist = JSON.parse(localStorage.getItem('wishlistItems')) || [];
-    setCartItems(storedCart);
-    setWishlistItems(storedWishlist);
-  }, []);
-
-  useEffect(() => {
-    const handleStorageChange = (e) => {
-      if (e.key === 'cartItems') {
-        setCartItems(JSON.parse(e.newValue) || []);
-      } else if (e.key === 'wishlistItems') {
-        setWishlistItems(JSON.parse(e.newValue) || []);
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
-
-  useEffect(() => {
-    setWishlistItems(prevWishlistItems => {
-      return prevWishlistItems.map(wishlistItem => {
-        const cartItem = cartItems.find(
-          item => item.id === wishlistItem.id && 
-                  item.category === wishlistItem.category &&
-                  (item.size === wishlistItem.size || !item.size && !wishlistItem.size)
-        );
-        return {
-          ...wishlistItem,
-          inCart: !!cartItem,
-          quantity: cartItem ? cartItem.quantity : (wishlistItem.quantity || 1)
-        };
-      });
-    });
-  }, [cartItems]);
-
+  const [loading, setLoading] = useState(true);
+  const [qtyMap, setQtyMap] = useState({});
+  const token = localStorage.getItem('token');
   const navigate = useNavigate();
 
-  const handleRemove = (id, category, size) => {
-    const updatedWishlist = wishlistItems.filter((item) => 
-      !(item.id === id && item.category === category && item.size === size)
-    );
-    setWishlistItems(updatedWishlist);
-    localStorage.setItem('wishlistItems', JSON.stringify(updatedWishlist));
-    
-    window.dispatchEvent(new StorageEvent('storage', {
-      key: 'wishlistItems',
-      newValue: JSON.stringify(updatedWishlist)
-    }));
-  };
-
-  const handleClearWishlist = () => {
-    localStorage.removeItem('wishlistItems');
-    setWishlistItems([]);
-    alert('Your wishlist has been cleared!');
-    
-    window.dispatchEvent(new StorageEvent('storage', {
-      key: 'wishlistItems',
-      newValue: JSON.stringify([])
-    }));
-  };
-
-  const handleAddToCart = (item) => {
-    let currentCart = JSON.parse(localStorage.getItem('cartItems')) || [];
-    
-    const existingItemIndex = currentCart.findIndex(
-      cartItem => cartItem.id === item.id && 
-                 cartItem.category === item.category && 
-                 cartItem.size === item.size
-    );
-
-    if (existingItemIndex !== -1) {
-      currentCart[existingItemIndex].quantity += (item.quantity || 1);
-    } else {
-      currentCart.push({...item, quantity: (item.quantity || 1)});
+  // Fetch wishlist from backend
+  const fetchWishlist = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('http://localhost:5000/api/wishlist', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (res.ok && data && data.data) {
+        setWishlistItems(data.data);
+        // Initialize qtyMap for each item
+        const newQtyMap = {};
+        data.data.forEach(item => {
+          newQtyMap[item.id] = item.quantity || 1;
+        });
+        setQtyMap(newQtyMap);
+      } else {
+        setWishlistItems([]);
+        setQtyMap({});
+      }
+    } catch (e) {
+      setWishlistItems([]);
+      setQtyMap({});
     }
+    setLoading(false);
+  };
 
-    localStorage.setItem('cartItems', JSON.stringify(currentCart));
-    setCartItems(currentCart);
-    alert('Item added to cart!');
+  useEffect(() => {
+    fetchWishlist();
+    // eslint-disable-next-line
+  }, []);
 
-    window.dispatchEvent(new StorageEvent('storage', {
-      key: 'cartItems',
-      newValue: JSON.stringify(currentCart)
-    }));
+  const handleRemove = async (wishlistItemId) => {
+    try {
+      await fetch(`http://localhost:5000/api/wishlist/${wishlistItemId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setWishlistItems(wishlistItems.filter(item => item.id !== wishlistItemId));
+      setQtyMap(prev => { const copy = { ...prev }; delete copy[wishlistItemId]; return copy; });
+    } catch (e) {
+      alert('Failed to remove item from wishlist');
+    }
+  };
+
+  const handleClearWishlist = async () => {
+    try {
+      await fetch('http://localhost:5000/api/wishlist', {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setWishlistItems([]);
+      setQtyMap({});
+      alert('Your wishlist has been cleared!');
+    } catch (e) {
+      alert('Failed to clear wishlist');
+    }
+  };
+
+  const handleQtyChange = (id, delta) => {
+    setQtyMap(prev => {
+      const newQty = Math.max(1, (prev[id] || 1) + delta);
+      return { ...prev, [id]: newQty };
+    });
+  };
+
+  const handleAddToCart = async (item) => {
+    const quantity = qtyMap[item.id] || 1;
+    try {
+      const response = await fetch('http://localhost:5000/api/cart/items', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          product_id: item.product_id,
+          quantity
+        })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Failed to add to cart');
+      alert('Added to cart successfully!');
+    } catch (error) {
+      alert(error.message || 'Failed to add to cart');
+    }
   };
 
   return (
@@ -109,51 +112,50 @@ function WishList() {
             Clear Wishlist
           </button>
         </div>
-        {wishlistItems.length === 0 ? (
+        {loading ? (
+          <div className="flex items-center justify-center h-[50vh] text-center text-[#484848] text-lg">
+            Loading...
+          </div>
+        ) : wishlistItems.length === 0 ? (
           <div className="flex items-center justify-center h-[50vh] text-center text-[#484848] text-lg">
             Your wishlist is empty
           </div>
         ) : (
           wishlistItems.map((item) => (
             <div
-              key={`${item.id}-${item.category}-${item.size}`}
+              key={item.id}
               className="bg-white border border-[#E1E1E1] rounded-[20px] mt-4 flex row gap-4 p-4"
             >
               <div className="w-[200px] h-[180px]">
-                <img src={item.image} alt="product" className="w-full h-full p-4" />
+                <img src={item.product?.photo ? `http://localhost:5000/uploads/${item.product.photo}` : 'fallback.jpg'} alt="product" className="w-full h-full p-4" />
               </div>
               <div className="flex-1">
                 <div className="flex justify-between items-center w-full">
-                  <p className="font-medium text-base text-[#484848]">{item.category}</p>
-                  <p className="text-[#5C3FFF] font-medium text-base">{item.discount}</p>
+                  <p className="font-medium text-base text-[#484848]">{item.product?.category?.name || ''}</p>
                 </div>
-                <div className="font-semibold text-base text-[#242424] pt-2">{item.name}</div>
-                {item.size && item.size !== 'N/A' && (
-                  <p className="font-medium text-sm text-[#484848] mb-2">
-                    Size: {item.size}
-                  </p>
-                )}
-                <p className="font-medium text-sm text-[#484848] mb-2">
-                  Quantity: {item.quantity || 1}
-                </p>
+                <div className="font-semibold text-base text-[#242424] pt-2">{item.product?.name}</div>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="font-medium text-sm text-[#484848]">Qty:</span>
+                  <button className="border px-2 rounded text-xs" onClick={() => handleQtyChange(item.id, -1)}>-</button>
+                  <span className="text-xs w-4 text-center">{qtyMap[item.id] || 1}</span>
+                  <button className="border px-2 rounded text-xs" onClick={() => handleQtyChange(item.id, 1)}>+</button>
+                </div>
                 <p className="font-medium text-sm text-[#242424] mb-2">
-                  ₹ {parseFloat(item.discountedPrice)} <span className="line-through text-[#C1C1C1]">₹ {parseFloat(item.originalPrice)}</span>
+                  ₹ {parseFloat(item.product?.discountedPrice || item.product?.price || 0)}{' '}
+                  {item.product?.originalPrice && (
+                    <span className="line-through text-[#C1C1C1]">₹ {parseFloat(item.product.originalPrice)}</span>
+                  )}
                 </p>
                 <div className="flex justify-between items-center w-full">
                   <button
                     onClick={() => handleAddToCart(item)}
-                    disabled={item.inCart}
-                    className={`px-4 py-2 rounded-full text-sm ${
-                      item.inCart 
-                        ? 'bg-gray-400 cursor-not-allowed text-white'
-                        : 'bg-[#5C3FFF] text-white hover:bg-[#4a32cc]'
-                    }`}
+                    className="px-4 py-2 rounded-full text-sm bg-[#5C3FFF] text-white hover:bg-[#4a32cc]"
                   >
-                    {item.inCart ? 'Added to Cart' : 'Add to Cart'}
+                    Add to Cart
                   </button>
                   <button
                     className="p-1 rounded-full text-purple-600 hover:bg-purple-100 transition-colors"
-                    onClick={() => handleRemove(item.id, item.category, item.size)}
+                    onClick={() => handleRemove(item.id)}
                     aria-label="Remove from wishlist"
                   >
                     <FaTrash className="w-6 h-6" />

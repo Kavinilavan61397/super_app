@@ -32,6 +32,69 @@ exports.getAllProducts = async (req, res) => {
     });
   }
 };
+exports.getProductsByCategory = async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+    
+    const products = await Product.findAll({
+      where: {
+        category_id: categoryId
+      },
+      include: [
+        { model: Brand, as: 'brand' },
+        { model: Category, as: 'category' }
+      ],
+      order: [['createdAt', 'DESC']]
+    });
+
+    res.json({
+      success: true,
+      data: products,
+      count: products.length
+    });
+  } catch (error) {
+    console.error('Error fetching products by category:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching products by category',
+      error: error.message
+    });
+  }
+};
+
+// Get products by category name (slug)
+exports.getProductsByCategoryName = async (req, res) => {
+  try {
+    const { categorySlug } = req.params;
+    
+    const products = await Product.findAll({
+      include: [
+        { model: Brand, as: 'brand' },
+        { 
+          model: Category, 
+          as: 'category',
+          where: {
+            slug: categorySlug
+          }
+        }
+      ],
+      order: [['createdAt', 'DESC']]
+    });
+
+    res.json({
+      success: true,
+      data: products,
+      count: products.length
+    });
+  } catch (error) {
+    console.error('Error fetching products by category name:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching products by category name',
+      error: error.message
+    });
+  }
+};
 
 // Get product by ID
 exports.getProductById = async (req, res) => {
@@ -312,13 +375,11 @@ exports.getAllProductVariations = async (req, res) => {
 // Create product variation
 exports.createProductVariation = async (req, res) => {
   try {
-    const { product_id, size_id, color_id, unit_id, price, stock, sku } = req.body;
+    const { product_id, size_id, price, stock, sku } = req.body;
 
     const variation = await ProductVariation.create({
       product_id,
       size_id,
-      color_id,
-      unit_id,
       price,
       stock,
       sku
@@ -350,13 +411,11 @@ exports.updateProductVariation = async (req, res) => {
       });
     }
 
-    const { product_id, size_id, color_id, unit_id, price, stock, sku } = req.body;
+    const { product_id, size_id, price, stock, sku } = req.body;
 
     await variation.update({
       product_id: product_id || variation.product_id,
       size_id: size_id || variation.size_id,
-      color_id: color_id || variation.color_id,
-      unit_id: unit_id || variation.unit_id,
       price: price || variation.price,
       stock: stock || variation.stock,
       sku: sku || variation.sku

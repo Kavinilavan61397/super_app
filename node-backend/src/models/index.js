@@ -14,6 +14,7 @@ const OrderItem = require('./OrderItem');
 const OTP = require('./otp.model');
 const GroceryOrder = require('./grocery_order')(sequelize, Sequelize.DataTypes);
 const GroceryOrderItem = require('./grocery_order_item')(sequelize, Sequelize.DataTypes);
+const Wishlist = require('./wishlist');
 
 // Factory models — initialize with sequelize
 const RestaurantCategory = require('./restaurantcategory')(sequelize, Sequelize.DataTypes);
@@ -32,6 +33,7 @@ const Role = require('./Role');
 const Staff = require('./Staff');
 const Policy = require('./Policy');
 const Location = require('./Location');
+const Brand = require('./Brand');
 
 // --- Associations ---
 
@@ -53,9 +55,6 @@ GroceryOrderItem.belongsTo(GroceryOrder, { foreignKey: 'order_id', as: 'order' }
 User.hasMany(GroceryOrder, { foreignKey: 'user_id', as: 'groceryOrders' });
 GroceryOrder.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 
-// Category self-reference (subcategories/parent for admin panel)
-Category.hasMany(Category, { as: 'subcategories', foreignKey: 'parent_id', onDelete: 'SET NULL', onUpdate: 'CASCADE' });
-Category.belongsTo(Category, { as: 'parent', foreignKey: 'parent_id', onDelete: 'SET NULL', onUpdate: 'CASCADE' });
 // Category self-reference (childCategories/parentCategory for new code)
 Category.hasMany(Category, { as: 'childCategories', foreignKey: 'parent_id', onDelete: 'SET NULL', onUpdate: 'CASCADE' });
 Category.belongsTo(Category, { as: 'parentCategory', foreignKey: 'parent_id', onDelete: 'SET NULL', onUpdate: 'CASCADE' });
@@ -65,7 +64,7 @@ Category.hasMany(Product, { as: 'categoryProducts', foreignKey: 'category_id', o
 Product.belongsTo(Category, { as: 'category', foreignKey: 'category_id', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
 
 // Product ↔ Brand
-Product.belongsTo(require('./Brand'), { foreignKey: 'brand_id', as: 'brand' });
+Product.belongsTo(Brand, { foreignKey: 'brand_id', as: 'brand' });
 
 // Product ↔ ProductVariation
 Product.hasMany(ProductVariation, { as: 'productVariations', foreignKey: 'product_id', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
@@ -81,7 +80,6 @@ Cart.belongsTo(User, { foreignKey: 'user_id', as: 'user', onDelete: 'CASCADE', o
 Cart.hasMany(CartItem, { foreignKey: 'cart_id', as: 'items', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
 CartItem.belongsTo(Cart, { foreignKey: 'cart_id', as: 'cart', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
 CartItem.belongsTo(Product, { foreignKey: 'product_id', as: 'product', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
-CartItem.belongsTo(ProductVariation, { foreignKey: 'variation_id', as: 'variation', onDelete: 'SET NULL', onUpdate: 'CASCADE' });
 
 // Order ↔ OrderItems
 User.hasMany(Order, { foreignKey: 'user_id', as: 'orders', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
@@ -115,6 +113,11 @@ if (Room.associate) Room.associate({ Hotel });
 // Register associations for Policy and Location
 if (Policy.associate) Policy.associate({ Hotel });
 if (Location.associate) Location.associate({ Hotel });
+// Wishlist associations
+
+Wishlist.belongsTo(Product, { foreignKey: 'product_id', as: 'product' });
+User.hasMany(Wishlist, { foreignKey: 'user_id', as: 'wishlists' });
+Wishlist.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 
 // Export all models
 module.exports = {
@@ -146,5 +149,7 @@ module.exports = {
   Role,
   Staff,
   Policy,
-  Location
+  Location,
+  Wishlist,
+  Brand
 };

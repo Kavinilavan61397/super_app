@@ -3,29 +3,42 @@ import Footer from '../../../Utility/Footer';
 import ClothesHeader from '../../Header/ClothesHeader';
 import { FaFilter, FaHeart, FaEye, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 
 // Import images
-import CottonBoxerBriefs from '../../Images/TerryRobe.jpg';
-import SilkPajamas from '../../Images/TerryRobe.jpg';
-import CottonLoungeShorts from '../../Images/TerryRobe.jpg';
-import ModalTrunks from '../../Images/TerryRobe.jpg';
-import TerryRobe from '../../Images/TerryRobe.jpg';
-import BambooCrewSocks from '../../Images/JerseyLoungePants.jpg';
-import JerseyLoungePants from '../../Images/JerseyLoungePants.jpg';
-import ThermalUnderwearSet from '../../Images/JerseyLoungePants.jpg';
-import FleeceSleepHoodie from '../../Images/JerseyLoungePants.jpg';
+import Boxers from '../../Images/TrackPants.png';
+import Briefs from '../../Images/TrackPants.png';
+import Trunks from '../../Images/TrackPants.png';
+import LoungePants from '../../Images/TrackPants.png';
+import LoungeShirt from '../../Images/TShirt.png';
+import Robe from '../../Images/TrackPants.png';
+import Slippers from '../../Images/TrackPants.png';
+import Sleepwear from '../../Images/TrackPants.png';
+import Pajamas from '../../Images/TrackPants.png';
+import Socks from '../../Images/TrackPants.png';
+import Undershirt from '../../Images/TShirt.png';
+import TankTop from '../../Images/TShirt.png';
+import Shorts from '../../Images/TrackPants.png';
+import Sweatpants from '../../Images/TrackPants.png';
 
-const underwearLoungewearItems = [
-  { id: 1, name: 'Cotton Boxer Briefs', originalPrice: 800, discountedPrice: 599, image: CottonBoxerBriefs, description: 'Comfortable cotton boxer briefs.', rating: 4.5, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Underwear', sizes: ['S', 'M', 'L', 'XL'], brand: 'Jockey', material: 'Cotton' },
-  { id: 2, name: 'Silk Pajamas', originalPrice: 2500, discountedPrice: 2000, image: SilkPajamas, description: 'Luxurious silk pajamas for comfortable sleep.', rating: 4.7, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Loungewear', sizes: ['M', 'L', 'XL'], brand: 'Zivame', material: 'Silk' },
-  { id: 3, name: 'Cotton Lounge Shorts', originalPrice: 1200, discountedPrice: 899, image: CottonLoungeShorts, description: 'Comfortable cotton shorts for lounging.', rating: 4.3, isBestSeller: false, quantity: 1, category: 'Men\'s Wear - Loungewear', sizes: ['S', 'M', 'L'], brand: 'Jockey', material: 'Cotton' },
-  { id: 4, name: 'Modal Trunks', originalPrice: 900, discountedPrice: 720, image: ModalTrunks, description: 'Soft modal fabric trunks.', rating: 4.6, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Underwear', sizes: ['S', 'M', 'L', 'XL'], brand: 'Jockey', material: 'Cotton' },
-  { id: 5, name: 'Terry Robe', originalPrice: 3000, discountedPrice: 2400, image: TerryRobe, description: 'Plush terry cloth robe for comfort.', rating: 4.8, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Loungewear', sizes: ['M', 'L', 'XL'], brand: 'Van Heusen', material: 'Jersey' },
-  { id: 6, name: 'Bamboo Crew Socks', originalPrice: 300, discountedPrice: 240, image: BambooCrewSocks, description: 'Breathable bamboo crew socks.', rating: 4.2, isBestSeller: false, quantity: 1, category: 'Men\'s Wear - Underwear', sizes: ['7', '8', '9', '10', '11'], brand: 'XYXX', material: 'Bamboo' },
-  { id: 7, name: 'Jersey Lounge Pants', originalPrice: 1500, discountedPrice: 1200, image: JerseyLoungePants, description: 'Soft jersey lounge pants.', rating: 4.4, isBestSeller: false, quantity: 1, category: 'Men\'s Wear - Loungewear', sizes: ['S', 'M', 'L', 'XL'], brand: 'Van Heusen', material: 'Jersey' },
-  { id: 8, name: 'Thermal Underwear Set', originalPrice: 2000, discountedPrice: 1600, image: ThermalUnderwearSet, description: 'Warm thermal set for cold weather.', rating: 4.7, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Underwear', sizes: ['S', 'M', 'L', 'XL'], brand: 'Jockey', material: 'Thermal' },
-  { id: 9, name: 'Fleece Sleep Hoodie', originalPrice: 1800, discountedPrice: 1440, image: FleeceSleepHoodie, description: 'Cozy fleece hoodie for sleeping or lounging.', rating: 4.5, isBestSeller: false, quantity: 1, category: 'Men\'s Wear - Loungewear', sizes: ['S', 'M', 'L', 'XL'], brand: 'Zivame', material: 'Fleece' }
-];
+// Fallback images mapping
+const fallbackImages = {
+  'Boxers': Boxers,
+  'Briefs': Briefs,
+  'Trunks': Trunks,
+  'Lounge Pants': LoungePants,
+  'Lounge Shirt': LoungeShirt,
+  'Robe': Robe,
+  'Slippers': Slippers,
+  'Sleepwear': Sleepwear,
+  'Pajamas': Pajamas,
+  'Socks': Socks,
+  'Undershirt': Undershirt,
+  'Tank Top': TankTop,
+  'Shorts': Shorts,
+  'Sweatpants': Sweatpants,
+  'default': Boxers
+};
 
 const ProductCard = ({ name, originalPrice, discountedPrice, image, description, rating, isBestSeller, onQuickView, item, addToCart, addToWishlist, cartItems, wishlistItems }) => {
   const [selectedSize, setSelectedSize] = useState(item.sizes && item.sizes.length > 0 ? item.sizes[0] : 'S');
@@ -113,21 +126,105 @@ function UnderwearLoungewear() {
   const [maxPrice, setMaxPrice] = useState(10000);
   const [selectedBrands, setSelectedBrands] = useState([]);
   const [selectedMaterials, setSelectedMaterials] = useState([]);
+  const [selectedTopics, setSelectedTopics] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const filterButtonRef = React.useRef(null);
   const filterPanelRef = React.useRef(null);
 
-  const allAvailableSizes = Array.from(new Set(underwearLoungewearItems.flatMap(item => item.sizes)));
+  // Fetch products from backend
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get('http://localhost:5000/api/products/category/name/mens-underwear-loungewear');
+        
+        // Transform the data to match the expected format
+        const transformedProducts = response.data.data.map(product => ({
+          id: product.id,
+          name: product.name,
+          originalPrice: parseFloat(product.price),
+          discountedPrice: parseFloat(product.discounted_price || product.price),
+          image: product.photo ? `http://localhost:5000/uploads/${product.photo}` : (fallbackImages[product.name] || fallbackImages.default),
+          description: product.description || 'Product description',
+          rating: product.rating || 4.0,
+          isBestSeller: product.is_bestseller || false,
+          quantity: 1,
+          category: 'Men\'s Wear - Underwear & Loungewear',
+          sizes: product.sizes ? JSON.parse(product.sizes) : ['S', 'M', 'L', 'XL'],
+          brand: product.brand?.name || 'Brand',
+          material: product.material || 'Cotton',
+          topic: product.topic || 'Underwear'
+        }));
+        
+        setProducts(transformedProducts);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching products:', err);
+        setError('Failed to load products');
+        // Fallback to empty array
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  const allAvailableSizes = Array.from(new Set(products.flatMap(item => item.sizes || [])));
 
   // Extract unique brands from items
-  const allBrands = Array.from(new Set(underwearLoungewearItems.flatMap(item => item.brand.split(',').map(b => b.trim()))));
+  const allBrands = Array.from(new Set(products.flatMap(item => (item.brand || '').split(',').map(b => b.trim()))));
   // Extract unique materials from items
-  const allMaterials = Array.from(new Set(underwearLoungewearItems.map(item => item.material)));
+  const allMaterials = Array.from(new Set(products.map(item => item.material || 'Cotton')));
+  const allTopics = Array.from(new Set(products.map(item => item.topic || 'Underwear')));
+
+  // Fetch cart from backend
+  const fetchCart = async () => {
+    try {
+      const cartRes = await axios.get('http://localhost:5000/api/cart', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (cartRes.data && cartRes.data.data && cartRes.data.data.items) {
+        setCartItems(cartRes.data.data.items.map(item => ({
+          ...item.product,
+          quantity: item.quantity,
+          id: item.product_id,
+          cartItemId: item.id
+        })));
+      } else {
+        setCartItems([]);
+      }
+    } catch (e) {
+      setCartItems([]);
+    }
+  };
+
+  // Fetch wishlist from backend
+  const fetchWishlist = async () => {
+    try {
+      const res = await axios.get('http://localhost:5000/api/wishlist', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (res.data && res.data.data) {
+        setWishlistItems(res.data.data.map(item => ({
+          ...item.product,
+          id: item.product_id,
+          wishlistItemId: item.id
+        })));
+      } else {
+        setWishlistItems([]);
+      }
+    } catch (e) {
+      setWishlistItems([]);
+    }
+  };
 
   useEffect(() => {
-    const storedCart = JSON.parse(localStorage.getItem('cartItems')) || [];
-    const storedWishlist = JSON.parse(localStorage.getItem('wishlistItems')) || [];
-    setCartItems(storedCart);
-    setWishlistItems(storedWishlist);
+    fetchCart();
+    fetchWishlist();
   }, []);
 
   useEffect(() => {
@@ -146,10 +243,12 @@ function UnderwearLoungewear() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showFilters]);
 
-  const filteredAndSortedItems = underwearLoungewearItems
+  const filteredAndSortedItems = products
     .filter(item => {
+      // Always show items by default
       let showItem = true;
 
+      // Apply search filter if search term exists
       if (filterCategorySearch !== '') {
         showItem = showItem && (
           item.name.toLowerCase().includes(filterCategorySearch.toLowerCase()) ||
@@ -157,76 +256,118 @@ function UnderwearLoungewear() {
         );
       }
 
-      if (minPrice > 0 || maxPrice < 10000) {
+      // Apply price range filter only if prices are set
+      if (minPrice > 0 || maxPrice < 999999) {
         showItem = showItem && (
           (minPrice > 0 ? item.discountedPrice >= minPrice : true) &&
-          (maxPrice < 10000 ? item.discountedPrice <= maxPrice : true)
+          (maxPrice < 999999 ? item.discountedPrice <= maxPrice : true)
         );
       }
 
+      // Apply size filter only if sizes are selected
       if (selectedSizes.length > 0) {
         showItem = showItem && selectedSizes.some(size => item.sizes && item.sizes.includes(size));
       }
 
       // Brand filter
       if (selectedBrands.length > 0) {
-        const itemBrands = item.brand.split(',').map(b => b.trim());
+        const itemBrands = (item.brand || '').split(',').map(b => b.trim());
         showItem = showItem && selectedBrands.some(brand => itemBrands.includes(brand));
       }
 
       // Material filter
       if (selectedMaterials.length > 0) {
-        showItem = showItem && selectedMaterials.includes(item.material);
+        showItem = showItem && selectedMaterials.includes(item.material || 'Cotton');
+      }
+
+      // Topic filter
+      if (selectedTopics.length > 0) {
+        showItem = showItem && selectedTopics.includes(item.topic || 'Underwear');
       }
 
       return showItem;
     })
     .sort((a, b) => {
       switch (sortOption) {
-        case 'price-low':
+        case 'price-low-high':
           return a.discountedPrice - b.discountedPrice;
-        case 'price-high':
+        case 'price-high-low':
           return b.discountedPrice - a.discountedPrice;
-        case 'best-seller':
-          return b.isBestSeller - a.isBestSeller;
+        case 'name-a-z':
+          return a.name.localeCompare(b.name);
+        case 'name-z-a':
+          return b.name.localeCompare(a.name);
+        case 'rating-high-low':
+          return b.rating - a.rating;
         default:
-    return 0;
+          return 0;
       }
-  });
+    });
 
-  const addToCart = (product, quantity = 1, size = 'S') => {
-    const currentCart = JSON.parse(localStorage.getItem('cartItems')) || [];
-    const existingItemIndex = currentCart.findIndex((item) => item.id === product.id && item.category === product.category && item.size === size);
-
-    if (existingItemIndex !== -1) {
-      const updatedCart = currentCart.map((item, index) =>
-        index === existingItemIndex ? { ...item, quantity: item.quantity + quantity } : item
+  const addToCart = async (product, quantity = 1, size = 'S') => {
+    try {
+      const response = await axios.post(
+        'http://localhost:5000/api/cart/items',
+        {
+          product_id: product.id,
+          quantity,
+          variation_id: null
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          }
+        }
       );
-      localStorage.setItem('cartItems', JSON.stringify(updatedCart));
-      setCartItems(updatedCart);
-      alert(`${quantity} of ${product.name} (Size: ${size}) quantity updated in cart!`);
-    } else {
-      const updatedCart = [...currentCart, { ...product, quantity: parseInt(quantity), size: size }];
-      localStorage.setItem('cartItems', JSON.stringify(updatedCart));
-      setCartItems(updatedCart);
-      alert(`${parseInt(quantity)} of ${product.name} (Size: ${size}) added to cart!`);
+
+      console.log('Item added to cart:', response.data);
+      
+      // Update localStorage for frontend state management
+      const currentCart = JSON.parse(localStorage.getItem('cartItems')) || [];
+      const existingItemIndex = currentCart.findIndex((item) => item.id === product.id && item.category === product.category && item.size === size);
+
+      if (existingItemIndex !== -1) {
+        const updatedCart = currentCart.map((item, index) =>
+          index === existingItemIndex ? { ...item, quantity: item.quantity + quantity } : item
+        );
+        localStorage.setItem('cartItems', JSON.stringify(updatedCart));
+        setCartItems(updatedCart);
+      } else {
+        const updatedCart = [...currentCart, { ...product, quantity: parseInt(quantity), size: size }];
+        localStorage.setItem('cartItems', JSON.stringify(updatedCart));
+        setCartItems(updatedCart);
+      }
+      
+      alert('Added to cart successfully!');
+    } catch (error) {
+      console.error('Error adding to cart:', error.response?.data || error.message);
+      alert('Failed to add to cart');
     }
   };
 
-  const addToWishlist = (product, quantity = 1, size = 'S') => {
-    const currentWishlist = JSON.parse(localStorage.getItem('wishlistItems')) || [];
-    const isInWishlist = currentWishlist.some((item) => item.id === product.id && item.category === product.category && item.size === size);
-
-    if (isInWishlist) {
-      const updatedWishlist = currentWishlist.filter((item) => !(item.id === product.id && item.category === product.category && item.size === size));
-      localStorage.setItem('wishlistItems', JSON.stringify(updatedWishlist));
-      setWishlistItems(updatedWishlist);
-      alert(`${product.name} removed from wishlist!`);
-    } else {
-      const updatedWishlist = [...currentWishlist, { ...product, quantity: parseInt(quantity), size: size }];
-      localStorage.setItem('wishlistItems', JSON.stringify(updatedWishlist));
-      setWishlistItems(updatedWishlist);
-      alert(`${product.name} added to wishlist!`);
+  const addToWishlist = async (product, quantity = 1, size = 'S') => {
+    const isInWishlist = wishlistItems.some(item => item.id === product.id);
+    try {
+      if (isInWishlist) {
+        const item = wishlistItems.find(item => item.id === product.id);
+        await axios.delete(`http://localhost:5000/api/wishlist/${item.wishlistItemId}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+      } else {
+        await axios.post('http://localhost:5000/api/wishlist', {
+          product_id: product.id
+        }, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          }
+        });
+      }
+      await fetchWishlist();
+    } catch (error) {
+      alert('Failed to update wishlist');
+      console.error('addToWishlist error', error);
     }
   };
 
@@ -243,6 +384,8 @@ function UnderwearLoungewear() {
         : [...prevSizes, size]
     );
   };
+
+  if (loading) return <div>Loading...</div>;
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 font-sans">
@@ -282,9 +425,11 @@ function UnderwearLoungewear() {
                   className="appearance-none bg-white border border-gray-300 rounded-md pl-4 pr-10 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="default">Sort By</option>
-                  <option value="price-low">Price: Low to High</option>
-                  <option value="price-high">Price: High to Low</option>
-                  <option value="best-seller">Best Seller</option>
+                  <option value="price-low-high">Price: Low to High</option>
+                  <option value="price-high-low">Price: High to Low</option>
+                  <option value="name-a-z">Name: A-Z</option>
+                  <option value="name-z-a">Name: Z-A</option>
+                  <option value="rating-high-low">Rating: High to Low</option>
                 </select>
                 <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" />
               </div>
@@ -409,6 +554,27 @@ function UnderwearLoungewear() {
                     ))}
                   </div>
                 </div>
+                {/* Topic Filter */}
+                <div className="mb-2 sm:mb-6">
+                  <h3 className="text-sm sm:text-md font-semibold text-gray-700 mb-1 sm:mb-3">Topic</h3>
+                  <div className="flex flex-wrap gap-1 sm:gap-2">
+                    {allTopics.map(topic => (
+                      <button
+                        key={topic}
+                        className={`px-2 sm:px-3 py-1 border rounded-md text-xs sm:text-sm ${
+                          selectedTopics.includes(topic)
+                            ? 'bg-blue-500 text-white border-blue-500'
+                            : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'
+                        }`}
+                        onClick={() => setSelectedTopics(selectedTopics.includes(topic)
+                          ? selectedTopics.filter(t => t !== topic)
+                          : [...selectedTopics, topic])}
+                      >
+                        {topic}
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 {/* Clear Filters Button */}
                 <div className="mt-2 sm:mt-6">
                   <div className="flex justify-end">
@@ -420,6 +586,7 @@ function UnderwearLoungewear() {
                         setSelectedSizes([]);
                         setSelectedBrands([]);
                         setSelectedMaterials([]);
+                        setSelectedTopics([]);
                         setShowFilters(false);
                         setSortOption('default');
                       }}
@@ -439,7 +606,8 @@ function UnderwearLoungewear() {
             maxPrice > 0 || 
             selectedSizes.length > 0 ||
             selectedBrands.length > 0 ||
-            selectedMaterials.length > 0) && (
+            selectedMaterials.length > 0 ||
+            selectedTopics.length > 0) && (
             <div className="bg-gray-50 p-4 rounded-lg mb-4">
               <div className="flex flex-wrap gap-2">
                 {filterCategorySearch && filterCategorySearch.length > 0 && (
@@ -500,28 +668,58 @@ function UnderwearLoungewear() {
                     </button>
                   </span>
                 ))}
+                {selectedTopics.length > 0 && selectedTopics.map(topic => (
+                  <span key={topic} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
+                    Topic: {topic}
+                    <button
+                      onClick={() => setSelectedTopics(selectedTopics.filter(t => t !== topic))}
+                      className="ml-2 text-blue-700 hover:text-blue-900"
+                    >
+                      &times;
+                    </button>
+                  </span>
+                ))}
               </div>
             </div>
           )}
 
           {/* Product Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-2">
-            {filteredAndSortedItems.map((item) => (
-              <ProductCard
-                key={item.id}
-                {...item}
-                onQuickView={handleQuickView}
-                addToCart={addToCart}
-                addToWishlist={addToWishlist}
-                cartItems={cartItems}
-                wishlistItems={wishlistItems}
-                item={item}
-              />
-            ))}
-            {filteredAndSortedItems.length === 0 && (
-              <p className="text-center text-gray-600 mt-8">No items found matching your criteria.</p>
-            )}
-          </div>
+          {loading ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading products...</p>
+              </div>
+            </div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <p className="text-red-600 mb-4">{error}</p>
+              <button 
+                onClick={() => window.location.reload()} 
+                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+              >
+                Try Again
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-2">
+              {filteredAndSortedItems.map((item) => (
+                <ProductCard
+                  key={item.id}
+                  {...item}
+                  onQuickView={handleQuickView}
+                  addToCart={addToCart}
+                  addToWishlist={addToWishlist}
+                  cartItems={cartItems}
+                  wishlistItems={wishlistItems}
+                  item={item}
+                />
+              ))}
+              {filteredAndSortedItems.length === 0 && (
+                <p className="text-center text-gray-600 mt-8">No items found matching your criteria.</p>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

@@ -46,12 +46,14 @@ const bannerImage = [
     // Add more banners if available
 ];
 
-function ProductCard({ product, onQuickView }) {
+function ProductCard({ product, onQuickView, addToCart, addToWishlist, cartItems, wishlistItems }) {
     const isBestSeller = product.attributes?.find(attr => attr.attribute_name === 'isBestSeller')?.attribute_value === 'true';
     const rating = product.attributes?.find(attr => attr.attribute_name === 'Rating')?.attribute_value;
     const [qty, setQty] = useState(1);
     const [wishlisted, setWishlisted] = useState(false);
-    const imgSrc = product.featured_image || product.photo || refrigeratorImg;
+    const imgSrc = product.photo ? `http://localhost:5000/uploads/${product.photo}` : (product.featured_image || refrigeratorImg);
+    const isInCart = cartItems.some(item => item.id === product.id);
+    const isInWishlist = wishlistItems.some(item => item.id === product.id);
     return (
         <div className="border rounded-2xl p-3 bg-white shadow-sm flex flex-col items-center relative h-full">
             <div className="relative w-full flex justify-center mb-2">
@@ -59,7 +61,7 @@ function ProductCard({ product, onQuickView }) {
                 {isBestSeller && (
                     <span className="absolute top-2 left-2 bg-yellow-400 text-[10px] font-semibold px-1.5 py-0.5 rounded z-10 mr-2" style={{lineHeight: '1.1'}}>Best Seller</span>
                 )}
-                <button className="absolute top-2 right-2 text-gray-400 hover:text-red-500 text-xl bg-white rounded-full p-1 z-10 ml-2" onClick={() => setWishlisted(w => !w)}>{wishlisted ? <FaHeart /> : <FaRegHeart />}</button>
+                <button className={`absolute top-2 right-2 text-xl bg-white rounded-full p-1 z-10 ml-2 ${isInWishlist ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`} onClick={() => addToWishlist(product)}>{isInWishlist ? <FaHeart /> : <FaRegHeart />}</button>
                 <button className="absolute top-2 right-10 text-gray-400 hover:text-blue-500 text-xl bg-white rounded-full p-1 z-10 ml-2" onClick={() => onQuickView(product)}><FaEye /></button>
             </div>
             <div className="font-semibold text-sm text-center mb-1 line-clamp-2">{product.name}</div>
@@ -73,7 +75,13 @@ function ProductCard({ product, onQuickView }) {
                 </div>
             </div>
             <div className="text-lg font-bold text-green-700 mb-1">₹{product.price}</div>
-            <button className="bg-[#5C3FFF] hover:bg-[#4326c7] text-white px-4 py-2 rounded text-xs font-semibold w-full mt-auto mb-2">Add to Cart</button>
+            <button
+                className={`bg-black hover:bg-gray-900 text-white px-4 py-2 rounded text-xs font-semibold w-full mt-auto mb-2 ${isInCart ? 'opacity-60 cursor-not-allowed' : ''}`}
+                onClick={() => addToCart(product, qty)}
+                disabled={isInCart}
+            >
+                {isInCart ? 'Added to Cart' : 'Add to Cart'}
+            </button>
         </div>
     );
 }
@@ -116,6 +124,52 @@ function HomeAppliances() {
     const navigate = useNavigate();
     const [bestSellers, setBestSellers] = useState([]);
     const [quickViewProduct, setQuickViewProduct] = useState(null);
+    const [cartItems, setCartItems] = useState([]);
+    const [wishlistItems, setWishlistItems] = useState([]);
+    const token = localStorage.getItem('token');
+
+    // Fetch cart from backend
+    const fetchCart = async () => {
+        try {
+            const res = await fetch('http://localhost:5000/api/cart', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (res.ok && data && data.data && data.data.items) {
+                setCartItems(data.data.items.map(item => ({
+                    ...item.product,
+                    quantity: item.quantity,
+                    id: item.product_id,
+                    cartItemId: item.id
+                })));
+            } else {
+                setCartItems([]);
+            }
+        } catch (e) {
+            setCartItems([]);
+        }
+    };
+
+    // Fetch wishlist from backend
+    const fetchWishlist = async () => {
+        try {
+            const res = await fetch('http://localhost:5000/api/wishlist', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (res.ok && data && data.data) {
+                setWishlistItems(data.data.map(item => ({
+                    ...item.product,
+                    id: item.product_id,
+                    wishlistItemId: item.id
+                })));
+            } else {
+                setWishlistItems([]);
+            }
+        } catch (e) {
+            setWishlistItems([]);
+        }
+    };
 
     useEffect(() => {
         async function fetchBestSellers() {
@@ -123,9 +177,7 @@ function HomeAppliances() {
                 const res = await fetch('/api/products/appliances');
                 const data = await res.json();
                 let all = (data.data || data) || [];
-                // Find all best sellers
                 let best = all.filter(p => p.attributes?.find(attr => attr.attribute_name === 'isBestSeller')?.attribute_value === 'true');
-                // Shuffle and pick up to 6
                 best = best.sort(() => 0.5 - Math.random()).slice(0, 6);
                 setBestSellers(best);
             } catch (e) {
@@ -133,7 +185,62 @@ function HomeAppliances() {
             }
         }
         fetchBestSellers();
+        fetchCart();
+        fetchWishlist();
+        // eslint-disable-next-line
     }, []);
+
+    // Add to cart using backend
+    const addToCart = async (product, quantity = 1) => {
+        try {
+            const response = await fetch('http://localhost:5000/api/cart/items', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    product_id: product.id,
+                    quantity,
+                    variation_id: null
+                })
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || 'Failed to add to cart');
+            await fetchCart();
+            alert('Added to cart successfully!');
+        } catch (error) {
+            alert(error.message || 'Failed to add to cart');
+        }
+    };
+
+    // Add/remove from wishlist using backend
+    const addToWishlist = async (product) => {
+        const isInWishlist = wishlistItems.some(item => item.id === product.id);
+        try {
+            if (isInWishlist) {
+                // Remove from wishlist
+                const item = wishlistItems.find(item => item.id === product.id);
+                await fetch(`http://localhost:5000/api/wishlist/${item.wishlistItemId}`, {
+                    method: 'DELETE',
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+            } else {
+                // Add to wishlist
+                await fetch('http://localhost:5000/api/wishlist', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ product_id: product.id })
+                });
+            }
+            await fetchWishlist();
+        } catch (error) {
+            alert('Failed to update wishlist');
+        }
+    };
 
     return (
         <div className='min-h-screen'>
@@ -178,10 +285,11 @@ function HomeAppliances() {
                 </div>
 
                 {/* Categories */}
-                <div className="mt-4 mb-2 flex items-center">
-                    <span className="text-lg font-bold text-[#222]">Categories</span>
+                <div className="mt-8 mb-2 flex items-center justify-center">
+                    <span className="text-3xl md:text-4xl font-extrabold text-black text-center tracking-wide" style={{ letterSpacing: '2px' }}>
+                        HOME APPLIANCE CATEGORIES
+                    </span>
                 </div>
-
                 <div className="grid grid-cols-3 gap-2 mt-3">
                     {categories.map((category, index) => (
                         <div
@@ -209,7 +317,7 @@ function HomeAppliances() {
                 <div className="grid grid-cols-2 gap-3">
                   {bestSellers.length === 0 && <div className="col-span-2 text-gray-400 text-center">No best sellers found.</div>}
                   {bestSellers.map(product => (
-                    <ProductCard key={product.id} product={product} onQuickView={setQuickViewProduct} />
+                    <ProductCard key={product.id} product={product} onQuickView={setQuickViewProduct} addToCart={addToCart} addToWishlist={addToWishlist} cartItems={cartItems} wishlistItems={wishlistItems} />
                   ))}
                 </div>
                 <QuickViewModal product={quickViewProduct} onClose={() => setQuickViewProduct(null)} />

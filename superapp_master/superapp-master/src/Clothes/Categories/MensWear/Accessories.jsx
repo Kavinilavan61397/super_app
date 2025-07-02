@@ -3,49 +3,42 @@ import Footer from '../../../Utility/Footer';
 import ClothesHeader from '../../Header/ClothesHeader';
 import { FaFilter, FaHeart, FaEye, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 
 // Import images
-import Wallets from '../../Images/DesignerSunglasses.jpg';
-import MenWatch from '../../Images/DesignerSunglasses.jpg';
-import AviatorSunglasses from '../../Images/DesignerSunglasses.jpg';
-import LeatherBelt from '../../Images/DesignerSunglasses.jpg';
-import BaseballCap from '../../Images/DesignerSunglasses.jpg';
-import TieClipSet from '../../Images/DesignerSunglasses.jpg';
-import CasualBackpack from '../../Images/DesignerSunglasses.jpg';
-import SportsSocksSet from '../../Images/DesignerSunglasses.jpg';
-import LeatherCardHolder from '../../Images/DesignerSunglasses.jpg';
-import SmartWatch from '../../Images/DesignerSunglasses.jpg';
-import DesignerSunglasses from '../../Images/DesignerSunglasses.jpg';
-import FormalTieCollection from '../../Images/DesignerSunglasses.jpg';
-import LeatherMessengerBag from '../../Images/DesignerSunglasses.jpg';
-import PremiumCufflinks from '../../Images/DesignerSunglasses.jpg';
-import LeatherKeyChain from '../../Images/DesignerSunglasses.jpg';
-import Perfume from '../../Images/DesignerSunglasses.jpg';
-import LongLastingPerfumes from '../../Images/DesignerSunglasses.jpg';
-import DigitalWatch from '../../Images/DesignerSunglasses.jpg';
-import Beanies from '../../Images/DesignerSunglasses.jpg';
+import Watch from '../../Images/TShirt.png';
+import Belt from '../../Images/TShirt.png';
+import Wallet from '../../Images/TShirt.png';
+import Sunglasses from '../../Images/TShirt.png';
+import Tie from '../../Images/TShirt.png';
+import Cufflinks from '../../Images/TShirt.png';
+import PocketSquare from '../../Images/TShirt.png';
+import Cap from '../../Images/TShirt.png';
+import Scarf from '../../Images/TShirt.png';
+import Gloves from '../../Images/TShirt.png';
+import Socks from '../../Images/TShirt.png';
+import Backpack from '../../Images/TShirt.png';
+import DuffelBag from '../../Images/TShirt.png';
+import MessengerBag from '../../Images/TShirt.png';
 
-const accessoriesItems = [
-  { id: 20, name: 'Leather Wallet', originalPrice: 1200, discountedPrice: 960, image: Wallets, description: 'Stylish and durable leather wallet.', rating: 4.6, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Accessories', sizes: ['OS'], brand: 'Fossil', type: ['Bags & Wallets'] },
-  { id: 21, name: "Men's Watch", originalPrice: 3000, discountedPrice: 2400, image: MenWatch, description: 'Classic analog watch.', rating: 4.4, isBestSeller: false, quantity: 1, category: 'Men\'s Wear - Accessories', sizes: ['OS'], brand: 'Fossil', type: ['Watches'] },
-  { id: 22, name: 'Aviator Sunglasses', originalPrice: 1500, discountedPrice: 1200, image: AviatorSunglasses, description: 'Classic aviator sunglasses with UV protection.', rating: 4.7, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Accessories', sizes: ['OS'], brand: 'Ray-Ban', type: ['Eyewear & Headwear'] },
-  { id: 23, name: 'Leather Belt', originalPrice: 900, discountedPrice: 720, image: LeatherBelt, description: 'Genuine leather belt with a metal buckle.', rating: 4.3, isBestSeller: false, quantity: 1, category: 'Men\'s Wear - Accessories', sizes: ['30', '32', '34', '36'], brand: 'Fossil', type: ['Formal Wear'] },
-  { id: 24, name: 'Baseball Cap', originalPrice: 600, discountedPrice: 480, image: BaseballCap, description: 'Comfortable cotton baseball cap.', rating: 4.0, isBestSeller: false, quantity: 1, category: 'Men\'s Wear - Accessories', sizes: ['OS'], brand: 'Fossil', type: ['Eyewear & Headwear'] },
-  { id: 25, name: 'Tie Clip Set', originalPrice: 700, discountedPrice: 560, image: TieClipSet, description: 'Elegant tie clip and cufflink set.', rating: 4.5, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Accessories', sizes: ['OS'], brand: 'Van Heusen', type: ['Formal Wear'] },
-  { id: 26, name: 'Casual Backpack', originalPrice: 2500, discountedPrice: 2000, image: CasualBackpack, description: 'Spacious and stylish backpack for daily use.', rating: 4.8, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Accessories', sizes: ['OS'], brand: 'Fossil', type: ['Bags & Wallets'] },
-  { id: 27, name: 'Sports Socks (3 Pair Pack)', originalPrice: 450, discountedPrice: 360, image: SportsSocksSet, description: 'Breathable sports socks for athletic activities.', rating: 4.2, isBestSeller: false, quantity: 1, category: 'Men\'s Wear - Accessories', sizes: ['7', '8', '9', '10', '11'], brand: 'Fossil', type: ['Lifestyle'] },
-  { id: 28, name: 'Leather Card Holder', originalPrice: 800, discountedPrice: 640, image: LeatherCardHolder, description: 'Slim leather card holder with multiple slots.', rating: 4.4, isBestSeller: false, quantity: 1, category: 'Men\'s Wear - Accessories', sizes: ['OS'], brand: 'Fossil', type: ['Bags & Wallets'] },
-  { id: 29, name: 'Smart Watch', originalPrice: 4500, discountedPrice: 3600, image: SmartWatch, description: 'Feature-rich smartwatch with health tracking.', rating: 4.7, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Accessories', sizes: ['OS'], brand: 'Fossil', type: ['Watches'] },
-  { id: 30, name: 'Designer Sunglasses', originalPrice: 2000, discountedPrice: 1600, image: DesignerSunglasses, description: 'Trendy designer sunglasses with polarized lenses.', rating: 4.5, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Accessories', sizes: ['OS'], brand: 'Ray-Ban', type: ['Eyewear & Headwear'] },
-  { id: 31, name: 'Formal Tie Collection', originalPrice: 1200, discountedPrice: 960, image: FormalTieCollection, description: 'Set of 3 premium silk ties.', rating: 4.6, isBestSeller: false, quantity: 1, category: 'Men\'s Wear - Accessories', sizes: ['OS'], brand: 'Van Heusen', type: ['Formal Wear'] },
-  { id: 32, name: 'Leather Messenger Bag', originalPrice: 3500, discountedPrice: 2800, image: LeatherMessengerBag, description: 'Professional leather messenger bag for work.', rating: 4.8, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Accessories', sizes: ['OS'], brand: 'Fossil', type: ['Bags & Wallets'] },
-  { id: 33, name: 'Premium Cufflinks', originalPrice: 1500, discountedPrice: 1200, image: PremiumCufflinks, description: 'Elegant metal cufflinks for formal occasions.', rating: 4.4, isBestSeller: false, quantity: 1, category: 'Men\'s Wear - Accessories', sizes: ['OS'], brand: 'Van Heusen', type: ['Formal Wear'] },
-  { id: 34, name: 'Premium Perfumes', originalPrice: 800, discountedPrice: 640, image: Perfume, description: 'Premium Signature scent for personal style.', rating: 4.3, isBestSeller: false, quantity: 1, category: 'Men\'s Wear - Accessories', sizes: ['OS'], brand: 'Fossil', type: ['Fragrances'] },
-  { id: 35, name: 'Leather Keychain', originalPrice: 500, discountedPrice: 400, image: LeatherKeyChain, description: 'Stylish leather keychain with metal details.', rating: 4.2, isBestSeller: false, quantity: 1, category: 'Men\'s Wear - Accessories', sizes: ['OS'], brand: 'Fossil', type: ['Lifestyle'] },
-  { id: 36, name: 'Long Lasting Perfumes', originalPrice: 1000, discountedPrice: 800, image: LongLastingPerfumes, description: 'Long lasting perfumes for personal style.', rating: 4.6, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Accessories', sizes: ['OS'], brand: 'Fossil', type: ['Fragrances'] },
-  { id: 37, name: 'Digital Watch', originalPrice: 3000, discountedPrice: 2400, image: DigitalWatch, description: 'Digital watch with health tracking.', rating: 4.6, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Accessories', sizes: ['OS'], brand: 'Fossil', type: ['Watches'] },
-  { id: 38, name: 'Beanies', originalPrice: 600, discountedPrice: 480, image: Beanies, description: 'Stylish beanie for cold weather.', rating: 4.6, isBestSeller: false, quantity: 1, category: 'Men\'s Wear - Accessories', sizes: ['OS'], brand: 'Van Heusen', type: ['Eyewear & Headwear'] },
-];
+// Fallback images mapping
+const fallbackImages = {
+  'Watch': Watch,
+  'Belt': Belt,
+  'Wallet': Wallet,
+  'Sunglasses': Sunglasses,
+  'Tie': Tie,
+  'Cufflinks': Cufflinks,
+  'Pocket Square': PocketSquare,
+  'Cap': Cap,
+  'Scarf': Scarf,
+  'Gloves': Gloves,
+  'Socks': Socks,
+  'Backpack': Backpack,
+  'Duffel Bag': DuffelBag,
+  'Messenger Bag': MessengerBag,
+  'default': Watch
+};
 
 const ProductCard = ({ name, originalPrice, discountedPrice, image, description, rating, isBestSeller, onQuickView, item, addToCart, addToWishlist, cartItems, wishlistItems }) => {
   const [selectedSize, setSelectedSize] = useState(item.sizes && item.sizes.length > 0 ? item.sizes[0] : 'S');
@@ -120,7 +113,6 @@ const ProductCard = ({ name, originalPrice, discountedPrice, image, description,
 };
 
 function Accessories() {
-  //const [selectedCategory, setSelectedCategory] = useState('');
   const [sortOption, setSortOption] = useState('default');
   const [showFilters, setShowFilters] = useState(false);
   const [cartItems, setCartItems] = useState([]);
@@ -133,23 +125,106 @@ function Accessories() {
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(10000);
   const [selectedBrands, setSelectedBrands] = useState([]);
-  const [selectedTypes, setSelectedTypes] = useState([]);
+  const [selectedMaterials, setSelectedMaterials] = useState([]);
+  const [selectedTopics, setSelectedTopics] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const filterButtonRef = React.useRef(null);
   const filterPanelRef = React.useRef(null);
 
-  const allAvailableSizes = Array.from(new Set(accessoriesItems.flatMap(item => item.sizes)));
+  // Fetch products from backend
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get('http://localhost:5000/api/products/category/name/mens-accessories');
+        
+        // Transform the data to match the expected format
+        const transformedProducts = response.data.data.map(product => ({
+          id: product.id,
+          name: product.name,
+          originalPrice: parseFloat(product.price),
+          discountedPrice: parseFloat(product.discounted_price || product.price),
+          image: product.photo ? `http://localhost:5000/uploads/${product.photo}` : (fallbackImages[product.name] || fallbackImages.default),
+          description: product.description || 'Product description',
+          rating: product.rating || 4.0,
+          isBestSeller: product.is_bestseller || false,
+          quantity: 1,
+          category: 'Men\'s Wear - Accessories',
+          sizes: product.sizes ? JSON.parse(product.sizes) : ['S', 'M', 'L', 'XL'],
+          brand: product.brand?.name || 'Brand',
+          material: product.material || 'Leather',
+          topic: product.topic || 'Watches'
+        }));
+        
+        setProducts(transformedProducts);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching products:', err);
+        setError('Failed to load products');
+        // Fallback to empty array
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  // Fetch wishlist from backend
+  const fetchWishlist = async () => {
+    try {
+      const res = await axios.get('http://localhost:5000/api/wishlist', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (res.data && res.data.data) {
+        setWishlistItems(res.data.data.map(item => ({
+          ...item.product,
+          id: item.product_id,
+          wishlistItemId: item.id
+        })));
+      } else {
+        setWishlistItems([]);
+      }
+    } catch (e) {
+      setWishlistItems([]);
+    }
+  };
+
+  // Fetch cart from backend
+  const fetchCart = async () => {
+    try {
+      const cartRes = await axios.get('http://localhost:5000/api/cart', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (cartRes.data && cartRes.data.data && cartRes.data.data.items) {
+        setCartItems(cartRes.data.data.items.map(item => ({
+          ...item.product,
+          quantity: item.quantity,
+          id: item.product_id,
+          cartItemId: item.id
+        })));
+      } else {
+        setCartItems([]);
+      }
+    } catch (e) {
+      setCartItems([]);
+    }
+  };
+  useEffect(() => {
+    fetchCart();
+    fetchWishlist();
+  }, []);
+
+  const allAvailableSizes = Array.from(new Set(products.flatMap(item => item.sizes || [])));
 
   // Extract unique brands from items
-  const allBrands = Array.from(new Set(accessoriesItems.flatMap(item => item.brand.split(',').map(b => b.trim()))));
-  // Extract unique types from items
-  //const allTypes = Array.from(new Set(accessoriesItems.flatMap(item => item.type).filter(Boolean)));
-
-  useEffect(() => {
-    const storedCart = JSON.parse(localStorage.getItem('cartItems')) || [];
-    const storedWishlist = JSON.parse(localStorage.getItem('wishlistItems')) || [];
-    setCartItems(storedCart);
-    setWishlistItems(storedWishlist);
-  }, []);
+  const allBrands = Array.from(new Set(products.flatMap(item => (item.brand || '').split(',').map(b => b.trim()))));
+  // Extract unique materials from items
+  const allMaterials = Array.from(new Set(products.map(item => item.material || 'Leather')));
+  const allTopics = Array.from(new Set(products.map(item => item.topic || 'Watches')));
 
   useEffect(() => {
     if (!showFilters) return;
@@ -167,10 +242,12 @@ function Accessories() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showFilters]);
 
-  const filteredAndSortedItems = accessoriesItems
+  const filteredAndSortedItems = products
     .filter(item => {
+      // Always show items by default
       let showItem = true;
 
+      // Apply search filter if search term exists
       if (filterCategorySearch !== '') {
         showItem = showItem && (
           item.name.toLowerCase().includes(filterCategorySearch.toLowerCase()) ||
@@ -178,78 +255,112 @@ function Accessories() {
         );
       }
 
-      if (minPrice > 0 || maxPrice < 10000) {
+      // Apply price range filter only if prices are set
+      if (minPrice > 0 || maxPrice < 999999) {
         showItem = showItem && (
           (minPrice > 0 ? item.discountedPrice >= minPrice : true) &&
-          (maxPrice < 10000 ? item.discountedPrice <= maxPrice : true)
+          (maxPrice < 999999 ? item.discountedPrice <= maxPrice : true)
         );
       }
 
+      // Apply size filter only if sizes are selected
       if (selectedSizes.length > 0) {
         showItem = showItem && selectedSizes.some(size => item.sizes && item.sizes.includes(size));
       }
 
       // Brand filter
       if (selectedBrands.length > 0) {
-        const itemBrands = item.brand.split(',').map(b => b.trim());
+        const itemBrands = (item.brand || '').split(',').map(b => b.trim());
         showItem = showItem && selectedBrands.some(brand => itemBrands.includes(brand));
       }
 
-      // Type filter
-      if (selectedTypes.length > 0) {
-        showItem = showItem && item.type && selectedTypes.some(type => item.type.includes(type));
+      // Material filter
+      if (selectedMaterials.length > 0) {
+        showItem = showItem && selectedMaterials.includes(item.material || 'Leather');
+      }
+
+      // Topic filter
+      if (selectedTopics.length > 0) {
+        showItem = showItem && selectedTopics.includes(item.topic || 'Watches');
       }
 
       return showItem;
     })
     .sort((a, b) => {
       switch (sortOption) {
-        case 'price-low':
+        case 'price-low-high':
           return a.discountedPrice - b.discountedPrice;
-        case 'price-high':
+        case 'price-high-low':
           return b.discountedPrice - a.discountedPrice;
-        case 'best-seller':
-          return b.isBestSeller - a.isBestSeller;
+        case 'name-a-z':
+          return a.name.localeCompare(b.name);
+        case 'name-z-a':
+          return b.name.localeCompare(a.name);
+        case 'rating-high-low':
+          return b.rating - a.rating;
         default:
-        return 0;
+          return 0;
       }
-      });
+    });
 
-  //const uniqueCategories = ['Men\'s Wear - Accessories'];
-
-  const addToCart = (product, quantity = 1, size = 'S') => {
-    const currentCart = JSON.parse(localStorage.getItem('cartItems')) || [];
-    const existingItemIndex = currentCart.findIndex((item) => item.id === product.id && item.category === product.category && item.size === size);
-
-    if (existingItemIndex !== -1) {
-      const updatedCart = currentCart.map((item, index) =>
-        index === existingItemIndex ? { ...item, quantity: item.quantity + quantity } : item
+  const addToCart = async (product, quantity = 1, size = 'S') => {
+    try {
+      const response = await axios.post(
+        'http://localhost:5000/api/cart/items',
+        {
+          product_id: product.id,
+          quantity
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          }
+        }
       );
-      localStorage.setItem('cartItems', JSON.stringify(updatedCart));
-      setCartItems(updatedCart);
-      alert(`${quantity} of ${product.name} (Size: ${size}) quantity updated in cart!`);
-    } else {
-      const updatedCart = [...currentCart, { ...product, quantity: parseInt(quantity), size: size }];
-      localStorage.setItem('cartItems', JSON.stringify(updatedCart));
-      setCartItems(updatedCart);
-      alert(`${parseInt(quantity)} of ${product.name} (Size: ${size}) added to cart!`);
+      // Refetch cart from backend
+      const cartRes = await axios.get('http://localhost:5000/api/cart', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (cartRes.data && cartRes.data.data && cartRes.data.data.items) {
+        setCartItems(cartRes.data.data.items.map(item => ({
+          ...item.product,
+          quantity: item.quantity,
+          id: item.product_id,
+          cartItemId: item.id
+        })));
+      } else {
+        setCartItems([]);
+      }
+      alert('Added to cart successfully!');
+    } catch (error) {
+      console.error('Error adding to cart:', error.response?.data || error.message);
+      alert('Failed to add to cart');
     }
   };
 
-  const addToWishlist = (product, quantity = 1, size = 'S') => {
-    const currentWishlist = JSON.parse(localStorage.getItem('wishlistItems')) || [];
-    const isInWishlist = currentWishlist.some((item) => item.id === product.id && item.category === product.category && item.size === size);
-
-    if (isInWishlist) {
-      const updatedWishlist = currentWishlist.filter((item) => !(item.id === product.id && item.category === product.category && item.size === size));
-      localStorage.setItem('wishlistItems', JSON.stringify(updatedWishlist));
-      setWishlistItems(updatedWishlist);
-      alert(`${product.name} removed from wishlist!`);
-    } else {
-      const updatedWishlist = [...currentWishlist, { ...product, quantity: parseInt(quantity), size: size }];
-      localStorage.setItem('wishlistItems', JSON.stringify(updatedWishlist));
-      setWishlistItems(updatedWishlist);
-      alert(`${product.name} added to wishlist!`);
+  const addToWishlist = async (product, quantity = 1, size = 'S') => {
+    const isInWishlist = wishlistItems.some(item => item.id === product.id);
+    try {
+      if (isInWishlist) {
+        const item = wishlistItems.find(item => item.id === product.id);
+        await axios.delete(`http://localhost:5000/api/wishlist/${item.wishlistItemId}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+      } else {
+        await axios.post('http://localhost:5000/api/wishlist', {
+          product_id: product.id
+        }, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          }
+        });
+      }
+      await fetchWishlist();
+    } catch (error) {
+      alert('Failed to update wishlist');
+      console.error('addToWishlist error', error);
     }
   };
 
@@ -305,9 +416,11 @@ function Accessories() {
                   className="appearance-none bg-white border border-gray-300 rounded-md pl-4 pr-10 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="default">Sort By</option>
-                  <option value="price-low">Price: Low to High</option>
-                  <option value="price-high">Price: High to Low</option>
-                  <option value="best-seller">Best Seller</option>
+                  <option value="price-low-high">Price: Low to High</option>
+                  <option value="price-high-low">Price: High to Low</option>
+                  <option value="name-a-z">Name: A-Z</option>
+                  <option value="name-z-a">Name: Z-A</option>
+                  <option value="rating-high-low">Rating: High to Low</option>
                 </select>
                 <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" />
               </div>
@@ -411,23 +524,44 @@ function Accessories() {
                     ))}
                   </div>
                 </div>
-                {/* Type Filter */}
+                {/* Material Filter */}
                 <div className="mb-2 sm:mb-6">
-                  <h3 className="text-sm sm:text-md font-semibold text-gray-700 mb-1 sm:mb-3">All Accessories</h3>
+                  <h3 className="text-sm sm:text-md font-semibold text-gray-700 mb-1 sm:mb-3">Material</h3>
                   <div className="flex flex-wrap gap-1 sm:gap-2">
-                    {['Watches', 'Bags & Wallets', 'Eyewear & Headwear', 'Formal Wear', 'Lifestyle', 'Fragrances'].map(type => (
+                    {allMaterials.map(material => (
                       <button
-                        key={type}
+                        key={material}
                         className={`px-2 sm:px-3 py-1 border rounded-md text-xs sm:text-sm ${
-                          selectedTypes.includes(type)
+                          selectedMaterials.includes(material)
                             ? 'bg-blue-500 text-white border-blue-500'
                             : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'
                         }`}
-                        onClick={() => setSelectedTypes(selectedTypes.includes(type)
-                          ? selectedTypes.filter(t => t !== type)
-                          : [...selectedTypes, type])}
+                        onClick={() => setSelectedMaterials(selectedMaterials.includes(material)
+                          ? selectedMaterials.filter(m => m !== material)
+                          : [...selectedMaterials, material])}
                       >
-                        {type}
+                        {material}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {/* Topic Filter */}
+                <div className="mb-2 sm:mb-6">
+                  <h3 className="text-sm sm:text-md font-semibold text-gray-700 mb-1 sm:mb-3">Topic</h3>
+                  <div className="flex flex-wrap gap-1 sm:gap-2">
+                    {allTopics.map(topic => (
+                      <button
+                        key={topic}
+                        className={`px-2 sm:px-3 py-1 border rounded-md text-xs sm:text-sm ${
+                          selectedTopics.includes(topic)
+                            ? 'bg-blue-500 text-white border-blue-500'
+                            : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'
+                        }`}
+                        onClick={() => setSelectedTopics(selectedTopics.includes(topic)
+                          ? selectedTopics.filter(t => t !== topic)
+                          : [...selectedTopics, topic])}
+                      >
+                        {topic}
                       </button>
                     ))}
                   </div>
@@ -442,7 +576,8 @@ function Accessories() {
                         setMaxPrice(10000);
                         setSelectedSizes([]);
                         setSelectedBrands([]);
-                        setSelectedTypes([]);
+                        setSelectedMaterials([]);
+                        setSelectedTopics([]);
                         setShowFilters(false);
                         setSortOption('default');
                       }}
@@ -462,7 +597,8 @@ function Accessories() {
             maxPrice > 0 || 
             selectedSizes.length > 0 ||
             selectedBrands.length > 0 ||
-            selectedTypes.length > 0) && (
+            selectedMaterials.length > 0 ||
+            selectedTopics.length > 0) && (
             <div className="bg-gray-50 p-4 rounded-lg mb-4">
               <div className="flex flex-wrap gap-2">
                 {filterCategorySearch && filterCategorySearch.length > 0 && (
@@ -512,11 +648,22 @@ function Accessories() {
                     </button>
                   </span>
                 ))}
-                {selectedTypes.length > 0 && selectedTypes.map(type => (
-                  <span key={type} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
-                    Type: {type}
+                {selectedMaterials.length > 0 && selectedMaterials.map(material => (
+                  <span key={material} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
+                    Material: {material}
                     <button
-                      onClick={() => setSelectedTypes(selectedTypes.filter(t => t !== type))}
+                      onClick={() => setSelectedMaterials(selectedMaterials.filter(m => m !== material))}
+                      className="ml-2 text-blue-700 hover:text-blue-900"
+                    >
+                      &times;
+                    </button>
+                  </span>
+                ))}
+                {selectedTopics.length > 0 && selectedTopics.map(topic => (
+                  <span key={topic} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
+                    Topic: {topic}
+                    <button
+                      onClick={() => setSelectedTopics(selectedTopics.filter(t => t !== topic))}
                       className="ml-2 text-blue-700 hover:text-blue-900"
                     >
                       &times;
@@ -528,23 +675,42 @@ function Accessories() {
           )}
 
           {/* Product Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-2">
-            {filteredAndSortedItems.map((item) => (
-              <ProductCard
-                key={item.id}
-                {...item}
-                onQuickView={handleQuickView}
-                addToCart={addToCart}
-                addToWishlist={addToWishlist}
-                cartItems={cartItems}
-                wishlistItems={wishlistItems}
-                item={item}
-              />
-            ))}
-            {filteredAndSortedItems.length === 0 && (
-              <p className="text-center text-gray-600 mt-8">No items found matching your criteria.</p>
-            )}
-          </div>
+          {loading ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading products...</p>
+              </div>
+            </div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <p className="text-red-600 mb-4">{error}</p>
+              <button 
+                onClick={() => window.location.reload()} 
+                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+              >
+                Try Again
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-2">
+              {filteredAndSortedItems.map((item) => (
+                <ProductCard
+                  key={item.id}
+                  {...item}
+                  onQuickView={handleQuickView}
+                  addToCart={addToCart}
+                  addToWishlist={addToWishlist}
+                  cartItems={cartItems}
+                  wishlistItems={wishlistItems}
+                  item={item}
+                />
+              ))}
+              {filteredAndSortedItems.length === 0 && (
+                <p className="text-center text-gray-600 mt-8">No items found matching your criteria.</p>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

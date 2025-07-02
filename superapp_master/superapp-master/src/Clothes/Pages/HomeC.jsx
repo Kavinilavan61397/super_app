@@ -25,9 +25,11 @@ import homeAppliances from '../Images/homeAppliance.jpg';
 
 const categories = [
     { name: "Men ", image: mensWear, route: '/categories/mens-wear' },
-    { name: "Women ", image: womensWear, route: '/categories/women-uniforms' },
+    { name: "Women ", image: womensWear, route: '/categories/womens-wear' },
     { name: "Cosmetics", image: cosmetics, route: "/categories/cosmetics" },
     { name: "Home Appliances",image: homeAppliances,route:'/categories/homeappliances'}
+
+
     // { name: "Kurta", image: shirt, route: "/kurta" },
 ];
 

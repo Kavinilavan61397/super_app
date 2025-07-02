@@ -3,29 +3,42 @@ import Footer from '../../../Utility/Footer';
 import ClothesHeader from '../../Header/ClothesHeader';
 import { FaFilter, FaHeart, FaEye, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 
 // Import images
-import StylishWinterJacket from '../../Images/ClassicDenimJacket.jpg';
-import ClassicDenimJacket from '../../Images/ClassicDenimJacket.jpg';
-import LeatherBikerJacket from '../../Images/ClassicDenimJacket.jpg';
-import PufferVest from '../../Images/ClassicDenimJacket.jpg';
-import TrenchCoat from '../../Images/ClassicDenimJacket.jpg';
-import WindbreakerJacket from '../../Images/ClassicDenimJacket.jpg';
-import BomberJacket from '../../Images/ClassicDenimJacket.jpg';
-import ParkaJacket from '../../Images/ClassicDenimJacket.jpg';
-import FleeceJacket from '../../Images/ClassicDenimJacket.jpg';
+import Jacket from '../../Images/NavyBlueBlazer.png';
+import Blazer from '../../Images/NavyBlueBlazer.png';
+import Coat from '../../Images/NavyBlueBlazer.png';
+import Sweater from '../../Images/NavyBlueBlazer.png';
+import Cardigan from '../../Images/NavyBlueBlazer.png';
+import Vest from '../../Images/NavyBlueBlazer.png';
+import BomberJacket from '../../Images/NavyBlueBlazer.png';
+import LeatherJacket from '../../Images/NavyBlueBlazer.png';
+import DenimJacket from '../../Images/NavyBlueBlazer.png';
+import Parka from '../../Images/NavyBlueBlazer.png';
+import TrenchCoat from '../../Images/NavyBlueBlazer.png';
+import Peacoat from '../../Images/NavyBlueBlazer.png';
+import Windbreaker from '../../Images/NavyBlueBlazer.png';
+import Hoodie from '../../Images/NavyBlueBlazer.png';
 
-const outerwearItems = [
-  { id: 12, name: 'Stylish Winter Jacket', originalPrice: 5000, discountedPrice: 4000, image: StylishWinterJacket, description: 'Warm and stylish winter jacket.', rating: 4.6, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Outerwear', sizes: ['S', 'M', 'L', 'XL'], brand: 'The North Face', material: 'Polyester' },
-  { id: 13, name: 'Classic Denim Jacket', originalPrice: 3500, discountedPrice: 2800, image: ClassicDenimJacket, description: 'Timeless denim jacket for casual wear.', rating: 4.3, isBestSeller: false, quantity: 1, category: 'Men\'s Wear - Outerwear', sizes: ['S', 'M', 'L', 'XL'], brand: 'Levi\'s', material: 'Denim' },
-  { id: 14, name: 'Leather Biker Jacket', originalPrice: 8000, discountedPrice: 6400, image: LeatherBikerJacket, description: 'Edgy leather biker jacket.', rating: 4.7, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Outerwear', sizes: ['S', 'M', 'L', 'XL'], brand: 'Tommy Hilfiger', material: 'Leather' },
-  { id: 15, name: 'Puffer Vest', originalPrice: 2800, discountedPrice: 2240, image: PufferVest, description: 'Lightweight puffer vest for layering.', rating: 4.0, isBestSeller: false, quantity: 1, category: 'Men\'s Wear - Outerwear', sizes: ['M', 'L', 'XL'], brand: 'The North Face', material: 'Polyester' },
-  { id: 16, name: 'Trench Coat', originalPrice: 7000, discountedPrice: 5600, image: TrenchCoat, description: 'Classic trench coat for a sophisticated look.', rating: 4.8, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Outerwear', sizes: ['S', 'M', 'L'], brand: 'Tommy Hilfiger', material: 'Cotton Blend' },
-  { id: 17, name: 'Windbreaker Jacket', originalPrice: 2000, discountedPrice: 1600, image: WindbreakerJacket, description: 'Lightweight windbreaker for outdoor activities.', rating: 4.2, isBestSeller: false, quantity: 1, category: 'Men\'s Wear - Outerwear', sizes: ['S', 'M', 'L', 'XL'], brand: 'The North Face', material: 'Nylon' },
-  { id: 18, name: 'Bomber Jacket', originalPrice: 4500, discountedPrice: 3600, image: BomberJacket, description: 'Trendy bomber jacket for a casual style.', rating: 4.5, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Outerwear', sizes: ['S', 'M', 'L', 'XL', 'XXL'], brand: 'Levi\'s', material: 'Polyester' },
-  { id: 19, name: 'Parka Jacket', originalPrice: 9000, discountedPrice: 7200, image: ParkaJacket, description: 'Heavy-duty parka for extreme cold.', rating: 4.9, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Outerwear', sizes: ['M', 'L', 'XL', 'XXL'], brand: 'The North Face', material: 'Polyester' },
-  { id: 20, name: 'Fleece Jacket', originalPrice: 3000, discountedPrice: 2400, image: FleeceJacket, description: 'Soft and warm fleece jacket for everyday comfort.', rating: 4.1, isBestSeller: false, quantity: 1, category: 'Men\'s Wear - Outerwear', sizes: ['S', 'M', 'L'], brand: 'Tommy Hilfiger', material: 'Fleece' }
-];
+// Fallback images mapping
+const fallbackImages = {
+  'Jacket': Jacket,
+  'Blazer': Blazer,
+  'Coat': Coat,
+  'Sweater': Sweater,
+  'Cardigan': Cardigan,
+  'Vest': Vest,
+  'Bomber Jacket': BomberJacket,
+  'Leather Jacket': LeatherJacket,
+  'Denim Jacket': DenimJacket,
+  'Parka': Parka,
+  'Trench Coat': TrenchCoat,
+  'Peacoat': Peacoat,
+  'Windbreaker': Windbreaker,
+  'Hoodie': Hoodie,
+  'default': Jacket
+};
 
 const ProductCard = ({ name, originalPrice, discountedPrice, image, description, rating, isBestSeller, onQuickView, item, addToCart, addToWishlist, cartItems, wishlistItems }) => {
   const [selectedSize, setSelectedSize] = useState(item.sizes && item.sizes.length > 0 ? item.sizes[0] : 'S');
@@ -101,7 +114,7 @@ const ProductCard = ({ name, originalPrice, discountedPrice, image, description,
 
 function Outerwear() {
   const [sortOption, setSortOption] = useState('default');
-  const [showFilters, setShowFilters] = useState(false); // Filter section is closed by default
+  const [showFilters, setShowFilters] = useState(false);
   const [cartItems, setCartItems] = useState([]);
   const [wishlistItems, setWishlistItems] = useState([]);
   const [quickView, setQuickView] = useState(null);
@@ -110,24 +123,108 @@ function Outerwear() {
   const [filterCategorySearch, setFilterCategorySearch] = useState('');
   const [selectedSizes, setSelectedSizes] = useState([]);
   const [minPrice, setMinPrice] = useState(0);
-  const [maxPrice, setMaxPrice] = useState(10000); // Changed from 999999 to 10000 to match Tops.jsx
+  const [maxPrice, setMaxPrice] = useState(10000);
   const [selectedBrands, setSelectedBrands] = useState([]);
   const [selectedMaterials, setSelectedMaterials] = useState([]);
+  const [selectedTopics, setSelectedTopics] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const filterButtonRef = React.useRef(null);
   const filterPanelRef = React.useRef(null);
 
-  const allAvailableSizes = Array.from(new Set(outerwearItems.flatMap(item => item.sizes)));
+  // Fetch products from backend
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get('http://localhost:5000/api/products/category/name/mens-outerwear');
+        
+        // Transform the data to match the expected format
+        const transformedProducts = response.data.data.map(product => ({
+          id: product.id,
+          name: product.name,
+          originalPrice: parseFloat(product.price),
+          discountedPrice: parseFloat(product.discounted_price || product.price),
+          image: product.photo ? `http://localhost:5000/uploads/${product.photo}` : (fallbackImages[product.name] || fallbackImages.default),
+          description: product.description || 'Product description',
+          rating: product.rating || 4.0,
+          isBestSeller: product.is_bestseller || false,
+          quantity: 1,
+          category: 'Men\'s Wear - Outerwear',
+          sizes: product.sizes ? JSON.parse(product.sizes) : ['S', 'M', 'L', 'XL'],
+          brand: product.brand?.name || 'Brand',
+          material: product.material || 'Wool',
+          topic: product.topic || 'Jackets'
+        }));
+        
+        setProducts(transformedProducts);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching products:', err);
+        setError('Failed to load products');
+        // Fallback to empty array
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  const allAvailableSizes = Array.from(new Set(products.flatMap(item => item.sizes || [])));
 
   // Extract unique brands from items
-  const allBrands = Array.from(new Set(outerwearItems.flatMap(item => item.brand.split(',').map(b => b.trim()))));
+  const allBrands = Array.from(new Set(products.flatMap(item => (item.brand || '').split(',').map(b => b.trim()))));
   // Extract unique materials from items
-  const allMaterials = Array.from(new Set(outerwearItems.map(item => item.material)));
+  const allMaterials = Array.from(new Set(products.map(item => item.material || 'Cotton')));
+  const allTopics = Array.from(new Set(products.map(item => item.topic || 'Jackets')));
+
+  // Fetch wishlist from backend
+  const fetchWishlist = async () => {
+    try {
+      const res = await axios.get('http://localhost:5000/api/wishlist', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (res.data && res.data.data) {
+        setWishlistItems(res.data.data.map(item => ({
+          ...item.product,
+          id: item.product_id,
+          wishlistItemId: item.id
+        })));
+      } else {
+        setWishlistItems([]);
+      }
+    } catch (e) {
+      setWishlistItems([]);
+    }
+  };
+
+  // Fetch cart from backend
+  const fetchCart = async () => {
+    try {
+      const cartRes = await axios.get('http://localhost:5000/api/cart', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (cartRes.data && cartRes.data.data && cartRes.data.data.items) {
+        setCartItems(cartRes.data.data.items.map(item => ({
+          ...item.product,
+          quantity: item.quantity,
+          id: item.product_id,
+          cartItemId: item.id
+        })));
+      } else {
+        setCartItems([]);
+      }
+    } catch (e) {
+      setCartItems([]);
+    }
+  };
 
   useEffect(() => {
-    const storedCart = JSON.parse(localStorage.getItem('cartItems')) || [];
-    const storedWishlist = JSON.parse(localStorage.getItem('wishlistItems')) || [];
-    setCartItems(storedCart);
-    setWishlistItems(storedWishlist);
+    fetchCart();
+    fetchWishlist();
   }, []);
 
   useEffect(() => {
@@ -146,8 +243,9 @@ function Outerwear() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showFilters]);
 
-  const filteredAndSortedItems = outerwearItems
+  const filteredAndSortedItems = products
     .filter(item => {
+      // Always show items by default
       let showItem = true;
 
       // Apply search filter if search term exists
@@ -159,10 +257,10 @@ function Outerwear() {
       }
 
       // Apply price range filter only if prices are set
-      if (minPrice > 0 || maxPrice < 10000) {
+      if (minPrice > 0 || maxPrice < 999999) {
         showItem = showItem && (
           (minPrice > 0 ? item.discountedPrice >= minPrice : true) &&
-          (maxPrice < 10000 ? item.discountedPrice <= maxPrice : true)
+          (maxPrice < 999999 ? item.discountedPrice <= maxPrice : true)
         );
       }
 
@@ -173,63 +271,97 @@ function Outerwear() {
 
       // Brand filter
       if (selectedBrands.length > 0) {
-        const itemBrands = item.brand.split(',').map(b => b.trim());
+        const itemBrands = (item.brand || '').split(',').map(b => b.trim());
         showItem = showItem && selectedBrands.some(brand => itemBrands.includes(brand));
       }
 
       // Material filter
       if (selectedMaterials.length > 0) {
-        showItem = showItem && selectedMaterials.includes(item.material);
+        showItem = showItem && selectedMaterials.includes(item.material || 'Cotton');
+      }
+
+      // Topic filter
+      if (selectedTopics.length > 0) {
+        showItem = showItem && selectedTopics.includes(item.topic || 'Jackets');
       }
 
       return showItem;
     })
     .sort((a, b) => {
       switch (sortOption) {
-        case 'price-low':
+        case 'price-low-high':
           return a.discountedPrice - b.discountedPrice;
-        case 'price-high':
+        case 'price-high-low':
           return b.discountedPrice - a.discountedPrice;
-        case 'best-seller':
-          return b.isBestSeller - a.isBestSeller;
+        case 'name-a-z':
+          return a.name.localeCompare(b.name);
+        case 'name-z-a':
+          return b.name.localeCompare(a.name);
+        case 'rating-high-low':
+          return b.rating - a.rating;
         default:
           return 0;
       }
     });
 
-  const addToCart = (product, quantity = 1, size = 'S') => {
-    const currentCart = JSON.parse(localStorage.getItem('cartItems')) || [];
-    const existingItemIndex = currentCart.findIndex((item) => item.id === product.id && item.category === product.category && item.size === size);
-
-    if (existingItemIndex !== -1) {
-      const updatedCart = currentCart.map((item, index) =>
-        index === existingItemIndex ? { ...item, quantity: item.quantity + quantity } : item
+  const addToCart = async (product, quantity = 1, size = 'S') => {
+    try {
+      const response = await axios.post(
+        'http://localhost:5000/api/cart/items',
+        {
+          product_id: product.id,
+          quantity
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          }
+        }
       );
-      localStorage.setItem('cartItems', JSON.stringify(updatedCart));
-      setCartItems(updatedCart);
-      alert(`${quantity} of ${product.name} (Size: ${size}) quantity updated in cart!`);
-    } else {
-      const updatedCart = [...currentCart, { ...product, quantity: parseInt(quantity), size: size }];
-      localStorage.setItem('cartItems', JSON.stringify(updatedCart));
-      setCartItems(updatedCart);
-      alert(`${parseInt(quantity)} of ${product.name} (Size: ${size}) added to cart!`);
+      // Refetch cart from backend
+      const cartRes = await axios.get('http://localhost:5000/api/cart', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (cartRes.data && cartRes.data.data && cartRes.data.data.items) {
+        setCartItems(cartRes.data.data.items.map(item => ({
+          ...item.product,
+          quantity: item.quantity,
+          id: item.product_id,
+          cartItemId: item.id
+        })));
+      } else {
+        setCartItems([]);
+      }
+      alert('Added to cart successfully!');
+    } catch (error) {
+      console.error('Error adding to cart:', error.response?.data || error.message);
+      alert('Failed to add to cart');
     }
   };
 
-  const addToWishlist = (product, quantity = 1, size = 'S') => {
-    const currentWishlist = JSON.parse(localStorage.getItem('wishlistItems')) || [];
-    const isInWishlist = currentWishlist.some((item) => item.id === product.id && item.category === product.category && item.size === size);
-
-    if (isInWishlist) {
-      const updatedWishlist = currentWishlist.filter((item) => !(item.id === product.id && item.category === product.category && item.size === size));
-      localStorage.setItem('wishlistItems', JSON.stringify(updatedWishlist));
-      setWishlistItems(updatedWishlist);
-      alert(`${product.name} removed from wishlist!`);
-    } else {
-      const updatedWishlist = [...currentWishlist, { ...product, quantity: parseInt(quantity), size: size }];
-      localStorage.setItem('wishlistItems', JSON.stringify(updatedWishlist));
-      setWishlistItems(updatedWishlist);
-      alert(`${product.name} added to wishlist!`);
+  const addToWishlist = async (product, quantity = 1, size = 'S') => {
+    const isInWishlist = wishlistItems.some(item => item.id === product.id);
+    try {
+      if (isInWishlist) {
+        const item = wishlistItems.find(item => item.id === product.id);
+        await axios.delete(`http://localhost:5000/api/wishlist/${item.wishlistItemId}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+      } else {
+        await axios.post('http://localhost:5000/api/wishlist', {
+          product_id: product.id
+        }, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          }
+        });
+      }
+      await fetchWishlist();
+    } catch (error) {
+      alert('Failed to update wishlist');
+      console.error('addToWishlist error', error);
     }
   };
 
@@ -246,6 +378,8 @@ function Outerwear() {
         : [...prevSizes, size]
     );
   };
+
+  if (loading) return <div>Loading...</div>;
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 font-sans">
@@ -285,9 +419,11 @@ function Outerwear() {
                   className="appearance-none bg-white border border-gray-300 rounded-md pl-4 pr-10 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="default">Sort By</option>
-                  <option value="price-low">Price: Low to High</option>
-                  <option value="price-high">Price: High to Low</option>
-                  <option value="best-seller">Best Seller</option>
+                  <option value="price-low-high">Price: Low to High</option>
+                  <option value="price-high-low">Price: High to Low</option>
+                  <option value="name-a-z">Name: A-Z</option>
+                  <option value="name-z-a">Name: Z-A</option>
+                  <option value="rating-high-low">Rating: High to Low</option>
                 </select>
                 <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" />
               </div>
@@ -412,6 +548,27 @@ function Outerwear() {
                     ))}
                   </div>
                 </div>
+                {/* Topic Filter */}
+                <div className="mb-2 sm:mb-6">
+                  <h3 className="text-sm sm:text-md font-semibold text-gray-700 mb-1 sm:mb-3">Topic</h3>
+                  <div className="flex flex-wrap gap-1 sm:gap-2">
+                    {allTopics.map(topic => (
+                      <button
+                        key={topic}
+                        className={`px-2 sm:px-3 py-1 border rounded-md text-xs sm:text-sm ${
+                          selectedTopics.includes(topic)
+                            ? 'bg-blue-500 text-white border-blue-500'
+                            : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'
+                        }`}
+                        onClick={() => setSelectedTopics(selectedTopics.includes(topic)
+                          ? selectedTopics.filter(t => t !== topic)
+                          : [...selectedTopics, topic])}
+                      >
+                        {topic}
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 {/* Clear Filters Button */}
                 <div className="mt-2 sm:mt-6">
                   <div className="flex justify-end">
@@ -423,6 +580,7 @@ function Outerwear() {
                         setSelectedSizes([]);
                         setSelectedBrands([]);
                         setSelectedMaterials([]);
+                        setSelectedTopics([]);
                         setShowFilters(false);
                         setSortOption('default');
                       }}
@@ -436,23 +594,42 @@ function Outerwear() {
             )}
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-2">
-            {filteredAndSortedItems.map((item) => (
-              <ProductCard
-                key={item.id}
-                {...item}
-                onQuickView={handleQuickView}
-                addToCart={addToCart}
-                addToWishlist={addToWishlist}
-                cartItems={cartItems}
-                wishlistItems={wishlistItems}
-                item={item}
-              />
-            ))}
-          </div>
-
-          {filteredAndSortedItems.length === 0 && (
-            <p className="text-center text-gray-600 mt-8">No items found matching your criteria.</p>
+          {/* Product Grid */}
+          {loading ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading products...</p>
+              </div>
+            </div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <p className="text-red-600 mb-4">{error}</p>
+              <button 
+                onClick={() => window.location.reload()} 
+                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+              >
+                Try Again
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-2">
+              {filteredAndSortedItems.map((item) => (
+                <ProductCard
+                  key={item.id}
+                  {...item}
+                  onQuickView={handleQuickView}
+                  addToCart={addToCart}
+                  addToWishlist={addToWishlist}
+                  cartItems={cartItems}
+                  wishlistItems={wishlistItems}
+                  item={item}
+                />
+              ))}
+              {filteredAndSortedItems.length === 0 && (
+                <p className="text-center text-gray-600 mt-8">No items found matching your criteria.</p>
+              )}
+            </div>
           )}
         </div>
       </div>
@@ -550,6 +727,6 @@ function Outerwear() {
       <Footer />
     </div>
   );
-};
+}
 
 export default Outerwear;

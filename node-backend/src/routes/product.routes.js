@@ -21,7 +21,9 @@ const {
   updateProductVariationStock,
   getStockByProductVariation,
   deleteStockManagement,
-  getApplianceProductsWithAttributes // custom endpoint
+  getApplianceProductsWithAttributes, // custom endpoint
+  getProductsByCategory,
+  getProductsByCategoryName
 } = require('../controllers/product.controller');
 
 // Product routes
@@ -46,4 +48,6 @@ router.put('/update_product_variation_stock_by_id/:id', protect, authorize('admi
 router.get('/getStockByProductVariation/:id', getStockByProductVariation);
 router.delete('/delete_stock_management/:id', protect, authorize('admin'), deleteStockManagement);
 
+router.get('/category/:categoryId', getProductsByCategory);
+router.get('/category/name/:categorySlug', getProductsByCategoryName);
 module.exports = router;

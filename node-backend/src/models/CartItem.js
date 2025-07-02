@@ -13,19 +13,16 @@ const CartItem = sequelize.define('CartItem', {
   },
   product_id: {
     type: DataTypes.BIGINT.UNSIGNED,
-    allowNull: false
-  },
-  variation_id: {
-    type: DataTypes.BIGINT.UNSIGNED,
-    allowNull: true
+    allowNull: false,
+    references: {
+      model: 'products',
+      key: 'id'
+    }
   },
   quantity: {
     type: DataTypes.INTEGER,
     allowNull: false,
-    defaultValue: 1,
-    validate: {
-      min: 1
-    }
+    defaultValue: 1
   },
   price: {
     type: DataTypes.DECIMAL(10, 2),
@@ -54,9 +51,6 @@ const CartItem = sequelize.define('CartItem', {
     },
     {
       fields: ['product_id']
-    },
-    {
-      fields: ['variation_id']
     }
   ]
 });

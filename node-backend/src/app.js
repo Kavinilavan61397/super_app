@@ -28,6 +28,8 @@ const amenityRoutes = require('./routes/amenity.routes');
 const policyRoutes = require('./routes/policy.routes');
 const locationRoutes = require('./routes/location.routes');
 const faqRoutes = require('./routes/faq.routes');
+const wishlistRoutes = require('./routes/wishlist.routes')
+const cartRoutes = require('./routes/cart.routes')
 
 const app = express();
 
@@ -50,7 +52,9 @@ app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 app.use('/api/auth', authRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/admin', brandRoutes);     // /admin/brands
-app.use('/api/admin', productRoutes);   // /admin/products
+app.use('/api/products',productRoutes);
+app.use('/api/wishlist',wishlistRoutes);
+app.use('/api/cart',cartRoutes);
 app.use('/api/admin', sizeRoutes);      // /admin/sizes
 app.use('/api/admin', colorRoutes);     // /admin/colors
 app.use('/api/admin', unitRoutes);      // /admin/units
@@ -85,6 +89,10 @@ app.get('/', (req, res) => {
     endpoints: {
       auth: '/api/auth',
       categories: '/api/categories',
+      products: '/api/products',
+      brands: '/api/admin/brands',
+      cart: '/api/cart',
+      wishlist: '/api/wishlist',
       admin: '/api/admin',
       hotels: '/api/hotels',
       rooms: '/api/rooms',

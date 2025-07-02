@@ -10,7 +10,7 @@ import MensBlackSuit from '../Images/MensBlackSuit.jpg';
 
 const categories = [
   { name: 'Men', image: MensBlackSuit, bg: 'bg-gradient-to-t from-[#47FF9A00] to-[#47FF9A]', route: '/categories/mens-wear' },
-  { name: 'Women', image: shirt, bg: 'bg-gradient-to-t from-[#47FFFF00] to-[#47FFFF]', route: '/categories/women-uniforms' },
+  { name: 'Women', image: shirt, bg: 'bg-gradient-to-t from-[#47FFFF00] to-[#47FFFF]', route: '/categories/womens-wear' },
   { name: 'Cosmetics', image: cosmeticImage, bg: 'bg-gradient-to-t from-[#BC47FF00] to-[#BC47FF]', route: '/categories/cosmetics' },
   { name: "Home Appliances",image: homeAppliances, bg: 'bg-gradient-to-t from-[#E6F24200] to-[#E6F242]', route:'/categories/homeappliances'}
 ];

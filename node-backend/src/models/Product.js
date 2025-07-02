@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
-// const Brand = require('./Brand'); // Only needed for field definition, not association here
-// const Category = require('./Category'); // Only needed for field definition, not association here
+const Brand = require('./Brand'); // Only needed for field definition, not association here
+const Category = require('./Category'); // Only needed for field definition, not association here
 // ProductAttribute association will be set in models/index.js to avoid circular dependency
 
 const Product = sequelize.define('Product', {

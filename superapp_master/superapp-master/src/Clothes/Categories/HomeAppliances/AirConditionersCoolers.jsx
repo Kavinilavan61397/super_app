@@ -4,12 +4,17 @@ import Footer from '../../../Utility/Footer';
 import { FaHeart, FaRegHeart, FaEye, FaFilter, FaSort } from 'react-icons/fa';
 import homeApplianceImg from '../../Images/homeAppliance.jpg';
 
-function ProductCard({ product, onQuickView }) {
+function ProductCard({ product, onQuickView, addToCart, addToWishlist, cartItems, wishlistItems }) {
     const isBestSeller = product.attributes?.find(attr => attr.attribute_name === 'isBestSeller')?.attribute_value === 'true';
     const rating = product.attributes?.find(attr => attr.attribute_name === 'Rating')?.attribute_value;
     const [qty, setQty] = useState(1);
-    const [wishlisted, setWishlisted] = useState(false);
-    const imgSrc = product.featured_image || product.photo || homeApplianceImg;
+    const imgSrc = product.photo ? `http://localhost:5000/uploads/${product.photo}` : (product.featured_image || homeApplianceImg);
+    const isInCart = cartItems.some(item => item.id === product.id);
+    const isWishlisted = wishlistItems.some(item => item.id === product.id);
+    const handleAddToCart = async () => {
+        if (isInCart) return;
+        await addToCart(product, qty);
+    };
     return (
         <div className="border rounded-2xl p-3 bg-white shadow-sm flex flex-col items-center relative h-full" style={{paddingBottom: 0, marginBottom: 0}}>
             <div className="relative w-full flex justify-center mb-2">
@@ -17,7 +22,7 @@ function ProductCard({ product, onQuickView }) {
                 {isBestSeller && (
                     <span className="absolute top-2 left-2 bg-yellow-400 text-[10px] font-semibold px-1.5 py-0.5 rounded z-10 mr-2" style={{lineHeight: '1.1'}}>Best Seller</span>
                 )}
-                <button className="absolute top-2 right-2 text-gray-400 hover:text-red-500 text-xl bg-white rounded-full p-1 z-10 ml-2" onClick={() => setWishlisted(w => !w)}>{wishlisted ? <FaHeart /> : <FaRegHeart />}</button>
+                <button className={`absolute top-2 right-2 text-xl bg-white rounded-full p-1 z-10 ml-2 ${isWishlisted ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`} onClick={() => addToWishlist(product)}>{isWishlisted ? <FaHeart /> : <FaRegHeart />}</button>
                 <button className="absolute top-2 right-10 text-gray-400 hover:text-blue-500 text-xl bg-white rounded-full p-1 z-10 ml-2" onClick={() => onQuickView(product)}><FaEye /></button>
             </div>
             <div className="font-semibold text-sm text-center mb-1 line-clamp-2">{product.name}</div>
@@ -31,7 +36,7 @@ function ProductCard({ product, onQuickView }) {
                 </div>
             </div>
             <div className="text-lg font-bold text-green-700 mb-1">₹{product.price}</div>
-            <button className="bg-[#5C3FFF] hover:bg-[#4326c7] text-white px-4 py-2 rounded text-xs font-semibold w-full mt-auto mb-2">Add to Cart</button>
+            <button className={`bg-black hover:bg-grey:800 text-white px-4 py-2 rounded text-xs font-semibold w-full mt-auto mb-2 ${isInCart ? 'opacity-60 cursor-not-allowed' : ''}`} onClick={handleAddToCart} disabled={isInCart}>{isInCart ? 'Added to Cart' : 'Add to Cart'}</button>
         </div>
     );
 }
@@ -92,6 +97,9 @@ function AirConditionersCoolers() {
         { value: 'price_desc', label: 'Price: High to Low' },
         { value: 'rating', label: 'Rating' }
     ]);
+    const [cartItems, setCartItems] = useState([]);
+    const [wishlistItems, setWishlistItems] = useState([]);
+    const token = localStorage.getItem('token');
 
     // Fetch products with filters
     const fetchProducts = async (filters = {}) => {
@@ -110,9 +118,10 @@ function AirConditionersCoolers() {
             });
             const res = await fetch(`/api/products/appliances?${params.toString()}`);
             const data = await res.json();
+            console.log('API data:',data);
             // Filter for 'Air Conditioners & Coolers' subcategory
             let filtered = (data.data || data).filter(
-              p => (p.category === 'Air Conditioners & Coolers' || p.category_name === 'Air Conditioners & Coolers' || (p.category && p.category.name === 'Air Conditioners & Coolers'))
+              p => (p.category === 'Air Conditioners & Coolers' || p.category.name === 'Air Conditioners & Coolers' )
             );
             // Apply Best Seller filter on frontend
             if (selectedAttributes.isBestSeller === 'true') {
@@ -155,9 +164,33 @@ function AirConditionersCoolers() {
         }
     };
 
+    // Fetch cart from backend
+    const fetchCart = async () => {
+        try {
+            const res = await fetch('http://localhost:5000/api/cart', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (res.ok && data && data.data && data.data.items) {
+                setCartItems(data.data.items.map(item => ({
+                    ...item.product,
+                    quantity: item.quantity,
+                    id: item.product_id,
+                    cartItemId: item.id
+                })));
+            } else {
+                setCartItems([]);
+            }
+        } catch (e) {
+            setCartItems([]);
+        }
+    };
+
     // Fetch on mount and whenever filters/search/sort change
     useEffect(() => {
         fetchProducts();
+        fetchCart();
+        fetchWishlist();
         // eslint-disable-next-line
     }, [search, sort, priceRange, selectedRating, selectedBrands, selectedAttributes]);
 
@@ -173,6 +206,75 @@ function AirConditionersCoolers() {
         setSelectedAttributes({});
         setShowFilterModal(false);
         fetchProducts();
+    };
+
+    const fetchWishlist = async () => {
+        try {
+            const res = await fetch('http://localhost:5000/api/wishlist', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (res.ok && data && data.data) {
+                setWishlistItems(data.data.map(item => ({
+                    ...item.product,
+                    id: item.product_id,
+                    wishlistItemId: item.id
+                })));
+            } else {
+                setWishlistItems([]);
+            }
+        } catch (e) {
+            setWishlistItems([]);
+        }
+    };
+
+    const addToCart = async (product, quantity = 1) => {
+        alert('addToCart called');
+        console.log('addToCart called', product, quantity);
+        try {
+            const response = await fetch('http://localhost:5000/api/cart/items', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    product_id: product.id,
+                    quantity
+                })
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || 'Failed to add to cart');
+            await fetchCart();
+            alert('Added to cart successfully!');
+        } catch (error) {
+            alert(error.message || 'Failed to add to cart');
+            console.error('addToCart error', error);
+        }
+    };
+    const addToWishlist = async (product) => {
+        const isInWishlist = wishlistItems.some(item => item.id === product.id);
+        try {
+            if (isInWishlist) {
+                const item = wishlistItems.find(item => item.id === product.id);
+                await fetch(`http://localhost:5000/api/wishlist/${item.wishlistItemId}`, {
+                    method: 'DELETE',
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+            } else {
+                await fetch('http://localhost:5000/api/wishlist', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ product_id: product.id })
+                });
+            }
+            await fetchWishlist();
+        } catch (error) {
+            alert('Failed to update wishlist');
+        }
     };
 
     return (
@@ -193,7 +295,7 @@ function AirConditionersCoolers() {
                 {/* Filter and Sort on the next line */}
                 <div className="flex flex-row items-center gap-2 mb-4">
                   <button
-                    className="flex items-center gap-1 px-3 py-1.5 bg-[#5C3FFF] text-white rounded-full font-semibold text-sm h-9 w-1/2 justify-center"
+                    className="flex items-center gap-1 px-3 py-1.5 bg-black text-white rounded-full font-semibold text-sm h-9 w-1/2 justify-center"
                     style={{ fontSize: '14px' }}
                     onClick={() => setShowFilterModal(true)}
                   >
@@ -274,7 +376,7 @@ function AirConditionersCoolers() {
                       ))}
                       <div className="flex gap-2 justify-end mt-6">
                         <button className="px-4 py-2 rounded-full border border-gray-300" onClick={handleClearFilters}>Clear</button>
-                        <button className="px-4 py-2 rounded-full bg-[#5C3FFF] text-white font-semibold" onClick={handleApplyFilters}>Apply</button>
+                        <button className="px-4 py-2 rounded-full bg-black text-white font-semibold" onClick={handleApplyFilters}>Apply</button>
                       </div>
                     </div>
                   </div>
@@ -287,7 +389,7 @@ function AirConditionersCoolers() {
                 )}
                 <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 mt-4">
                     {products.map(product => (
-                        <ProductCard key={product.id} product={product} onQuickView={setQuickViewProduct} />
+                        <ProductCard key={product.id} product={product} onQuickView={setQuickViewProduct} addToCart={addToCart} addToWishlist={addToWishlist} cartItems={cartItems} wishlistItems={wishlistItems} />
                     ))}
                 </div>
             </div>

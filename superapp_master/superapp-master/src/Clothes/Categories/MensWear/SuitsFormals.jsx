@@ -3,41 +3,42 @@ import Footer from '../../../Utility/Footer';
 import ClothesHeader from '../../Header/ClothesHeader';
 import { FaFilter, FaHeart, FaEye, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 
 // Import images
-import NavyBlueBusinessSuit from '../../Images/ThreePieceSuit.jpg';
-import FormalWhiteShirt from '../../Images/ThreePieceSuit.jpg';
-import BlackTuxedo from '../../Images/ThreePieceSuit.jpg';
-import GreySlimFitSuit from '../../Images/ThreePieceSuit.jpg';
-import BlueStripedShirt from '../../Images/ThreePieceSuit.jpg';
-import FormalBlackTrouser from '../../Images/ThreePieceSuit.jpg';
-import ThreePieceSuit from '../../Images/ThreePieceSuit.jpg';
-import SilkTieSet from '../../Images/ThreePieceSuit.jpg';
-import CharcoalGreySuit from '../../Images/ThreePieceSuit.jpg';
-import FormalWaistcoat from '../../Images/ThreePieceSuit.jpg';
-import DoubleBreastedSuit from '../../Images/ThreePieceSuit.jpg';
-import FormalDressShirt from '../../Images/ThreePieceSuit.jpg';
-import PinstripeSuit from '../../Images/ThreePieceSuit.jpg';
-import FormalBlazer from '../../Images/ThreePieceSuit.jpg';
-import FormalChinos from '../../Images/ThreePieceSuit.jpg';
+import Suit from '../../Images/NavyBlueBlazer.png';
+import Blazer from '../../Images/NavyBlueBlazer.png';
+import FormalShirt from '../../Images/WhiteFormalShirt.jpg';
+import DressPants from '../../Images/NavyBlueBlazer.png';
+import Waistcoat from '../../Images/NavyBlueBlazer.png';
+import Tie from '../../Images/NavyBlueBlazer.png';
+import Cufflinks from '../../Images/NavyBlueBlazer.png';
+import PocketSquare from '../../Images/NavyBlueBlazer.png';
+import FormalShoes from '../../Images/RunningShoes.png';
+import Belt from '../../Images/NavyBlueBlazer.png';
+import Watch from '../../Images/NavyBlueBlazer.png';
+import Briefcase from '../../Images/NavyBlueBlazer.png';
+import Perfume from '../../Images/NavyBlueBlazer.png';
+import Sunglasses from '../../Images/NavyBlueBlazer.png';
 
-const suitsFormalsItems = [
-  { id: 14, name: 'Navy Blue Business Suit', originalPrice: 8000, discountedPrice: 6400, image: NavyBlueBusinessSuit, description: 'Premium quality navy blue business suit.', rating: 4.7, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Suits & Formals', sizes: ['S', 'M', 'L', 'XL'], brand: 'Raymond', material: 'Wool Blend' },
-  { id: 15, name: 'Formal White Shirt', originalPrice: 1800, discountedPrice: 1440, image: FormalWhiteShirt, description: 'Crisp white formal shirt.', rating: 4.4, isBestSeller: false, quantity: 1, category: 'Men\'s Wear - Suits & Formals', sizes: ['S', 'M', 'L', 'XL'], brand: 'Van Heusen', material: 'Cotton' },
-  { id: 16, name: 'Black Tuxedo', originalPrice: 12000, discountedPrice: 9600, image: BlackTuxedo, description: 'Elegant black tuxedo for special events.', rating: 4.9, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Suits & Formals', sizes: ['M', 'L', 'XL', 'XXL'], brand: 'Raymond', material: 'Wool Blend' },
-  { id: 17, name: 'Grey Slim Fit Suit', originalPrice: 7500, discountedPrice: 6000, image: GreySlimFitSuit, description: 'Modern grey slim fit suit.', rating: 4.5, isBestSeller: false, quantity: 1, category: 'Men\'s Wear - Suits & Formals', sizes: ['S', 'M', 'L'], brand: 'Raymond', material: 'Wool Blend' },
-  { id: 18, name: 'Blue Striped Shirt', originalPrice: 1600, discountedPrice: 1280, image: BlueStripedShirt, description: 'Stylish blue striped formal shirt.', rating: 4.3, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Suits & Formals', sizes: ['S', 'M', 'L', 'XL'], brand: 'Van Heusen', material: 'Cotton' },
-  { id: 19, name: 'Formal Black Trousers', originalPrice: 2000, discountedPrice: 1600, image: FormalBlackTrouser, description: 'Classic black formal trousers.', rating: 4.2, isBestSeller: false, quantity: 1, category: 'Men\'s Wear - Suits & Formals', sizes: ['28', '30', '32', '34', '36'], brand: 'Raymond', material: 'Wool Blend' },
-  { id: 20, name: 'Three-Piece Suit', originalPrice: 10000, discountedPrice: 8000, image: ThreePieceSuit, description: 'Complete three-piece suit for a distinguished look.', rating: 4.8, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Suits & Formals', sizes: ['M', 'L', 'XL'], brand: 'Park Avenue', material: 'Wool Blend' },
-  { id: 21, name: 'Silk Tie Set', originalPrice: 1000, discountedPrice: 800, image: SilkTieSet, description: 'Premium silk tie and pocket square set.', rating: 4.6, isBestSeller: false, quantity: 1, category: 'Men\'s Wear - Suits & Formals', sizes: ['OS'], brand: 'Van Heusen', material: 'Silk' },
-  { id: 22, name: 'Charcoal Grey Suit', originalPrice: 8500, discountedPrice: 6800, image: CharcoalGreySuit, description: 'Classic charcoal grey suit for business meetings.', rating: 4.7, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Suits & Formals', sizes: ['S', 'M', 'L', 'XL'], brand: 'Raymond', material: 'Wool Blend' },
-  { id: 23, name: 'Formal Waistcoat', originalPrice: 3500, discountedPrice: 2800, image: FormalWaistcoat, description: 'Elegant formal waistcoat for special occasions.', rating: 4.5, isBestSeller: false, quantity: 1, category: 'Men\'s Wear - Suits & Formals', sizes: ['S', 'M', 'L', 'XL'], brand: 'Van Heusen', material: 'Wool Blend' },
-  { id: 24, name: 'Double-Breasted Suit', originalPrice: 11000, discountedPrice: 8800, image: DoubleBreastedSuit, description: 'Stylish double-breasted suit for a modern look.', rating: 4.8, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Suits & Formals', sizes: ['M', 'L', 'XL'], brand: 'Park Avenue', material: 'Wool Blend' },
-  { id: 25, name: 'Formal Dress Shirt', originalPrice: 2200, discountedPrice: 1760, image: FormalDressShirt, description: 'Premium cotton formal dress shirt.', rating: 4.4, isBestSeller: false, quantity: 1, category: 'Men\'s Wear - Suits & Formals', sizes: ['S', 'M', 'L', 'XL'], brand: 'Van Heusen', material: 'Cotton' },
-  { id: 26, name: 'Pinstripe Suit', originalPrice: 9000, discountedPrice: 7200, image: PinstripeSuit, description: 'Classic pinstripe suit for a professional appearance.', rating: 4.6, isBestSeller: true, quantity: 1, category: 'Men\'s Wear - Suits & Formals', sizes: ['S', 'M', 'L', 'XL'], brand: 'Raymond', material: 'Wool Blend' },
-  { id: 27, name: 'Formal Blazer', originalPrice: 6000, discountedPrice: 4800, image: FormalBlazer, description: 'Versatile formal blazer for various occasions.', rating: 4.5, isBestSeller: false, quantity: 1, category: 'Men\'s Wear - Suits & Formals', sizes: ['S', 'M', 'L', 'XL'], brand: 'Park Avenue', material: 'Wool Blend' },
-  { id: 29, name: 'Formal Chinos', originalPrice: 1800, discountedPrice: 1440, image: FormalChinos, description: 'Comfortable formal chinos for business casual.', rating: 4.3, isBestSeller: false, quantity: 1, category: 'Men\'s Wear - Suits & Formals', sizes: ['28', '30', '32', '34', '36'], brand: 'Raymond', material: 'Cotton' }
-];
+// Fallback images mapping
+const fallbackImages = {
+  'Suit': Suit,
+  'Blazer': Blazer,
+  'Formal Shirt': FormalShirt,
+  'Dress Pants': DressPants,
+  'Waistcoat': Waistcoat,
+  'Tie': Tie,
+  'Cufflinks': Cufflinks,
+  'Pocket Square': PocketSquare,
+  'Formal Shoes': FormalShoes,
+  'Belt': Belt,
+  'Watch': Watch,
+  'Briefcase': Briefcase,
+  'Perfume': Perfume,
+  'Sunglasses': Sunglasses,
+  'default': Suit
+};
 
 const ProductCard = ({ name, originalPrice, discountedPrice, image, description, rating, isBestSeller, onQuickView, item, addToCart, addToWishlist, cartItems, wishlistItems }) => {
   const [selectedSize, setSelectedSize] = useState(item.sizes && item.sizes.length > 0 ? item.sizes[0] : 'S');
@@ -125,21 +126,105 @@ function SuitsFormals() {
   const [maxPrice, setMaxPrice] = useState(10000);
   const [selectedBrands, setSelectedBrands] = useState([]);
   const [selectedMaterials, setSelectedMaterials] = useState([]);
+  const [selectedTopics, setSelectedTopics] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const filterButtonRef = React.useRef(null);
   const filterPanelRef = React.useRef(null);
 
-  const allAvailableSizes = Array.from(new Set(suitsFormalsItems.flatMap(item => item.sizes)));
+  // Fetch products from backend
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get('http://localhost:5000/api/products/category/name/mens-suits-formals');
+        
+        // Transform the data to match the expected format
+        const transformedProducts = response.data.data.map(product => ({
+          id: product.id,
+          name: product.name,
+          originalPrice: parseFloat(product.price),
+          discountedPrice: parseFloat(product.discounted_price || product.price),
+          image: product.photo ? `http://localhost:5000/uploads/${product.photo}` : (fallbackImages[product.name] || fallbackImages.default),
+          description: product.description || 'Product description',
+          rating: product.rating || 4.0,
+          isBestSeller: product.is_bestseller || false,
+          quantity: 1,
+          category: 'Men\'s Wear - Suits & Formals',
+          sizes: product.sizes ? JSON.parse(product.sizes) : ['S', 'M', 'L', 'XL'],
+          brand: product.brand?.name || 'Brand',
+          material: product.material || 'Wool',
+          topic: product.topic || 'Suits'
+        }));
+        
+        setProducts(transformedProducts);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching products:', err);
+        setError('Failed to load products');
+        // Fallback to empty array
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  const allAvailableSizes = Array.from(new Set(products.flatMap(item => item.sizes || [])));
 
   // Extract unique brands from items
-  const allBrands = Array.from(new Set(suitsFormalsItems.flatMap(item => item.brand.split(',').map(b => b.trim()))));
+  const allBrands = Array.from(new Set(products.flatMap(item => (item.brand || '').split(',').map(b => b.trim()))));
   // Extract unique materials from items
-  const allMaterials = Array.from(new Set(suitsFormalsItems.map(item => item.material)));
+  const allMaterials = Array.from(new Set(products.map(item => item.material || 'Wool')));
+  const allTopics = Array.from(new Set(products.map(item => item.topic || 'Suits')));
+
+  // Fetch cart from backend
+  const fetchCart = async () => {
+    try {
+      const cartRes = await axios.get('http://localhost:5000/api/cart', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (cartRes.data && cartRes.data.data && cartRes.data.data.items) {
+        setCartItems(cartRes.data.data.items.map(item => ({
+          ...item.product,
+          quantity: item.quantity,
+          id: item.product_id,
+          cartItemId: item.id
+        })));
+      } else {
+        setCartItems([]);
+      }
+    } catch (e) {
+      setCartItems([]);
+    }
+  };
+
+  // Fetch wishlist from backend
+  const fetchWishlist = async () => {
+    try {
+      const res = await axios.get('http://localhost:5000/api/wishlist', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (res.data && res.data.data) {
+        setWishlistItems(res.data.data.map(item => ({
+          ...item.product,
+          id: item.product_id,
+          wishlistItemId: item.id
+        })));
+      } else {
+        setWishlistItems([]);
+      }
+    } catch (e) {
+      setWishlistItems([]);
+    }
+  };
 
   useEffect(() => {
-    const storedCart = JSON.parse(localStorage.getItem('cartItems')) || [];
-    const storedWishlist = JSON.parse(localStorage.getItem('wishlistItems')) || [];
-    setCartItems(storedCart);
-    setWishlistItems(storedWishlist);
+    fetchCart();
+    fetchWishlist();
   }, []);
 
   useEffect(() => {
@@ -158,10 +243,12 @@ function SuitsFormals() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showFilters]);
 
-  const filteredAndSortedItems = suitsFormalsItems
+  const filteredAndSortedItems = products
     .filter(item => {
+      // Always show items by default
       let showItem = true;
 
+      // Apply search filter if search term exists
       if (filterCategorySearch !== '') {
         showItem = showItem && (
           item.name.toLowerCase().includes(filterCategorySearch.toLowerCase()) ||
@@ -169,76 +256,141 @@ function SuitsFormals() {
         );
       }
 
-      if (minPrice > 0 || maxPrice < 10000) {
+      // Apply price range filter only if prices are set
+      if (minPrice > 0 || maxPrice < 999999) {
         showItem = showItem && (
           (minPrice > 0 ? item.discountedPrice >= minPrice : true) &&
-          (maxPrice < 10000 ? item.discountedPrice <= maxPrice : true)
+          (maxPrice < 999999 ? item.discountedPrice <= maxPrice : true)
         );
       }
 
+      // Apply size filter only if sizes are selected
       if (selectedSizes.length > 0) {
         showItem = showItem && selectedSizes.some(size => item.sizes && item.sizes.includes(size));
       }
 
       // Brand filter
       if (selectedBrands.length > 0) {
-        const itemBrands = item.brand.split(',').map(b => b.trim());
+        const itemBrands = (item.brand || '').split(',').map(b => b.trim());
         showItem = showItem && selectedBrands.some(brand => itemBrands.includes(brand));
       }
 
       // Material filter
       if (selectedMaterials.length > 0) {
-        showItem = showItem && selectedMaterials.includes(item.material);
+        showItem = showItem && selectedMaterials.includes(item.material || 'Wool');
+      }
+
+      // Topic filter
+      if (selectedTopics.length > 0) {
+        showItem = showItem && selectedTopics.includes(item.topic || 'Suits');
       }
 
       return showItem;
     })
     .sort((a, b) => {
       switch (sortOption) {
-        case 'price-low':
+        case 'price-low-high':
           return a.discountedPrice - b.discountedPrice;
-        case 'price-high':
+        case 'price-high-low':
           return b.discountedPrice - a.discountedPrice;
-        case 'best-seller':
-          return b.isBestSeller - a.isBestSeller;
+        case 'name-a-z':
+          return a.name.localeCompare(b.name);
+        case 'name-z-a':
+          return b.name.localeCompare(a.name);
+        case 'rating-high-low':
+          return b.rating - a.rating;
         default:
           return 0;
       }
     });
 
-  const addToCart = (product, quantity = 1, size = 'S') => {
-    const currentCart = JSON.parse(localStorage.getItem('cartItems')) || [];
-    const existingItemIndex = currentCart.findIndex((item) => item.id === product.id && item.category === product.category && item.size === size);
+  const addToCart = async (product, quantity = 1, size = 'S') => {
+    try {
+      // Check if user is logged in
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Please login first to add items to cart');
+        return;
+      }
 
-    if (existingItemIndex !== -1) {
-      const updatedCart = currentCart.map((item, index) =>
-        index === existingItemIndex ? { ...item, quantity: item.quantity + quantity } : item
+      console.log('Adding to cart:', {
+        product_id: product.id,
+        quantity,
+        variation_id: null,
+        token: token ? 'Token exists' : 'No token'
+      });
+
+      const response = await axios.post(
+        'http://localhost:5000/api/cart/items',
+        {
+          product_id: product.id,
+          quantity,
+          variation_id: null
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
       );
-      localStorage.setItem('cartItems', JSON.stringify(updatedCart));
-      setCartItems(updatedCart);
-      alert(`${quantity} of ${product.name} (Size: ${size}) quantity updated in cart!`);
-    } else {
-      const updatedCart = [...currentCart, { ...product, quantity: parseInt(quantity), size: size }];
-      localStorage.setItem('cartItems', JSON.stringify(updatedCart));
-      setCartItems(updatedCart);
-      alert(`${parseInt(quantity)} of ${product.name} (Size: ${size}) added to cart!`);
+
+      console.log('Item added to cart:', response.data);
+      
+      // Update localStorage for frontend state management
+      const currentCart = JSON.parse(localStorage.getItem('cartItems')) || [];
+      const existingItemIndex = currentCart.findIndex((item) => item.id === product.id && item.category === product.category && item.size === size);
+
+      if (existingItemIndex !== -1) {
+        const updatedCart = currentCart.map((item, index) =>
+          index === existingItemIndex ? { ...item, quantity: item.quantity + quantity } : item
+        );
+        localStorage.setItem('cartItems', JSON.stringify(updatedCart));
+        setCartItems(updatedCart);
+      } else {
+        const updatedCart = [...currentCart, { ...product, quantity: parseInt(quantity), size: size }];
+        localStorage.setItem('cartItems', JSON.stringify(updatedCart));
+        setCartItems(updatedCart);
+      }
+      
+      alert('Added to cart successfully!');
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      console.error('Error response:', error.response?.data);
+      console.error('Error status:', error.response?.status);
+      
+      if (error.response?.status === 401) {
+        alert('Please login first to add items to cart');
+      } else if (error.response?.status === 404) {
+        alert('Product not found');
+      } else {
+        alert('Failed to add to cart: ' + (error.response?.data?.message || error.message));
+      }
     }
   };
 
-  const addToWishlist = (product, quantity = 1, size = 'S') => {
-    const currentWishlist = JSON.parse(localStorage.getItem('wishlistItems')) || [];
-    const isInWishlist = currentWishlist.some((item) => item.id === product.id && item.category === product.category && item.size === size);
-
-    if (isInWishlist) {
-      const updatedWishlist = currentWishlist.filter((item) => !(item.id === product.id && item.category === product.category && item.size === size));
-      localStorage.setItem('wishlistItems', JSON.stringify(updatedWishlist));
-      setWishlistItems(updatedWishlist);
-      alert(`${product.name} removed from wishlist!`);
-    } else {
-      const updatedWishlist = [...currentWishlist, { ...product, quantity: parseInt(quantity), size: size }];
-      localStorage.setItem('wishlistItems', JSON.stringify(updatedWishlist));
-      setWishlistItems(updatedWishlist);
-      alert(`${product.name} added to wishlist!`);
+  const addToWishlist = async (product, quantity = 1, size = 'S') => {
+    const isInWishlist = wishlistItems.some(item => item.id === product.id);
+    try {
+      if (isInWishlist) {
+        const item = wishlistItems.find(item => item.id === product.id);
+        await axios.delete(`http://localhost:5000/api/wishlist/${item.wishlistItemId}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+      } else {
+        await axios.post('http://localhost:5000/api/wishlist', {
+          product_id: product.id
+        }, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          }
+        });
+      }
+      await fetchWishlist();
+    } catch (error) {
+      alert('Failed to update wishlist');
+      console.error('addToWishlist error', error);
     }
   };
 
@@ -255,6 +407,8 @@ function SuitsFormals() {
         : [...prevSizes, size]
     );
   };
+
+  if (loading) return <div>Loading...</div>;
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 font-sans">
@@ -294,9 +448,11 @@ function SuitsFormals() {
                     className="appearance-none bg-white border border-gray-300 rounded-md pl-4 pr-10 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                   <option value="default">Sort By</option>
-                    <option value="price-low">Price: Low to High</option>
-                    <option value="price-high">Price: High to Low</option>
-                    <option value="best-seller">Best Seller</option>
+                    <option value="price-low-high">Price: Low to High</option>
+                    <option value="price-high-low">Price: High to Low</option>
+                    <option value="name-a-z">Name: A-Z</option>
+                    <option value="name-z-a">Name: Z-A</option>
+                    <option value="rating-high-low">Rating: High to Low</option>
                   </select>
                   <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" />
                 </div>
@@ -421,6 +577,27 @@ function SuitsFormals() {
                     ))}
                   </div>
                 </div>
+                {/* Topic Filter */}
+                <div className="mb-2 sm:mb-6">
+                  <h3 className="text-sm sm:text-md font-semibold text-gray-700 mb-1 sm:mb-3">Topic</h3>
+                  <div className="flex flex-wrap gap-1 sm:gap-2">
+                    {allTopics.map(topic => (
+                      <button
+                        key={topic}
+                        className={`px-2 sm:px-3 py-1 border rounded-md text-xs sm:text-sm ${
+                          selectedTopics.includes(topic)
+                            ? 'bg-blue-500 text-white border-blue-500'
+                            : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'
+                        }`}
+                        onClick={() => setSelectedTopics(selectedTopics.includes(topic)
+                          ? selectedTopics.filter(t => t !== topic)
+                          : [...selectedTopics, topic])}
+                      >
+                        {topic}
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 {/* Clear Filters Button */}
                 <div className="mt-2 sm:mt-6">
                     <div className="flex justify-end">
@@ -432,6 +609,7 @@ function SuitsFormals() {
                           setSelectedSizes([]);
                         setSelectedBrands([]);
                         setSelectedMaterials([]);
+                        setSelectedTopics([]);
                           setShowFilters(false);
                           setSortOption('default');
                         }}
@@ -450,7 +628,8 @@ function SuitsFormals() {
             maxPrice < 999999 || 
             selectedSizes.length > 0 ||
             selectedBrands.length > 0 ||
-            selectedMaterials.length > 0) && (
+            selectedMaterials.length > 0 ||
+            selectedTopics.length > 0) && (
             <div className="bg-gray-50 p-4 rounded-lg mb-4">
               <div className="flex flex-wrap gap-2">
                 {filterCategorySearch && filterCategorySearch.length > 0 && (
@@ -511,27 +690,58 @@ function SuitsFormals() {
                     </button>
                   </span>
                 ))}
+                {selectedTopics.length > 0 && selectedTopics.map(topic => (
+                  <span key={topic} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
+                    Topic: {topic}
+                    <button
+                      onClick={() => setSelectedTopics(selectedTopics.filter(t => t !== topic))}
+                      className="ml-2 text-blue-700 hover:text-blue-900"
+                    >
+                      &times;
+                    </button>
+                  </span>
+                ))}
+              </div>
             </div>
-          </div>
           )}
 
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-2">
-            {filteredAndSortedItems.map((item) => (
-              <ProductCard
-                key={item.id}
-                {...item}
-                onQuickView={handleQuickView}
-                addToCart={addToCart}
-                addToWishlist={addToWishlist}
-                cartItems={cartItems}
-                wishlistItems={wishlistItems}
-                item={item}
-              />
-            ))}
-            {filteredAndSortedItems.length === 0 && (
-              <p className="text-center text-gray-600 mt-8">No items found matching your criteria.</p>
-            )}
-          </div>
+          {/* Product Grid */}
+          {loading ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading products...</p>
+              </div>
+            </div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <p className="text-red-600 mb-4">{error}</p>
+              <button 
+                onClick={() => window.location.reload()} 
+                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+              >
+                Try Again
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-2">
+              {filteredAndSortedItems.map((item) => (
+                <ProductCard
+                  key={item.id}
+                  {...item}
+                  onQuickView={handleQuickView}
+                  addToCart={addToCart}
+                  addToWishlist={addToWishlist}
+                  cartItems={cartItems}
+                  wishlistItems={wishlistItems}
+                  item={item}
+                />
+              ))}
+              {filteredAndSortedItems.length === 0 && (
+                <p className="text-center text-gray-600 mt-8">No items found matching your criteria.</p>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -563,9 +773,9 @@ function SuitsFormals() {
                   <div className="flex items-baseline space-x-2 mb-2 sm:mb-4">
                     <p className="text-lg sm:text-2xl font-bold text-gray-900">₹{quickView.discountedPrice.toFixed(2)}</p>
                     <p className="text-base sm:text-xl text-gray-500 line-through">₹{quickView.originalPrice.toFixed(2)}</p>
-            </div>
+                  </div>
                   <p className="text-xs sm:text-base text-gray-600 mb-2 sm:mb-6">{quickView.description}</p>
-            {quickView.sizes && quickView.sizes.length > 0 && (
+                  {quickView.sizes && quickView.sizes.length > 0 && (
                     <div className="mb-2 sm:mb-6">
                       <h3 className="text-xs sm:text-sm font-medium text-gray-900 mb-1 sm:mb-2">Select Size</h3>
                       <div className="flex flex-wrap gap-1 sm:gap-2">
@@ -577,10 +787,10 @@ function SuitsFormals() {
                           >
                             {size}
                           </button>
-                  ))}
+                        ))}
                       </div>
-              </div>
-            )}
+                    </div>
+                  )}
                   <div className="flex items-center space-x-2 sm:space-x-4 mb-2 sm:mb-6">
                     <div className="flex items-center border border-gray-300 rounded-md">
                       <button
@@ -597,17 +807,17 @@ function SuitsFormals() {
                         +
                       </button>
                     </div>
-            </div>
+                  </div>
                   <div className="flex space-x-2 sm:space-x-4">
-            <button
-              onClick={() => {
-                addToCart(quickView, quickViewQuantity, quickViewSize);
-                setQuickView(null);
-              }}
+                    <button
+                      onClick={() => {
+                        addToCart(quickView, quickViewQuantity, quickViewSize);
+                        setQuickView(null);
+                      }}
                       className="flex-1 bg-black text-white py-2 px-2 sm:px-4 rounded-md hover:bg-gray-800 transition-colors text-xs sm:text-base"
-            >
-              Add to Cart
-            </button>
+                    >
+                      Add to Cart
+                    </button>
                     <button
                       onClick={() => {
                         addToWishlist(quickView, quickViewQuantity, quickViewSize);

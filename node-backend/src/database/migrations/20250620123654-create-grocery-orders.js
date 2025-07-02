@@ -13,7 +13,9 @@ module.exports = {
         references: {
           model: 'users',
           key: 'id'
-        }
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE'
       },
       total_amount: {
         type: Sequelize.DECIMAL(10, 2),

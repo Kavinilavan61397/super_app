@@ -15,10 +15,6 @@ exports.getCart = async (req, res) => {
           {
             model: Product,
             as: 'product'
-          },
-          {
-            model: ProductVariation,
-            as: 'variation'
           }
         ]
       }]
@@ -50,16 +46,15 @@ exports.addItem = async (req, res) => {
   try {
     console.log('Adding item to cart:', {
       product_id: req.body.product_id,
-      variation_id: req.body.variation_id,
       quantity: req.body.quantity,
       user_id: req.user?.id
     });
 
-    const { product_id, variation_id, quantity } = req.body;
+    const { product_id, quantity } = req.body;
 
     // Log the database operations
     console.log('Validating product...');
-    const product = await Product.findByPk(product_id);
+    let product = await Product.findByPk(product_id);
     console.log('Product found:', product ? product.toJSON() : 'not found');
 
     if (!product) {
@@ -69,31 +64,14 @@ exports.addItem = async (req, res) => {
       });
     }
 
-    // Validate product exists
-     product = await Product.findByPk(product_id);
-    if (!product) {
-      return res.status(404).json({
-        success: false,
-        message: 'Product not found'
-      });
-    }
-
-    // If variation provided, validate it exists
-    let variation = null;
-    if (variation_id) {
-      variation = await ProductVariation.findOne({
-        where: {
-          id: variation_id,
-          product_id
-        }
-      });
-      if (!variation) {
-        return res.status(404).json({
-          success: false,
-          message: 'Product variation not found'
-        });
-      }
-    }
+    // // Validate product exists
+    //  product = await Product.findByPk(product_id);
+    // if (!product) {
+    //   return res.status(404).json({
+    //     success: false,
+    //     message: 'Product not found'
+    //   });
+    // }
 
     // Get or create active cart
     let cart = await Cart.findOne({
@@ -114,12 +92,11 @@ exports.addItem = async (req, res) => {
     let cartItem = await CartItem.findOne({
       where: {
         cart_id: cart.id,
-        product_id,
-        variation_id: variation_id || null
+        product_id
       }
     });
 
-    const price = variation ? variation.price : product.price;
+    const price = product.price;
 
     if (cartItem) {
       // Update quantity and total price
@@ -133,7 +110,6 @@ exports.addItem = async (req, res) => {
       cartItem = await CartItem.create({
         cart_id: cart.id,
         product_id,
-        variation_id: variation_id || null,
         quantity: quantity || 1,
         price,
         total_price: price * (quantity || 1)
@@ -157,10 +133,6 @@ exports.addItem = async (req, res) => {
           {
             model: Product,
             as: 'product'
-          },
-          {
-            model: ProductVariation,
-            as: 'variation'
           }
         ]
       }]
@@ -239,10 +211,6 @@ exports.updateItem = async (req, res) => {
           {
             model: Product,
             as: 'product'
-          },
-          {
-            model: ProductVariation,
-            as: 'variation'
           }
         ]
       }]
@@ -314,10 +282,6 @@ exports.removeItem = async (req, res) => {
           {
             model: Product,
             as: 'product'
-          },
-          {
-            model: ProductVariation,
-            as: 'variation'
           }
         ]
       }]

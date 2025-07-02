@@ -1,45 +1,11 @@
 import React from "react";
 import MainDashboard from "views/admin/default";
 import authRoutes from "./routes/auth.routes";
-import {
-  MdSupervisorAccount,
-  MdLock,
-  MdSecurity ,
-  MdHome,
-  MdLocalShipping,
-  MdRestaurant,
-  MdCategory,
-  MdBrandingWatermark,
-  MdViewQuilt,
-  MdImage,
-  MdPerson,
-  MdPages,
-  MdDescription,
-  MdSettings,
-  MdHelp,
-  MdStar,
-  MdEmail,
-  MdLibraryBooks,
-  MdPayment,
-  MdStore,
-  MdInventory,
-  MdShoppingCart,
-  MdQuestionAnswer,
-  MdTag,
-  MdColorLens,
-  MdFormatSize,
-  MdAttachMoney,
-  MdGroup,
-  MdScale,
-  MdPeople,
-  MdLocalPizza,
-  MdHotel,
-  MdLocationCity,
-  MdHelpOutline,
-  MdLocalGroceryStore,
-  MdDirectionsCar
-} from "react-icons/md";
-import { FaTags, FaPercentage } from "react-icons/fa";
+import { MdSupervisorAccount, MdLock, MdSecurity , MdHome, MdLocalShipping, MdRestaurant, MdCategory,
+MdBrandingWatermark, MdViewQuilt, MdImage, MdPerson, MdPages, MdDescription, MdSettings, MdHelp,
+MdStar, MdEmail, MdLibraryBooks, MdPayment, MdStore, MdInventory, MdColorLens, MdShoppingCart,
+MdQuestionAnswer, MdTag, MdGroup, MdFormatSize, MdAttachMoney, MdScale, MdPeople, MdLocalPizza,
+MdHotel, MdLocationCity, MdHelpOutline, MdLocalGroceryStore, MdDirectionsCar} from "react-icons/md";
 import { AiOutlineShoppingCart, AiOutlineAppstore } from 'react-icons/ai';
 import BrandTable from "views/admin/Sidenav_pages/BrandTable";
 import CategoryTable from "views/admin/Sidenav_pages/CategoryTable";
@@ -390,76 +356,76 @@ const routes = [
       },
     ]
   },
-  {
-    name: "Content Management",
-    layout: "/admin",
-    icon: <MdLibraryBooks className="h-6 w-6" />,
-    subNav: [
-      {
-        name: "Pages",
-        layout: "/admin",
-        icon: <MdPages className="h-6 w-6" />,
-        path: "pages",
-        component: <Pages />,
-      },
-      {
-        name: "Banner",
-        layout: "/admin",
-        icon: <MdImage className="h-6 w-6" />,
-        path: "banner",
-        component: <Banner />,
-      },
-      {
-        name: "FAQ",
-        layout: "/admin",
-        icon: <MdHelp className="h-6 w-6" />,
-        path: "faq",
-        component: <Faq />,
-      },
-      {
-        name: "Home Page",
-        layout: "/admin",
-        icon: <MdHome className="h-6 w-6" />,
-        path: "homepage",
-        component: <HomePage />,
-      },
-      {
-        name: "Sections",
-        layout: "/admin",
-        icon: <MdLibraryBooks className="h-6 w-6" />,
-        path: "sectionname",
-        component: <SectionName />,
-      },
-      {
-        name: "Blog Category",
-        layout: "/admin",
-        icon: <MdCategory className="h-6 w-6" />,
-        path: "blogcategory",
-        component: <BlogCategory />,
-      },
-      {
-        name: "Blog Posts",
-        layout: "/admin",
-        icon: <MdDescription className="h-6 w-6" />,
-        path: "blogmain",
-        component: <BlogMain />,
-      },
-      {
-        name: "Tags",
-        layout: "/admin",
-        icon: <MdTag className="h-6 w-6" />,
-        path: "tags",
-        component: <Tags />,
-      },
-      {
-        name: "Enquiry",
-        layout: "/admin",
-        icon: <MdQuestionAnswer className="h-6 w-6" />, 
-        path: "enquiry",
-        component: <Enquiry />,
-      },
-    ]
-  },
+  // {
+  //   name: "Content Management",
+  //   layout: "/admin",
+  //   icon: <MdLibraryBooks className="h-6 w-6" />,
+  //   subNav: [
+  //     {
+  //       name: "Pages",
+  //       layout: "/admin",
+  //       icon: <MdPages className="h-6 w-6" />,
+  //       path: "pages",
+  //       component: <Pages />,
+  //     },
+  //     {
+  //       name: "Banner",
+  //       layout: "/admin",
+  //       icon: <MdImage className="h-6 w-6" />,
+  //       path: "banner",
+  //       component: <Banner />,
+  //     },
+  //     {
+  //       name: "FAQ",
+  //       layout: "/admin",
+  //       icon: <MdHelp className="h-6 w-6" />,
+  //       path: "faq",
+  //       component: <Faq />,
+  //     },
+  //     {
+  //       name: "Home Page",
+  //       layout: "/admin",
+  //       icon: <MdHome className="h-6 w-6" />,
+  //       path: "homepage",
+  //       component: <HomePage />,
+  //     },
+  //     {
+  //       name: "Sections",
+  //       layout: "/admin",
+  //       icon: <MdLibraryBooks className="h-6 w-6" />,
+  //       path: "sectionname",
+  //       component: <SectionName />,
+  //     },
+  //     {
+  //       name: "Blog Category",
+  //       layout: "/admin",
+  //       icon: <MdCategory className="h-6 w-6" />,
+  //       path: "blogcategory",
+  //       component: <BlogCategory />,
+  //     },
+  //     {
+  //       name: "Blog Posts",
+  //       layout: "/admin",
+  //       icon: <MdDescription className="h-6 w-6" />,
+  //       path: "blogmain",
+  //       component: <BlogMain />,
+  //     },
+  //     {
+  //       name: "Tags",
+  //       layout: "/admin",
+  //       icon: <MdTag className="h-6 w-6" />,
+  //       path: "tags",
+  //       component: <Tags />,
+  //     },
+  //     {
+  //       name: "Enquiry",
+  //       layout: "/admin",
+  //       icon: <MdQuestionAnswer className="h-6 w-6" />, 
+  //       path: "enquiry",
+  //       component: <Enquiry />,
+  //     },
+  //   ]
+  // },
   // Hidden routes (not shown in sidebar but accessible via direct URL)
   {
     name: "",

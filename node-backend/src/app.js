@@ -30,6 +30,8 @@ const locationRoutes = require('./routes/location.routes');
 const faqRoutes = require('./routes/faq.routes');
 const wishlistRoutes = require('./routes/wishlist.routes')
 const cartRoutes = require('./routes/cart.routes')
+const orderRoutes = require('./routes/order.routes')
+const adminOrderRoutes = require('./routes/adminOrder.routes')
 
 const app = express();
 
@@ -51,10 +53,12 @@ app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 // ✅ API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/admin/orders', adminOrderRoutes); // Admin order routes
 app.use('/api/admin', brandRoutes);     // /admin/brands
 app.use('/api/products',productRoutes);
 app.use('/api/wishlist',wishlistRoutes);
 app.use('/api/cart',cartRoutes);
+app.use('/api/orders', orderRoutes);    // User order routes
 app.use('/api/admin', sizeRoutes);      // /admin/sizes
 app.use('/api/admin', colorRoutes);     // /admin/colors
 app.use('/api/admin', unitRoutes);      // /admin/units
@@ -92,6 +96,7 @@ app.get('/', (req, res) => {
       products: '/api/products',
       brands: '/api/admin/brands',
       cart: '/api/cart',
+      orders: '/api/orders',
       wishlist: '/api/wishlist',
       admin: '/api/admin',
       hotels: '/api/hotels',

@@ -11,25 +11,50 @@ const Order = sequelize.define('Order', {
     type: DataTypes.BIGINT.UNSIGNED,
     allowNull: false
   },
+  order_number: {
+    type: DataTypes.STRING,
+    unique: true,
+    allowNull: false
+  },
   status: {
-    type: DataTypes.ENUM('pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'),
+    type: DataTypes.ENUM('pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'),
     defaultValue: 'pending'
   },
   total_amount: {
     type: DataTypes.DECIMAL(10, 2),
     allowNull: false
   },
+  subtotal: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: false
+  },
+  tax_amount: {
+    type: DataTypes.DECIMAL(10, 2),
+    defaultValue: 0
+  },
+  shipping_amount: {
+    type: DataTypes.DECIMAL(10, 2),
+    defaultValue: 0
+  },
+  discount_amount: {
+    type: DataTypes.DECIMAL(10, 2),
+    defaultValue: 0
+  },
   shipping_address: {
     type: DataTypes.JSON,
     allowNull: false
   },
-  payment_status: {
-    type: DataTypes.ENUM('pending', 'paid', 'failed'),
-    defaultValue: 'pending'
+  billing_address: {
+    type: DataTypes.JSON,
+    allowNull: false
   },
   payment_method: {
     type: DataTypes.STRING,
     allowNull: false
+  },
+  payment_status: {
+    type: DataTypes.ENUM('pending', 'paid', 'failed', 'refunded'),
+    defaultValue: 'pending'
   },
   payment_details: {
     type: DataTypes.JSON,
@@ -37,6 +62,10 @@ const Order = sequelize.define('Order', {
   },
   tracking_number: {
     type: DataTypes.STRING,
+    allowNull: true
+  },
+  notes: {
+    type: DataTypes.TEXT,
     allowNull: true
   },
   createdAt: {

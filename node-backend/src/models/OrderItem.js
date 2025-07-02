@@ -26,7 +26,8 @@ const OrderItem = sequelize.define('OrderItem', {
   },
   price: {
     type: DataTypes.DECIMAL(10, 2),
-    allowNull: false
+    allowNull: false,
+    field: 'price'
   },
   total_price: {
     type: DataTypes.DECIMAL(10, 2),
@@ -35,6 +36,7 @@ const OrderItem = sequelize.define('OrderItem', {
   product_data: {
     type: DataTypes.JSON,
     allowNull: false,
+    field: 'product_data',
     comment: 'Snapshot of product data at time of order'
   },
   createdAt: {

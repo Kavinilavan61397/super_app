@@ -9,11 +9,14 @@ router.use(protect);
 // Create order from cart
 router.post('/', orderController.createOrder);
 
-// Get all orders for user
+// Get user orders with pagination and filtering
 router.get('/', orderController.getUserOrders);
 
-// Get single order
+// Get single order by ID
 router.get('/:id', orderController.getOrder);
+
+// Get order by order number
+router.get('/number/:orderNumber', orderController.getOrderByNumber);
 
 // Cancel order
 router.post('/:id/cancel', orderController.cancelOrder);

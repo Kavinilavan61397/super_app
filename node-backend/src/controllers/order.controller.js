@@ -1,4 +1,4 @@
-const { Order, OrderItem, Cart, CartItem, Product, ProductVariation } = require('../models');
+const { Order, OrderItem, Cart, CartItem, Product, ProductVariation, User } = require('../models');
 const { sequelize } = require('../models');
 
 // Create order from cart
@@ -6,14 +6,20 @@ exports.createOrder = async (req, res) => {
   const transaction = await sequelize.transaction();
   
   try {
-    const { shipping_address, payment_method } = req.body;
+    const { shipping_address, billing_address, payment_method, notes } = req.body;
     
-    // Get active cart
+    // Validate required fields
+    if (!shipping_address || !billing_address || !payment_method) {
+      await transaction.rollback();
+      return res.status(400).json({
+        success: false,
+        message: 'Shipping address, billing address, and payment method are required'
+      });
+    }
+
+    // Get active cart with items
     const cart = await Cart.findOne({
-      where: {
-        user_id: req.user.id,
-        status: 'active'
-      },
+      where: { user_id: req.user.id, status: 'active' },
       include: [{
         model: CartItem,
         as: 'items',
@@ -33,21 +39,39 @@ exports.createOrder = async (req, res) => {
       });
     }
 
+    // Calculate totals
+    const subtotal = cart.items.reduce((sum, item) => sum + item.total_price, 0);
+    const tax_amount = subtotal * 0.1; // 10% tax - can be made configurable
+    const shipping_amount = 0; // Free shipping or calculate based on address
+    const discount_amount = 0; // Apply any discounts
+    const total_amount = subtotal + tax_amount + shipping_amount - discount_amount;
+
+    // Generate unique order number
+    const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+
     // Create order
     const order = await Order.create({
       user_id: req.user.id,
-      total_amount: cart.total_amount,
+      order_number: orderNumber,
+      total_amount,
+      subtotal,
+      tax_amount,
+      shipping_amount,
+      discount_amount,
       shipping_address,
+      billing_address,
       payment_method,
-      payment_status: 'pending'
+      notes
     }, { transaction });
 
-    // Create order items
+    // Create order items with product snapshots
     const orderItems = await Promise.all(cart.items.map(item => {
-      const productData = {
+      const productSnapshot = {
         name: item.product.name,
         sku: item.product.sku,
         price: item.price,
+        image: item.product.featured_image,
+        category: item.product.category?.name,
         variation: item.variation ? {
           sku: item.variation.sku,
           attributes: item.variation.attributes
@@ -59,18 +83,18 @@ exports.createOrder = async (req, res) => {
         product_id: item.product_id,
         variation_id: item.variation_id,
         quantity: item.quantity,
-        price: item.price,
+        unit_price: item.price,
         total_price: item.total_price,
-        product_data: productData
+        product_snapshot: productSnapshot
       }, { transaction });
     }));
 
-    // Update cart status
+    // Update cart status to completed
     await cart.update({ status: 'completed' }, { transaction });
 
     await transaction.commit();
 
-    // Fetch complete order with items
+    // Return complete order with items
     const completeOrder = await Order.findByPk(order.id, {
       include: [{
         model: OrderItem,
@@ -86,57 +110,64 @@ exports.createOrder = async (req, res) => {
   } catch (error) {
     await transaction.rollback();
     console.error('Order creation error:', error);
-    if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
+    
+    if (error.name === 'SequelizeValidationError') {
       return res.status(400).json({
         success: false,
         message: 'Validation error',
-        errors: error.errors ? error.errors.map(e => e.message) : error.message
+        errors: error.errors.map(e => e.message)
       });
     }
+    
     res.status(500).json({
       success: false,
-      message: error.message,
-      stack: error.stack,
-      fullError: error
+      message: 'Failed to create order',
+      error: error.message
     });
   }
 };
 
-// Get user's orders
+// Get user orders with pagination and filtering
 exports.getUserOrders = async (req, res) => {
   try {
-    const orders = await Order.findAll({
-      where: { user_id: req.user.id },
+    const { page = 1, limit = 10, status, search } = req.query;
+    const offset = (page - 1) * limit;
+    
+    const whereClause = { user_id: req.user.id };
+    if (status) whereClause.status = status;
+
+    const orders = await Order.findAndCountAll({
+      where: whereClause,
       include: [{
         model: OrderItem,
         as: 'items'
       }],
-      order: [['created_at', 'DESC']]
+      order: [['created_at', 'DESC']],
+      limit: parseInt(limit),
+      offset: parseInt(offset)
     });
 
     res.json({
       success: true,
-      data: orders
+      data: orders.rows,
+      pagination: {
+        current_page: parseInt(page),
+        total_pages: Math.ceil(orders.count / limit),
+        total_items: orders.count,
+        items_per_page: parseInt(limit)
+      }
     });
   } catch (error) {
     console.error('Get orders error:', error);
-    if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
-      return res.status(400).json({
-        success: false,
-        message: 'Validation error',
-        errors: error.errors ? error.errors.map(e => e.message) : error.message
-      });
-    }
     res.status(500).json({
       success: false,
-      message: error.message,
-      stack: error.stack,
-      fullError: error
+      message: 'Failed to fetch orders',
+      error: error.message
     });
   }
 };
 
-// Get single order
+// Get single order by ID
 exports.getOrder = async (req, res) => {
   try {
     const order = await Order.findOne({
@@ -163,18 +194,10 @@ exports.getOrder = async (req, res) => {
     });
   } catch (error) {
     console.error('Get order error:', error);
-    if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
-      return res.status(400).json({
-        success: false,
-        message: 'Validation error',
-        errors: error.errors ? error.errors.map(e => e.message) : error.message
-      });
-    }
     res.status(500).json({
       success: false,
-      message: error.message,
-      stack: error.stack,
-      fullError: error
+      message: 'Failed to fetch order',
+      error: error.message
     });
   }
 };
@@ -196,6 +219,7 @@ exports.cancelOrder = async (req, res) => {
       });
     }
 
+    // Only allow cancellation for pending or confirmed orders
     if (!['pending', 'confirmed'].includes(order.status)) {
       return res.status(400).json({
         success: false,
@@ -212,18 +236,45 @@ exports.cancelOrder = async (req, res) => {
     });
   } catch (error) {
     console.error('Cancel order error:', error);
-    if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
-      return res.status(400).json({
-        success: false,
-        message: 'Validation error',
-        errors: error.errors ? error.errors.map(e => e.message) : error.message
-      });
-    }
     res.status(500).json({
       success: false,
-      message: error.message,
-      stack: error.stack,
-      fullError: error
+      message: 'Failed to cancel order',
+      error: error.message
+    });
+  }
+};
+
+// Get order by order number
+exports.getOrderByNumber = async (req, res) => {
+  try {
+    const order = await Order.findOne({
+      where: {
+        order_number: req.params.orderNumber,
+        user_id: req.user.id
+      },
+      include: [{
+        model: OrderItem,
+        as: 'items'
+      }]
+    });
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: order
+    });
+  } catch (error) {
+    console.error('Get order by number error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch order',
+      error: error.message
     });
   }
 }; 

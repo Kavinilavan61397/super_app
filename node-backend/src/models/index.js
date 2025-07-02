@@ -34,6 +34,7 @@ const Staff = require('./Staff');
 const Policy = require('./Policy');
 const Location = require('./Location');
 const Brand = require('./Brand');
+const Amenity = require('./Amenity');
 
 // --- Associations ---
 
@@ -107,7 +108,7 @@ if (User.associate) User.associate({ Staff });
 if (Staff.associate) Staff.associate({ User });
 
 // Register associations for Hotel and Room
-if (Hotel.associate) Hotel.associate({ Room, Policy, Location });
+if (Hotel.associate) Hotel.associate({ Room, Policy, Location, Amenity });
 if (Room.associate) Room.associate({ Hotel });
 
 // Register associations for Policy and Location
@@ -151,5 +152,6 @@ module.exports = {
   Policy,
   Location,
   Wishlist,
-  Brand
+  Brand,
+  Amenity
 };

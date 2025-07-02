@@ -76,6 +76,16 @@ Hotel.associate = (models) => {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE'
   });
+
+  // Many-to-many association with Amenity
+  Hotel.belongsToMany(models.Amenity, {
+    through: 'hotel_amenities',
+    foreignKey: 'hotel_id',
+    otherKey: 'amenity_id',
+    as: 'amenities',
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE'
+  });
 };
 
 module.exports = Hotel; 

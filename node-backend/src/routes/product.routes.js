@@ -31,7 +31,7 @@ router.get('/get_all_product', getAllProducts);
 router.get('/appliances', getApplianceProductsWithAttributes); // custom appliances endpoint
 router.get('/:id', getProductById);
 router.post('/save_product', protect, authorize('admin'), upload.single('product_image'), validateImage, createProduct);
-router.put('/update_product_by_id/:id', protect, authorize('admin'), upload.single('product_image'), validateImage, updateProduct);
+router.put('/update_product_by_id/:id', protect, authorize('admin'), upload.single('product_image'), updateProduct);
 router.delete('/delete_product_by_id/:id', protect, authorize('admin'), deleteProduct);
 router.delete('/delete_products', protect, authorize('admin'), bulkDeleteProducts);
 

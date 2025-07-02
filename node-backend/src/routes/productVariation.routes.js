@@ -17,7 +17,7 @@ router.get('/:id', getVariationById);
 
 // Protected routes (admin only)
 router.post('/', protect, authorize('admin'), upload.single('variation_image'), validateImage, createVariation);
-router.put('/:id', protect, authorize('admin'), upload.single('variation_image'), validateImage, updateVariation);
+router.put('/:id', protect, authorize('admin'), upload.single('variation_image'), updateVariation);
 router.delete('/:id', protect, authorize('admin'), deleteVariation);
 
 module.exports = router; 

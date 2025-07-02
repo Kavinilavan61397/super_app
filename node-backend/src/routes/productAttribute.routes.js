@@ -10,8 +10,8 @@ router.post('/', upload.single('attribute_image'), validateImage, controller.cre
 // Get attributes for a product (updated path to avoid conflict)
 router.get('/product/:product_id', controller.getByProduct);
 
-// Update an attribute (with image upload and validation)
-router.put('/:id', upload.single('attribute_image'), validateImage, controller.update);
+// Update an attribute (with optional image upload)
+router.put('/:id', upload.single('attribute_image'), controller.update);
 
 // Delete an attribute
 router.delete('/:id', controller.delete);

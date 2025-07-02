@@ -18,7 +18,7 @@ router.get('/:id', getCategoryById);
 
 // Protected routes (admin and ecommerce_admin)
 router.post('/', protect, authorize('admin', 'ecommerce_admin'), upload.single('category_image'), validateImage, createCategory);
-router.put('/:id', protect, authorize('admin', 'ecommerce_admin'), upload.single('category_image'), validateImage, updateCategory);
+router.put('/:id', protect, authorize('admin', 'ecommerce_admin'), upload.single('category_image'), updateCategory);
 router.delete('/:id', protect, authorize('admin', 'ecommerce_admin'), deleteCategory);
 router.patch('/:id/toggle-status', protect, authorize('admin', 'ecommerce_admin'), toggleStatus);
 

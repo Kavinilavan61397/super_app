@@ -15,8 +15,8 @@ router.get('/', hotelController.getAllHotels);
 router.get('/:id', hotelController.getHotelById);
 // Create hotel (with image upload and validation)
 router.post('/', upload.single('main_image'), validateImage, hotelController.createHotel);
-// Update hotel (with image upload and validation)
-router.put('/:id', upload.single('main_image'), validateImage, hotelController.updateHotel);
+// Update hotel (with optional image upload)
+router.put('/:id', upload.single('main_image'), hotelController.updateHotel);
 // Delete hotel
 router.delete('/:id', hotelController.deleteHotel);
 

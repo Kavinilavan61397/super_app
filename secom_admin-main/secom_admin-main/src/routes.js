@@ -143,27 +143,27 @@ const routes = [
         path: "orders",
         component: <Orders />,
       },
-      {
-        name: "Discount",
-        layout: "/admin",
-        icon: <FaPercentage className="h-6 w-6" />,
-        path: "discount",
-        component: <Discount />,
-      },
-      {
-        name: "Ratings",
-        layout: "/admin",
-        icon: <MdStar className="h-6 w-6" />, 
-        path: "rating",
-        component: <Rating />,
-      },
-      {
-        name: "Stock Management",
-        layout: "/admin",
-        icon: <MdStore className="h-6 w-6" />, 
-        path: "stockadjustment",
-        component: <StockAdjustment />,
-      },
+      // {
+      //   name: "Discount",
+      //   layout: "/admin",
+      //   icon: <FaPercentage className="h-6 w-6" />,
+      //   path: "discount",
+      //   component: <Discount />,
+      // },
+      // {
+      //   name: "Ratings",
+      //   layout: "/admin",
+      //   icon: <MdStar className="h-6 w-6" />, 
+      //   path: "rating",
+      //   component: <Rating />,
+      // },
+      // {
+      //   name: "Stock Management",
+      //   layout: "/admin",
+      //   icon: <MdStore className="h-6 w-6" />, 
+      //   path: "stockadjustment",
+      //   component: <StockAdjustment />,
+      // },
     ]
   },
   {
@@ -276,13 +276,13 @@ const routes = [
         path: "hotelpolicy",
         component: <HotelPolicy />,
       },
-      {
-        name: "Hotel FAQs",
-        layout: "/admin",
-        icon: <MdHelpOutline className="h-6 w-6" />,
-        path: "hotelfaqs",
-        component: <HotelFaqs />,
-      },
+      // {
+      //   name: "Hotel FAQs",
+      //   layout: "/admin",
+      //   icon: <MdHelpOutline className="h-6 w-6" />,
+      //   path: "hotelfaqs",
+      //   component: <HotelFaqs />,
+      // },
     ]
   },
   {

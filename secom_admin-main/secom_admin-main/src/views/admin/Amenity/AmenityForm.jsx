@@ -10,13 +10,24 @@ const schema = Yup.object().shape({
 });
 
 function AmenityForm({ initialValues = {}, onSubmit, onCancel, isEditMode }) {
-  const { control, handleSubmit, formState: { errors } } = useForm({
+  const { control, handleSubmit, formState: { errors }, setValue, watch } = useForm({
     resolver: yupResolver(schema),
     defaultValues: initialValues,
   });
+  const [file, setFile] = React.useState(null);
+
+  const handleFormSubmit = (data) => {
+    const formData = new FormData();
+    formData.append('name', data.name);
+    formData.append('status', data.status);
+    if (file) {
+      formData.append('attribute_image', file);
+    }
+    onSubmit(formData);
+  };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="p-4 space-y-4">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="p-4 space-y-4">
       <div>
         <label>Name</label>
         <Controller name="name" control={control} render={({ field }) => (
@@ -25,10 +36,8 @@ function AmenityForm({ initialValues = {}, onSubmit, onCancel, isEditMode }) {
         {errors.name && <span className="text-red-500">{errors.name.message}</span>}
       </div>
       <div>
-        <label>Icon (URL or class)</label>
-        <Controller name="icon" control={control} render={({ field }) => (
-          <input {...field} className="border px-2 py-1 w-full" />
-        )} />
+        <label>Icon (Image Upload)</label>
+        <input type="file" accept="image/*" onChange={e => setFile(e.target.files[0])} />
       </div>
       <div className="flex items-center">
         <Controller name="status" control={control} render={({ field }) => (

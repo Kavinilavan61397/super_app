@@ -2,7 +2,7 @@ const Amenity = require('../models/Amenity');
 
 exports.getAllAmenities = async (req, res) => {
   try {
-    const amenities = await Amenity.findAll();
+    const amenities = await Amenity.findAll({ order: [['createdAt', 'DESC']] });
     res.json({ success: true, data: amenities });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Error fetching amenities', error: error.message });
@@ -21,7 +21,13 @@ exports.getAmenityById = async (req, res) => {
 
 exports.createAmenity = async (req, res) => {
   try {
-    const { name, icon, status } = req.body;
+    console.log('DEBUG: req.body =', req.body);
+    console.log('DEBUG: req.file =', req.file);
+    const { name, status } = req.body;
+    let icon = req.body.icon;
+    if (req.file) {
+      icon = `/uploads/hotel_attributes/${req.file.filename}`;
+    }
     const amenity = await Amenity.create({ name, icon, status });
     res.status(201).json({ success: true, data: amenity });
   } catch (error) {
@@ -31,7 +37,11 @@ exports.createAmenity = async (req, res) => {
 
 exports.updateAmenity = async (req, res) => {
   try {
-    const { name, icon, status } = req.body;
+    const { name, status } = req.body;
+    let icon = req.body.icon;
+    if (req.file) {
+      icon = `/uploads/hotel_attributes/${req.file.filename}`;
+    }
     const amenity = await Amenity.findByPk(req.params.id);
     if (!amenity) return res.status(404).json({ success: false, message: 'Amenity not found' });
     await amenity.update({ name, icon, status });

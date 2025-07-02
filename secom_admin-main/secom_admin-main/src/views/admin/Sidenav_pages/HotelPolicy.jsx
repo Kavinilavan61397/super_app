@@ -109,15 +109,11 @@ function HotelPolicy() {
     
     const handleFormSubmit = async (data) => {
         setLoading(true);
-        const formData = new FormData();
-        formData.append('title', data.title);
-        formData.append('description', data.description);
-
         try {
-            await api.post('/api/policies', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
+            await api.post('/api/policies', {
+                title: data.title,
+                description: data.description
             });
-
             setOpenAddModal(false);
             fetchPolicyData();
             toast.success('Hotel Policy added successfully!');
@@ -131,16 +127,11 @@ function HotelPolicy() {
 
     const handleFormUpdate = async (data) => {
         setLoading(true);
-
-        const formData = new FormData();
-        formData.append('title', data.title);
-        formData.append('description', data.description);
-
         try {
-            await api.put(`/api/policies/${selectedQuestion.id}`, formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
+            await api.put(`/api/policies/${selectedQuestion.id}`, {
+                title: data.title,
+                description: data.description
             });
-
             setOpenEditModal(false);
             fetchPolicyData();
             toast.success('Hotel Policy updated successfully!');

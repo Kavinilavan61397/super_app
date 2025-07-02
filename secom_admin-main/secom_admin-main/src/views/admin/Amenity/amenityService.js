@@ -20,8 +20,8 @@ api.interceptors.request.use((config) => {
 const amenityService = {
   getAllAmenities: () => api.get('/api/amenities'),
   getAmenityById: (id) => api.get(`/api/amenities/${id}`),
-  createAmenity: (data) => api.post('/api/amenities', data),
-  updateAmenity: (id, data) => api.put(`/api/amenities/${id}`, data),
+  createAmenity: (data) => api.post('/api/amenities', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  updateAmenity: (id, data) => api.put(`/api/amenities/${id}`, data, { headers: { 'Content-Type': 'multipart/form-data' } }),
   deleteAmenity: (id) => api.delete(`/api/amenities/${id}`),
   toggleStatus: (id) => api.patch(`/api/amenities/${id}/toggle-status`),
 };

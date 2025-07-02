@@ -24,7 +24,6 @@ const HotelService = {
   createHotel: (data) => api.post('/api/hotels', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
   updateHotel: (id, data) => api.put(`/api/hotels/${id}`, data, { headers: { 'Content-Type': 'multipart/form-data' } }),
   deleteHotel: (id) => api.delete(`/api/hotels/${id}`),
-  getAmenities: () => api.get('/api/amenities'),
   getPolicies: () => api.get('/api/policies'),
   getFAQs: () => api.get('/api/faqs'),
   getLocations: () => api.get('/api/locations'),

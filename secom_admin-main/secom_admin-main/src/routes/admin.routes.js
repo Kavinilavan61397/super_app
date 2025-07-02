@@ -17,7 +17,8 @@ import RestaurantForm from '../views/admin/Sidenav_pages/RestaurantForm';
 import DishTable from '../views/admin/Sidenav_pages/DishTable';
 import DishForm from '../views/admin/Sidenav_pages/DishForm';
 import Staff from '../views/admin/Sidenav_pages/Staff';
-import Hotel from 'views/admin/Hotel';
+import HotelTable from '../views/admin/Hotel/HotelTable';
+import HotelForm from '../views/admin/Hotel/HotelForm';
 
 const adminRoutes = [
   {
@@ -133,15 +134,16 @@ const adminRoutes = [
     element: <Staff />,
   },
   {
-    path: 'hotels',
-    element: <Hotel />,
-    name: 'Hotels',
-    layout: '/admin',
+    path: 'hotel',
+    element: <HotelTable />,
   },
   {
-    path: 'allhotel',
-    element: <Hotel />,
-    name: 'All Hotels',
+    path: 'hotel/new',
+    element: <HotelForm />,
+  },
+  {
+    path: 'hotel/edit/:id',
+    element: <HotelForm />,
   },
 ];
 

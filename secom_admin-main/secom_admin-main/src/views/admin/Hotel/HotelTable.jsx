@@ -1,179 +1,318 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import {
+  Card,
+  CardHeader,
+  CardBody,
+  Typography,
+  Button,
+  Input,
+  Chip,
+  IconButton,
+  Tooltip,
+  Dialog,
+  DialogHeader,
+  DialogBody,
+  DialogFooter,
+} from '@material-tailwind/react';
+import { PencilIcon, TrashIcon, PlusIcon, MagnifyingGlassIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import HotelService from './HotelService';
+import API_CONFIG from '../../../config/api.config';
+import { toast } from 'react-toastify';
 
-function HotelTable({ onAdd, onEdit, onDelete }) {
+const HotelTable = () => {
   const [hotels, setHotels] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [deleteDialog, setDeleteDialog] = useState({ open: false, hotel: null });
 
-  useEffect(() => {
-    fetchHotels();
-  }, []);
-
+  // Fetch hotels
   const fetchHotels = async () => {
-    setLoading(true);
     try {
+      setLoading(true);
+      console.log('Fetching hotels...');
       const response = await HotelService.getAllHotels();
+      console.log('Hotels fetched successfully:', response);
       setHotels(response.data.data || []);
     } catch (error) {
       console.error('Error fetching hotels:', error);
+      console.error('Error details:', error.response?.data || error.message);
+      toast.error('Failed to fetch hotels');
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredHotels = hotels.filter(hotel =>
-    hotel.name?.toLowerCase().includes(search.toLowerCase()) ||
-    hotel.city?.toLowerCase().includes(search.toLowerCase()) ||
-    hotel.state?.toLowerCase().includes(search.toLowerCase())
-  );
+  useEffect(() => {
+    fetchHotels();
+  }, []);
 
-  // Pagination logic
-  const indexOfLast = currentPage * itemsPerPage;
-  const indexOfFirst = indexOfLast - itemsPerPage;
-  const currentHotels = filteredHotels.slice(indexOfFirst, indexOfLast);
-  const totalPages = Math.ceil(filteredHotels.length / itemsPerPage);
+  // Handle delete
+  const handleDelete = async () => {
+    if (!deleteDialog.hotel) return;
+    try {
+      await HotelService.deleteHotel(deleteDialog.hotel.id);
+      toast.success('Hotel deleted successfully');
+      fetchHotels();
+      setDeleteDialog({ open: false, hotel: null });
+    } catch (error) {
+      console.error('Error deleting hotel:', error);
+      toast.error('Failed to delete hotel');
+    }
+  };
+
+  // Filter hotels
+  const filteredHotels = hotels.filter((hotel) => {
+    const matchesSearch = hotel.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         hotel.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         hotel.state?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         hotel.address?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || 
+                         (statusFilter === 'active' && hotel.status) ||
+                         (statusFilter === 'inactive' && !hotel.status);
+    return matchesSearch && matchesStatus;
+  });
+
+  // Navigate to add/edit form
+  const navigateToForm = (hotel = null) => {
+    const path = hotel ? `/admin/hotel/edit/${hotel.id}` : '/admin/hotel/new';
+    window.location.href = path;
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Typography variant="h6">Loading hotels...</Typography>
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex-1 max-w-md">
-          <input
-            type="text"
-            placeholder="Search by hotel name, city, or state..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
-        </div>
-        <button 
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors ml-4"
-          onClick={onAdd}
-        >
-          Add Hotel
-        </button>
-      </div>
-      {loading ? (
-        <div className="flex justify-center items-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          <span className="ml-2 text-gray-600">Loading hotels...</span>
-        </div>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white border border-gray-300">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Name</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Address</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">City/State</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Policies</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Locations</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {currentHotels.map(hotel => (
-                <tr key={hotel.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {hotel.name}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                    {hotel.address}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                    {hotel.city}, {hotel.state}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      hotel.status 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {hotel.status ? 'Active' : 'Inactive'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-500">
-                    {hotel.policies && hotel.policies.length > 0 ? (
-                      <div className="flex flex-wrap gap-1">
-                        {hotel.policies.slice(0, 2).map(policy => (
-                          <span key={policy.id} className="inline-flex px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
-                            {policy.title}
-                          </span>
-                        ))}
-                        {hotel.policies.length > 2 && (
-                          <span className="inline-flex px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-full">
-                            +{hotel.policies.length - 2} more
-                          </span>
-                        )}
-                      </div>
-                    ) : (
-                      <span className="text-gray-400">None</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-500">
-                    {hotel.locations && hotel.locations.length > 0 ? (
-                      <div className="flex flex-wrap gap-1">
-                        {hotel.locations.slice(0, 2).map(location => (
-                          <span key={location.id} className="inline-flex px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
-                            {location.name}
-                          </span>
-                        ))}
-                        {hotel.locations.length > 2 && (
-                          <span className="inline-flex px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-full">
-                            +{hotel.locations.length - 2} more
-                          </span>
-                        )}
-                      </div>
-                    ) : (
-                      <span className="text-gray-400">None</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
-                    <button 
-                      className="text-indigo-600 hover:text-indigo-900 mr-3"
-                      onClick={() => onEdit(hotel)}
-                    >
-                      Edit
-                    </button>
-                    <button 
-                      className="text-red-600 hover:text-red-900"
-                      onClick={() => onDelete(hotel.id)}
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-      {/* Pagination Controls */}
-      {totalPages > 1 && (
-        <div className="flex justify-center mt-6">
-          <div className="flex space-x-1">
-            {Array.from({ length: totalPages }, (_, i) => (
-              <button
-                key={i}
-                className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                  currentPage === i + 1 
-                    ? 'bg-blue-600 text-white' 
-                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                }`}
-                onClick={() => setCurrentPage(i + 1)}
+    <div className="mt-8 mb-8 flex flex-col items-center gap-8">
+      <Card className="w-full max-w-7xl shadow-lg p-2">
+        <CardHeader variant="text" color="blue" className="mb-4 p-4 rounded-t-lg">
+          <Typography variant="h5" color="white">
+            Hotels
+          </Typography>
+        </CardHeader>
+        <CardBody className="px-0 pt-0 pb-2">
+          {/* Search and Filter Section */}
+          <div className="flex flex-col md:flex-row gap-4 p-4 border-b border-blue-gray-50 bg-blue-gray-50/30 rounded-t-lg">
+            <div className="flex-1">
+              <div className="relative">
+                <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-blue-gray-400" />
+                <Input
+                  type="text"
+                  placeholder="Search hotels..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                  labelProps={{ className: "hidden" }}
+                />
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="px-3 py-2 border border-blue-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                {i + 1}
-              </button>
-            ))}
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+              <Button
+                color="blue"
+                className="flex items-center gap-2"
+                onClick={() => navigateToForm()}
+              >
+                <PlusIcon className="h-4 w-4" />
+                Add Hotel
+              </Button>
+            </div>
           </div>
-        </div>
-      )}
-      {/* Placeholders for modals/forms */}
+
+          {/* Table with fixed header and scrollable tbody */}
+          <div className="bg-white rounded-b-lg shadow-inner">
+            <table className="w-full min-w-[800px] table-fixed">
+              <thead>
+                <tr>
+                  <th className="border-b border-blue-gray-50 py-3 px-6 text-left w-20">
+                    <Typography variant="small" className="text-[11px] font-medium uppercase text-blue-gray-400">
+                      Image
+                    </Typography>
+                  </th>
+                  <th className="border-b border-blue-gray-50 py-3 px-6 text-left w-40">
+                    <Typography variant="small" className="text-[11px] font-medium uppercase text-blue-gray-400">
+                      Name
+                    </Typography>
+                  </th>
+                  <th className="border-b border-blue-gray-50 py-3 px-6 text-left w-56">
+                    <Typography variant="small" className="text-[11px] font-medium uppercase text-blue-gray-400">
+                      Address
+                    </Typography>
+                  </th>
+                  <th className="border-b border-blue-gray-50 py-3 px-6 text-left w-40">
+                    <Typography variant="small" className="text-[11px] font-medium uppercase text-blue-gray-400">
+                      City/State
+                    </Typography>
+                  </th>
+                  <th className="border-b border-blue-gray-50 py-3 px-6 text-left w-28">
+                    <Typography variant="small" className="text-[11px] font-medium uppercase text-blue-gray-400">
+                      Status
+                    </Typography>
+                  </th>
+                  <th className="border-b border-blue-gray-50 py-3 px-6 text-left w-32">
+                    <Typography variant="small" className="text-[11px] font-medium uppercase text-blue-gray-400">
+                      Policies
+                    </Typography>
+                  </th>
+                  <th className="border-b border-blue-gray-50 py-3 px-6 text-left w-32">
+                    <Typography variant="small" className="text-[11px] font-medium uppercase text-blue-gray-400">
+                      Locations
+                    </Typography>
+                  </th>
+                  <th className="border-b border-blue-gray-50 py-3 px-6 text-left w-24">
+                    <Typography variant="small" className="text-[11px] font-medium uppercase text-blue-gray-400">
+                      Actions
+                    </Typography>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredHotels.map((hotel, key) => (
+                  <tr key={key} className="hover:bg-blue-gray-50 transition-colors">
+                    <td className="py-3 px-6 w-20">
+                      {hotel.main_image ? (
+                        <img
+                          src={`${API_CONFIG.BASE_URL}${hotel.main_image}`}
+                          alt={hotel.name}
+                          className="h-16 w-16 rounded-lg object-cover border border-blue-gray-100"
+                        />
+                      ) : (
+                        <div className="h-16 w-16 rounded-lg bg-blue-gray-100 flex items-center justify-center border border-blue-gray-100">
+                          <Typography variant="small" className="text-blue-gray-400">
+                            No Image
+                          </Typography>
+                        </div>
+                      )}
+                    </td>
+                    <td className="py-3 px-6 w-40">
+                      <Typography variant="small" color="blue-gray" className="font-medium">
+                        {hotel.name}
+                      </Typography>
+                    </td>
+                    <td className="py-3 px-6 w-56">
+                      <Typography variant="small" color="blue-gray" className="font-normal">
+                        {hotel.address || 'No address'}
+                      </Typography>
+                    </td>
+                    <td className="py-3 px-6 w-40">
+                      <Typography variant="small" color="blue-gray" className="font-normal">
+                        {hotel.city}, {hotel.state}
+                      </Typography>
+                    </td>
+                    <td className="py-3 px-6 w-28 align-middle">
+                      <span className={
+                        `inline-flex items-center justify-center px-2 py-1 text-xs font-semibold rounded-full
+                        ${hotel.status === true ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}
+                        leading-tight min-w-[56px] h-6`
+                      }>
+                        {hotel.status === true ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+                    <td className="py-3 px-6 w-32">
+                      <Typography variant="small" color="blue-gray" className="font-normal">
+                        {hotel.policies && hotel.policies.length > 0 ? (
+                          <div className="flex flex-wrap gap-1">
+                            {hotel.policies.slice(0, 2).map(policy => (
+                              <span key={policy.id} className="inline-flex px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
+                                {policy.title}
+                              </span>
+                            ))}
+                            {hotel.policies.length > 2 && (
+                              <span className="inline-flex px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-full">
+                                +{hotel.policies.length - 2} more
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-gray-400">None</span>
+                        )}
+                      </Typography>
+                    </td>
+                    <td className="py-3 px-6 w-32">
+                      <Typography variant="small" color="blue-gray" className="font-normal">
+                        {hotel.locations && hotel.locations.length > 0 ? (
+                          <div className="flex flex-wrap gap-1">
+                            {hotel.locations.slice(0, 2).map(location => (
+                              <span key={location.id} className="inline-flex px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
+                                {location.name}
+                              </span>
+                            ))}
+                            {hotel.locations.length > 2 && (
+                              <span className="inline-flex px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-full">
+                                +{hotel.locations.length - 2} more
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-gray-400">None</span>
+                        )}
+                      </Typography>
+                    </td>
+                    <td className="py-3 px-6 w-24">
+                      <div className="flex gap-2">
+                        <Tooltip content="Edit Hotel">
+                          <IconButton
+                            variant="text"
+                            color="blue-gray"
+                            onClick={() => navigateToForm(hotel)}
+                          >
+                            <PencilIcon className="h-4 w-4" />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip content="Delete Hotel">
+                          <IconButton
+                            variant="text"
+                            color="red"
+                            onClick={() => setDeleteDialog({ open: true, hotel })}
+                          >
+                            <TrashIcon className="h-4 w-4" />
+                          </IconButton>
+                        </Tooltip>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardBody>
+      </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialog.open} handler={() => setDeleteDialog({ open: false, hotel: null })}>
+        <DialogHeader className="flex items-center gap-3">
+          <ExclamationTriangleIcon className="h-6 w-6 text-red-500" />
+          <Typography variant="h5">Delete Hotel</Typography>
+        </DialogHeader>
+        <DialogBody>
+          <Typography variant="paragraph" color="gray">
+            Are you sure you want to delete "{deleteDialog.hotel?.name}"? This action cannot be undone.
+          </Typography>
+        </DialogBody>
+        <DialogFooter className="space-x-2">
+          <Button variant="text" color="gray" onClick={() => setDeleteDialog({ open: false, hotel: null })}>
+            Cancel
+          </Button>
+          <Button variant="gradient" color="red" onClick={handleDelete}>
+            Delete
+          </Button>
+        </DialogFooter>
+      </Dialog>
     </div>
   );
-}
+};
 
 export default HotelTable; 

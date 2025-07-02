@@ -23,6 +23,12 @@ const storage = multer.diskStorage({
       uploadPath = createUploadsDir('categories');
     } else if (file.fieldname === 'profile_picture') {
       uploadPath = createUploadsDir('profiles');
+    } else if (file.fieldname === 'main_image') {
+      uploadPath = createUploadsDir('hotels');
+    } else if (file.fieldname === 'attribute_image') {
+      uploadPath = createUploadsDir('hotel_attributes');
+    } else if (file.fieldname === 'icon') {
+      uploadPath = createUploadsDir('hotel_attributes');
     } else {
       uploadPath = createUploadsDir('others');
     }

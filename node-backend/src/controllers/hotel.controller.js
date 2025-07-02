@@ -1,4 +1,7 @@
 const { Hotel, Room, Policy, Location } = require('../models');
+const { processImage } = require('../utils/imageProcessor');
+const path = require('path');
+const fs = require('fs');
 
 // List all hotels (with optional status filter)
 exports.getAllHotels = async (req, res) => {
@@ -40,42 +43,52 @@ exports.getHotelById = async (req, res) => {
 // Create hotel
 exports.createHotel = async (req, res) => {
   try {
-    const { policies, locations, ...hotelData } = req.body;
-    
-    // Create the hotel
-    const hotel = await Hotel.create(hotelData);
-    
-    // Add policies if provided
-    if (policies && Array.isArray(policies) && policies.length > 0) {
-      // Validate policy IDs exist
-      const validPolicies = await Policy.findAll({
-        where: { id: policies, status: true }
-      });
-      if (validPolicies.length !== policies.length) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'Some policy IDs are invalid or inactive' 
-        });
-      }
+    const { name, address, city, state, country, description, status } = req.body;
+    let imagePath = null;
+
+    // Image is required for create
+    if (req.file) {
+      const processedImage = await processImage(req.file, {
+        width: 800,
+        height: 800,
+        quality: 85,
+        format: 'jpeg'
+      }, 'hotels');
+      imagePath = `/uploads/hotels/${processedImage.filename}`;
+    } else {
+      return res.status(400).json({ success: false, message: 'Hotel image is required.' });
+    }
+
+    // Parse status as boolean
+    const statusBool = typeof status !== 'undefined' ? (String(status) === 'true') : true;
+
+    // Create hotel
+    const hotel = await Hotel.create({
+      name,
+      address,
+      city,
+      state,
+      country,
+      description,
+      status: statusBool,
+      main_image: imagePath
+    });
+
+    // Handle policies and locations
+    let policies = req.body['policies[]'] || [];
+    let locations = req.body['locations[]'] || [];
+    if (!Array.isArray(policies)) policies = policies ? [policies] : [];
+    if (!Array.isArray(locations)) locations = locations ? [locations] : [];
+
+    if (policies.length > 0) {
+      const validPolicies = await Policy.findAll({ where: { id: policies, status: true } });
       await hotel.setPolicies(validPolicies);
     }
-    
-    // Add locations if provided
-    if (locations && Array.isArray(locations) && locations.length > 0) {
-      // Validate location IDs exist
-      const validLocations = await Location.findAll({
-        where: { id: locations, status: true }
-      });
-      if (validLocations.length !== locations.length) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'Some location IDs are invalid or inactive' 
-        });
-      }
+    if (locations.length > 0) {
+      const validLocations = await Location.findAll({ where: { id: locations, status: true } });
       await hotel.setLocations(validLocations);
     }
-    
-    // Fetch the created hotel with associations
+
     const createdHotel = await Hotel.findByPk(hotel.id, {
       include: [
         { model: Room, as: 'rooms' },
@@ -83,7 +96,7 @@ exports.createHotel = async (req, res) => {
         { model: Location, as: 'locations', attributes: ['id', 'name', 'description'] }
       ]
     });
-    
+
     res.status(201).json({ success: true, data: createdHotel, message: 'Hotel created successfully' });
   } catch (error) {
     res.status(400).json({ success: false, message: 'Error creating hotel', error: error.message });
@@ -93,55 +106,63 @@ exports.createHotel = async (req, res) => {
 // Update hotel
 exports.updateHotel = async (req, res) => {
   try {
-    const { policies, locations, ...hotelData } = req.body;
-    
     const hotel = await Hotel.findByPk(req.params.id);
     if (!hotel) return res.status(404).json({ success: false, message: 'Hotel not found' });
-    
-    // Update hotel data
-    await hotel.update(hotelData);
-    
-    // Update policies if provided
-    if (policies !== undefined) {
-      if (Array.isArray(policies) && policies.length > 0) {
-        // Validate policy IDs exist
-        const validPolicies = await Policy.findAll({
-          where: { id: policies, status: true }
-        });
-        if (validPolicies.length !== policies.length) {
-          return res.status(400).json({ 
-            success: false, 
-            message: 'Some policy IDs are invalid or inactive' 
-          });
+
+    const { name, address, city, state, country, description, status } = req.body;
+    let imagePath = hotel.main_image;
+
+    // If new image uploaded, process and replace old
+    if (req.file) {
+      // Delete old image if exists
+      if (hotel.main_image) {
+        const oldImagePath = path.join(__dirname, '..', '..', 'uploads', hotel.main_image.replace('/uploads/', ''));
+        if (fs.existsSync(oldImagePath)) {
+          fs.unlinkSync(oldImagePath);
         }
-        await hotel.setPolicies(validPolicies);
-      } else {
-        // Clear all policies
-        await hotel.setPolicies([]);
       }
+      const processedImage = await processImage(req.file, {
+        width: 800,
+        height: 800,
+        quality: 85,
+        format: 'jpeg'
+      }, 'hotels');
+      imagePath = `/uploads/hotels/${processedImage.filename}`;
     }
-    
-    // Update locations if provided
-    if (locations !== undefined) {
-      if (Array.isArray(locations) && locations.length > 0) {
-        // Validate location IDs exist
-        const validLocations = await Location.findAll({
-          where: { id: locations, status: true }
-        });
-        if (validLocations.length !== locations.length) {
-          return res.status(400).json({ 
-            success: false, 
-            message: 'Some location IDs are invalid or inactive' 
-          });
-        }
-        await hotel.setLocations(validLocations);
-      } else {
-        // Clear all locations
-        await hotel.setLocations([]);
-      }
+
+    // Parse status as boolean
+    const statusBool = typeof status !== 'undefined' ? (String(status) === 'true') : hotel.status;
+
+    await hotel.update({
+      name: name || hotel.name,
+      address: address || hotel.address,
+      city: city || hotel.city,
+      state: state || hotel.state,
+      country: country || hotel.country,
+      description: description || hotel.description,
+      status: statusBool,
+      main_image: imagePath
+    });
+
+    // Handle policies and locations
+    let policies = req.body['policies[]'] || [];
+    let locations = req.body['locations[]'] || [];
+    if (!Array.isArray(policies)) policies = policies ? [policies] : [];
+    if (!Array.isArray(locations)) locations = locations ? [locations] : [];
+
+    if (policies.length > 0) {
+      const validPolicies = await Policy.findAll({ where: { id: policies, status: true } });
+      await hotel.setPolicies(validPolicies);
+    } else {
+      await hotel.setPolicies([]);
     }
-    
-    // Fetch the updated hotel with associations
+    if (locations.length > 0) {
+      const validLocations = await Location.findAll({ where: { id: locations, status: true } });
+      await hotel.setLocations(validLocations);
+    } else {
+      await hotel.setLocations([]);
+    }
+
     const updatedHotel = await Hotel.findByPk(hotel.id, {
       include: [
         { model: Room, as: 'rooms' },
@@ -149,7 +170,7 @@ exports.updateHotel = async (req, res) => {
         { model: Location, as: 'locations', attributes: ['id', 'name', 'description'] }
       ]
     });
-    
+
     res.json({ success: true, data: updatedHotel, message: 'Hotel updated successfully' });
   } catch (error) {
     res.status(400).json({ success: false, message: 'Error updating hotel', error: error.message });

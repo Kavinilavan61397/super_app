@@ -49,8 +49,8 @@ function HotelAttributes() {
 
     const { control, handleSubmit, reset, setValue, getValues, formState: { errors } } = useForm({
         defaultValues: {
-            amenity_name: '',
-            amenity_logo: null,
+            name: '',
+            icon: null,
         },
     });
 
@@ -110,7 +110,7 @@ function HotelAttributes() {
             const reader = new FileReader();
             reader.onloadend = () => setImagePreview(reader.result);
             reader.readAsDataURL(file);
-            setValue('amenity_logo', file);
+            setValue('icon', file);
         }
     };
 
@@ -120,10 +120,10 @@ function HotelAttributes() {
             const reader = new FileReader();
             reader.onloadend = () => setImagePreview(reader.result);
             reader.readAsDataURL(file);
-            setValue('amenity_logo', file);
+            setValue('icon', file);
         } else {
             setImagePreview(selectedBrand?.icon || null);
-            setValue('amenity_logo', null);
+            setValue('icon', null);
         }
     };
 
@@ -133,7 +133,7 @@ function HotelAttributes() {
         toast.dismiss();
         setSelectedBrand(null);
         setImagePreview(null);
-        setValue('amenity_logo', '');
+        setValue('icon', '');
         reset({
             name: '',
             icon: null,

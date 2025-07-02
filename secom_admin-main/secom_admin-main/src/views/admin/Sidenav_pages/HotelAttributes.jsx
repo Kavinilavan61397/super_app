@@ -57,8 +57,9 @@ function HotelAttributes() {
     const fetchBrandData = async () => {
         try {
             const response = await api.get('/api/amenities');
-            const data = response.data.data || response.data;
-            console.log('Amenities data:', data);
+            let data = response.data.data || response.data;
+            // Sort by createdAt descending
+            data = data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             setTableData(data);
             setFilteredData(data);
             setTotalItems(data.length);

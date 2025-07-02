@@ -14,6 +14,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import Navbar from 'components/navbar';
 import API_CONFIG from '../../../config/api.config';
 import { apiGet, apiPost, apiPut, apiDelete } from '../../../utils/apiUtils';
+import { productService } from 'services/productService';
 
 function Products() {
   const navigate = useNavigate();
@@ -186,9 +187,9 @@ function Products() {
   // Fetch Products from API
   const fetchProducts = async () => {
     try {
-      const response = await apiGet(API_CONFIG.ENDPOINTS.ADMIN.PRODUCTS);
-      setTableData(response.data);
-      setTotalItems(response.data.length);
+      const productResponse = await productService.getAllProducts();
+      setTableData(productResponse.data);
+      setTotalItems(productResponse.data.length);
     } catch (error) {
       console.error('Error fetching products:', error);
     }

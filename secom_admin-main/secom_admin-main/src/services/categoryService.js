@@ -80,8 +80,14 @@ export const categoryService = {
   getAllCategories: async () => {
     try {
       const response = await api.get(API_CONFIG.CATEGORY.LIST);
-      console.log('Categories Response:', response);
-      return { data: response.data }; // Wrap in data property to match component expectations
+      // Accept both array and { data: [...] } response
+      const categoriesData = Array.isArray(response.data)
+        ? response.data
+        : Array.isArray(response.data.data)
+          ? response.data.data
+          : [];
+      console.log('Categories Response:', categoriesData);
+      return { data: categoriesData }; // Always wrap in data property
     } catch (error) {
       console.error('Error fetching categories:', error);
       throw error;

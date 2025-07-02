@@ -60,4 +60,8 @@ const Category = sequelize.define('Category', {
   ]
 });
 
+// Self-referencing associations for parent/subcategories
+Category.hasMany(Category, { as: 'subcategories', foreignKey: 'parent_id' });
+Category.belongsTo(Category, { as: 'parent', foreignKey: 'parent_id' });
+
 module.exports = Category; 

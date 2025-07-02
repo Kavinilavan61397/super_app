@@ -26,6 +26,14 @@ const CATEGORY = {
   TOGGLE_STATUS: (id) => `/api/categories/${id}/toggle-status`
 };
 
+const PRODUCT = {
+  LIST: '/api/products',
+  DETAIL: (id) => `/api/products/${id}`,
+  CREATE: '/api/products',
+  UPDATE: (id) => `/api/products/${id}`,
+  DELETE: (id) => `/api/products/${id}`,
+};
+
 // Storage keys
 const STORAGE_KEYS = {
   AUTH_TOKEN: 'OnlineShop-accessToken',
@@ -49,8 +57,8 @@ const ROUTES = {
 const ENDPOINTS = {
   ADMIN: {
     BRANDS: '/api/admin/brands',
-    CATEGORIES: '/api/admin/categories',
-    PRODUCTS: '/api/admin/products',
+    CATEGORIES: '/api/categories',
+    PRODUCTS: '/api/products',
     PRODUCT_VARIATIONS: '/api/admin/product-variations',
     SIZES: '/api/admin/sizes',
     COLORS: '/api/admin/colors',
@@ -66,6 +74,7 @@ const fullConfig = {
   ...API_CONFIG,
   AUTH,
   CATEGORY,
+  PRODUCT,
   STORAGE_KEYS,
   HEADERS,
   ROUTES,

@@ -78,6 +78,10 @@ exports.createOrder = async (req, res) => {
         } : null
       };
 
+      // Use product's original and discounted price if available, else fallback to item.price
+      const originalPrice = item.product.original_price || item.price;
+      const discountedPrice = item.product.discounted_price || item.price;
+
       return OrderItem.create({
         order_id: order.id,
         product_id: item.product_id,
@@ -85,7 +89,9 @@ exports.createOrder = async (req, res) => {
         quantity: item.quantity,
         unit_price: item.price,
         total_price: item.total_price,
-        product_snapshot: productSnapshot
+        product_snapshot: productSnapshot,
+        original_price: originalPrice,
+        discounted_price: discountedPrice
       }, { transaction });
     }));
 

@@ -161,7 +161,20 @@ const OrderDetailsModal = ({ order, isOpen, onClose, onUpdate }) => {
                           </div>
                         </td>
                         <td className="px-4 py-3 text-sm text-gray-900">
-                          {formatCurrency(item.price)}
+                          {item.original_price && item.discounted_price && item.original_price !== item.discounted_price ? (
+                            <>
+                              <span className="line-through text-gray-400 mr-2">
+                                {formatCurrency(item.original_price)}
+                              </span>
+                              <span className="font-bold text-green-600">
+                                {formatCurrency(item.discounted_price)}
+                              </span>
+                            </>
+                          ) : (
+                            <span className="font-bold text-gray-900">
+                              {formatCurrency(item.discounted_price || item.original_price || item.price)}
+                            </span>
+                          )}
                         </td>
                         <td className="px-4 py-3 text-sm text-gray-900">
                           {item.quantity}

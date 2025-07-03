@@ -39,6 +39,16 @@ const OrderItem = sequelize.define('OrderItem', {
     defaultValue: {},
     field: 'product_snapshot',
   },
+  original_price: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: true,
+    field: 'original_price'
+  },
+  discounted_price: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: true,
+    field: 'discounted_price'
+  },
   createdAt: {
     type: DataTypes.DATE,
     field: 'created_at',

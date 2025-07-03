@@ -1,48 +1,82 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import {
+  fetchCart,
+  addToCart as apiAddToCart,
+  updateCartItem as apiUpdateCartItem,
+  removeCartItem as apiRemoveCartItem,
+  fetchWishlist,
+  addToWishlist as apiAddToWishlist,
+  removeWishlistItem as apiRemoveWishlistItem
+} from '../services/cartWishlistService';
 
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
-  const [cartItems, setCartItems] = useState([]);
-  const [wishlistItems, setWishlistItems] = useState([]);
+  const [cart, setCart] = useState(null); // cart object with items
+  const [wishlist, setWishlist] = useState([]); // wishlist array
+  const [loading, setLoading] = useState(true);
 
-  const addToCart = (item) => {
-    const existingItem = cartItems.find(cartItem => cartItem.id === item.id);
-    
-    if (existingItem) {
-      setCartItems(cartItems.map(cartItem => 
-        cartItem.id === item.id 
-          ? { ...cartItem, quantity: cartItem.quantity + 1 } 
-          : cartItem
-      ));
-    } else {
-      setCartItems([...cartItems, { ...item, quantity: 1 }]);
-    }
+  // Fetch cart and wishlist on mount
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      try {
+        const cartRes = await fetchCart();
+        if (cartRes.success) setCart(cartRes.data);
+        const wishlistRes = await fetchWishlist();
+        if (wishlistRes.success) setWishlist(wishlistRes.data);
+      } catch (e) {
+        setCart(null);
+        setWishlist([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  // Cart actions
+  const addToCart = async (product_id, quantity = 1) => {
+    const res = await apiAddToCart(product_id, quantity);
+    if (res.success) setCart(res.data);
+    return res;
+  };
+  const updateCartItem = async (itemId, quantity) => {
+    const res = await apiUpdateCartItem(itemId, quantity);
+    if (res.success) setCart(res.data);
+    return res;
+  };
+  const removeFromCart = async (itemId) => {
+    const res = await apiRemoveCartItem(itemId);
+    if (res.success) setCart(res.data);
+    return res;
   };
 
-  const removeFromCart = (itemId) => {
-    setCartItems(cartItems.filter(item => item.id !== itemId));
+  // Wishlist actions
+  const addToWishlist = async (product_id, quantity = 1) => {
+    const res = await apiAddToWishlist(product_id, quantity);
+    if (res.success) setWishlist((prev) => [...prev, res.data]);
+    return res;
   };
-
-  const addToWishlist = (item) => {
-    if (!wishlistItems.find(wishlistItem => wishlistItem.id === item.id)) {
-      setWishlistItems([...wishlistItems, item]);
-    }
-  };
-
-  const removeFromWishlist = (itemId) => {
-    setWishlistItems(wishlistItems.filter(item => item.id !== itemId));
+  const removeFromWishlist = async (itemId) => {
+    const res = await apiRemoveWishlistItem(itemId);
+    if (res.success) setWishlist((prev) => prev.filter(item => item.id !== itemId));
+    return res;
   };
 
   return (
-    <CartContext.Provider 
-      value={{ 
-        cartItems, 
-        wishlistItems,
+    <CartContext.Provider
+      value={{
+        cart,
+        wishlist,
+        loading,
         addToCart,
+        updateCartItem,
         removeFromCart,
         addToWishlist,
-        removeFromWishlist
+        removeFromWishlist,
+        setCart,
+        setWishlist,
       }}
     >
       {children}

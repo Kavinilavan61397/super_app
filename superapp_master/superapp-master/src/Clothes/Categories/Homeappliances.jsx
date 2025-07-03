@@ -25,6 +25,7 @@ import televisionImg from '../Images/television.png';
 import fansImg from '../Images/fans.png';
 import Footer from '../../Utility/Footer';
 import { FaHeart, FaRegHeart, FaEye } from 'react-icons/fa';
+import { useCart } from '../../Utility/CartContext';
 
 
 const categories = [
@@ -50,7 +51,6 @@ function ProductCard({ product, onQuickView, addToCart, addToWishlist, cartItems
     const isBestSeller = product.attributes?.find(attr => attr.attribute_name === 'isBestSeller')?.attribute_value === 'true';
     const rating = product.attributes?.find(attr => attr.attribute_name === 'Rating')?.attribute_value;
     const [qty, setQty] = useState(1);
-    const [wishlisted, setWishlisted] = useState(false);
     const imgSrc = product.photo ? `http://localhost:5000/uploads/${product.photo}` : (product.featured_image || refrigeratorImg);
     const isInCart = cartItems.some(item => item.id === product.id);
     const isInWishlist = wishlistItems.some(item => item.id === product.id);
@@ -124,52 +124,8 @@ function HomeAppliances() {
     const navigate = useNavigate();
     const [bestSellers, setBestSellers] = useState([]);
     const [quickViewProduct, setQuickViewProduct] = useState(null);
-    const [cartItems, setCartItems] = useState([]);
-    const [wishlistItems, setWishlistItems] = useState([]);
-    const token = localStorage.getItem('token');
-
-    // Fetch cart from backend
-    const fetchCart = async () => {
-        try {
-            const res = await fetch('http://localhost:5000/api/cart', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            const data = await res.json();
-            if (res.ok && data && data.data && data.data.items) {
-                setCartItems(data.data.items.map(item => ({
-                    ...item.product,
-                    quantity: item.quantity,
-                    id: item.product_id,
-                    cartItemId: item.id
-                })));
-            } else {
-                setCartItems([]);
-            }
-        } catch (e) {
-            setCartItems([]);
-        }
-    };
-
-    // Fetch wishlist from backend
-    const fetchWishlist = async () => {
-        try {
-            const res = await fetch('http://localhost:5000/api/wishlist', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            const data = await res.json();
-            if (res.ok && data && data.data) {
-                setWishlistItems(data.data.map(item => ({
-                    ...item.product,
-                    id: item.product_id,
-                    wishlistItemId: item.id
-                })));
-            } else {
-                setWishlistItems([]);
-            }
-        } catch (e) {
-            setWishlistItems([]);
-        }
-    };
+    // Use CartContext for cart and wishlist
+    const { cart, wishlist, addToCart, addToWishlist, removeFromWishlist } = useCart();
 
     useEffect(() => {
         async function fetchBestSellers() {
@@ -185,62 +141,25 @@ function HomeAppliances() {
             }
         }
         fetchBestSellers();
-        fetchCart();
-        fetchWishlist();
-        // eslint-disable-next-line
     }, []);
 
-    // Add to cart using backend
-    const addToCart = async (product, quantity = 1) => {
-        try {
-            const response = await fetch('http://localhost:5000/api/cart/items', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    product_id: product.id,
-                    quantity,
-                    variation_id: null
-                })
-            });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.message || 'Failed to add to cart');
-            await fetchCart();
-            alert('Added to cart successfully!');
-        } catch (error) {
-            alert(error.message || 'Failed to add to cart');
+    // CartContext-based addToCart and addToWishlist
+    const handleAddToCart = async (product, quantity = 1) => {
+        await addToCart(product.id, quantity);
+    };
+    const handleAddToWishlist = async (product) => {
+        const isInWishlist = wishlist?.some(item => item.product_id === product.id);
+        if (isInWishlist) {
+            const item = wishlist.find(item => item.product_id === product.id);
+            await removeFromWishlist(item.id);
+        } else {
+            await addToWishlist(product.id, 1);
         }
     };
 
-    // Add/remove from wishlist using backend
-    const addToWishlist = async (product) => {
-        const isInWishlist = wishlistItems.some(item => item.id === product.id);
-        try {
-            if (isInWishlist) {
-                // Remove from wishlist
-                const item = wishlistItems.find(item => item.id === product.id);
-                await fetch(`http://localhost:5000/api/wishlist/${item.wishlistItemId}`, {
-                    method: 'DELETE',
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-            } else {
-                // Add to wishlist
-                await fetch('http://localhost:5000/api/wishlist', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ product_id: product.id })
-                });
-            }
-            await fetchWishlist();
-        } catch (error) {
-            alert('Failed to update wishlist');
-        }
-    };
+    // Prepare cartItems and wishlistItems for ProductCard
+    const cartItems = cart?.items?.map(i => ({ ...i.product, id: i.product_id })) || [];
+    const wishlistItems = wishlist?.map(i => ({ ...i.product, id: i.product_id })) || [];
 
     return (
         <div className='min-h-screen'>
@@ -317,7 +236,7 @@ function HomeAppliances() {
                 <div className="grid grid-cols-2 gap-3">
                   {bestSellers.length === 0 && <div className="col-span-2 text-gray-400 text-center">No best sellers found.</div>}
                   {bestSellers.map(product => (
-                    <ProductCard key={product.id} product={product} onQuickView={setQuickViewProduct} addToCart={addToCart} addToWishlist={addToWishlist} cartItems={cartItems} wishlistItems={wishlistItems} />
+                    <ProductCard key={product.id} product={product} onQuickView={setQuickViewProduct} addToCart={handleAddToCart} addToWishlist={handleAddToWishlist} cartItems={cartItems} wishlistItems={wishlistItems} />
                   ))}
                 </div>
                 <QuickViewModal product={quickViewProduct} onClose={() => setQuickViewProduct(null)} />

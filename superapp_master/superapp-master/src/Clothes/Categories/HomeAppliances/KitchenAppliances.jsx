@@ -3,6 +3,7 @@ import Header from '../../Header/ClothesHeader';
 import Footer from '../../../Utility/Footer';
 import homeApplianceImg from '../../Images/homeAppliance.jpg';
 import { FaHeart, FaRegHeart, FaEye, FaFilter } from 'react-icons/fa';
+import { useCart } from '../../../Utility/CartContext';
 
 function ProductCard({ product, onQuickView, addToCart, addToWishlist, cartItems, wishlistItems }) {
     const isBestSeller = product.attributes?.find(attr => attr.attribute_name === 'isBestSeller')?.attribute_value === 'true';
@@ -102,9 +103,9 @@ function KitchenAppliances() {
         { value: 'price_desc', label: 'Price: High to Low' },
         { value: 'rating', label: 'Rating' }
     ]);
-    const [cartItems, setCartItems] = useState([]);
-    const [wishlistItems, setWishlistItems] = useState([]);
-    const token = localStorage.getItem('token');
+
+    // Use CartContext for cart and wishlist
+    const { cart, wishlist, addToCart, addToWishlist, removeFromWishlist } = useCart();
 
     const fetchProducts = async () => {
         setLoading(true);
@@ -160,49 +161,8 @@ function KitchenAppliances() {
         }
     };
 
-    const fetchCart = async () => {
-        try {
-            const res = await fetch('http://localhost:5000/api/cart', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            const data = await res.json();
-            if (res.ok && data && data.data && data.data.items) {
-                setCartItems(data.data.items.map(item => ({
-                    ...item.product,
-                    quantity: item.quantity,
-                    id: item.product_id,
-                    cartItemId: item.id
-                })));
-            } else {
-                setCartItems([]);
-            }
-        } catch (e) {
-            setCartItems([]);
-        }
-    };
-    const fetchWishlist = async () => {
-        try {
-            const res = await fetch('http://localhost:5000/api/wishlist', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            const data = await res.json();
-            if (res.ok && data && data.data) {
-                setWishlistItems(data.data.map(item => ({
-                    ...item.product,
-                    id: item.product_id,
-                    wishlistItemId: item.id
-                })));
-            } else {
-                setWishlistItems([]);
-            }
-        } catch (e) {
-            setWishlistItems([]);
-        }
-    };
     useEffect(() => {
         fetchProducts();
-        fetchCart();
-        fetchWishlist();
     }, [search, sort, priceRange, selectedRating, selectedBrands, selectedAttributes]);
 
     const handleApplyFilters = () => {
@@ -218,54 +178,23 @@ function KitchenAppliances() {
         fetchProducts();
     };
 
-    const addToCart = async (product, quantity = 1) => {
-        alert('addToCart called');
-        console.log('addToCart called', product, quantity);
-        try {
-            const response = await fetch('http://localhost:5000/api/cart/items', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    product_id: product.id,
-                    quantity
-                })
-            });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.message || 'Failed to add to cart');
-            await fetchCart();
-            alert('Added to cart successfully!');
-        } catch (error) {
-            alert(error.message || 'Failed to add to cart');
-            console.error('addToCart error', error);
+    // CartContext-based addToCart and addToWishlist
+    const handleAddToCart = async (product, quantity = 1) => {
+        await addToCart(product.id, quantity);
+    };
+    const handleAddToWishlist = async (product) => {
+        const isInWishlist = wishlist?.some(item => item.product_id === product.id);
+        if (isInWishlist) {
+            const item = wishlist.find(item => item.product_id === product.id);
+            await removeFromWishlist(item.id);
+        } else {
+            await addToWishlist(product.id, 1);
         }
     };
-    const addToWishlist = async (product) => {
-        const isInWishlist = wishlistItems.some(item => item.id === product.id);
-        try {
-            if (isInWishlist) {
-                const item = wishlistItems.find(item => item.id === product.id);
-                await fetch(`http://localhost:5000/api/wishlist/${item.wishlistItemId}`, {
-                    method: 'DELETE',
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-            } else {
-                await fetch('http://localhost:5000/api/wishlist', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ product_id: product.id })
-                });
-            }
-            await fetchWishlist();
-        } catch (error) {
-            alert('Failed to update wishlist');
-        }
-    };
+
+    // Prepare cartItems and wishlistItems for ProductCard
+    const cartItems = cart?.items?.map(i => ({ ...i.product, id: i.product_id })) || [];
+    const wishlistItems = wishlist?.map(i => ({ ...i.product, id: i.product_id })) || [];
 
     return (
         <div className='min-h-screen'>
@@ -375,7 +304,7 @@ function KitchenAppliances() {
                 )}
                 <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 mt-4">
                     {products.map(product => (
-                        <ProductCard key={product.id} product={product} onQuickView={setQuickViewProduct} addToCart={addToCart} addToWishlist={addToWishlist} cartItems={cartItems} wishlistItems={wishlistItems} />
+                        <ProductCard key={product.id} product={product} onQuickView={setQuickViewProduct} addToCart={handleAddToCart} addToWishlist={handleAddToWishlist} cartItems={cartItems} wishlistItems={wishlistItems} />
                     ))}
                 </div>
             </div>

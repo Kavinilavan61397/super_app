@@ -3,6 +3,7 @@ import Header from '../../Header/ClothesHeader';
 import Footer from '../../../Utility/Footer';
 import homeApplianceImg from '../../Images/homeAppliance.jpg';
 import { FaHeart, FaRegHeart, FaEye, FaFilter } from 'react-icons/fa';
+import { useCart } from '../../../Utility/CartContext';
 
 function ProductCard({ product, onQuickView, addToCart, addToWishlist, cartItems, wishlistItems }) {
     const isBestSeller = product.attributes?.find(attr => attr.attribute_name === 'isBestSeller')?.attribute_value === 'true';
@@ -19,7 +20,6 @@ function ProductCard({ product, onQuickView, addToCart, addToWishlist, cartItems
                     <span className="absolute top-2 left-2 bg-yellow-400 text-[10px] font-semibold px-1.5 py-0.5 rounded z-10 mr-2" style={{lineHeight: '1.1'}}>Best Seller</span>
                 )}
                 <button className={`absolute top-2 right-2 text-xl bg-white rounded-full p-1 z-10 ml-2 ${isWishlisted ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`} onClick={() => addToWishlist(product)}>{isWishlisted ? <FaHeart /> : <FaRegHeart />}</button>
-
                 <button className="absolute top-2 right-10 text-gray-400 hover:text-blue-500 text-xl bg-white rounded-full p-1 z-10 ml-2" onClick={() => onQuickView(product)}><FaEye /></button>
             </div>
             <div className="font-semibold text-sm text-center mb-1 line-clamp-2">{product.name}</div>
@@ -33,7 +33,7 @@ function ProductCard({ product, onQuickView, addToCart, addToWishlist, cartItems
                 </div>
             </div>
             <div className="text-lg font-bold text-green-700 mb-1">₹{product.price}</div>
-            <button className={`bg-black hover:bg-grey:800 text-white px-4 py-2 rounded text-xs font-semibold w-full mt-auto mb-2 ${isInCart ? 'opacity-60 cursor-not-allowed' : ''}`} onClick={() => { if (!isInCart) { console.log('Add to Cart clicked', product, qty); addToCart(product, qty); }}} disabled={isInCart}>{isInCart ? 'Added to Cart' : 'Add to Cart'}</button>
+            <button className={`bg-black hover:bg-grey:800 text-white px-4 py-2 rounded text-xs font-semibold w-full mt-auto mb-2 ${isInCart ? 'opacity-60 cursor-not-allowed' : ''}`} onClick={() => { if (!isInCart) { addToCart(product, qty); }}} disabled={isInCart}>{isInCart ? 'Added to Cart' : 'Add to Cart'}</button>
         </div>
     );
 }
@@ -87,9 +87,6 @@ function WashingMachines() {
     const [brandOptions, setBrandOptions] = useState([]);
     const [attributeOptions, setAttributeOptions] = useState({});
     const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
-    const [cartItems, setCartItems] = useState([]);
-    const [wishlistItems, setWishlistItems] = useState([]);
-    const token = localStorage.getItem('token');
     const sortOptions = [
       { value: 'newest', label: 'Newest' },
       { value: 'price_asc', label: 'Price: Low to High' },
@@ -97,6 +94,9 @@ function WashingMachines() {
       { value: 'rating', label: 'Rating' },
     ];
     const sortButtonRef = useRef();
+
+    // Use CartContext for cart and wishlist
+    const { cart, wishlist, addToCart, addToWishlist, removeFromWishlist } = useCart();
 
     const fetchProducts = async () => {
         setLoading(true);
@@ -152,50 +152,8 @@ function WashingMachines() {
         }
     };
 
-    const fetchCart = async () => {
-        try {
-            const res = await fetch('http://localhost:5000/api/cart', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            const data = await res.json();
-            if (res.ok && data && data.data && data.data.items) {
-                setCartItems(data.data.items.map(item => ({
-                    ...item.product,
-                    quantity: item.quantity,
-                    id: item.product_id,
-                    cartItemId: item.id
-                })));
-            } else {
-                setCartItems([]);
-            }
-        } catch (e) {
-            setCartItems([]);
-        }
-    };
-    const fetchWishlist = async () => {
-        try {
-            const res = await fetch('http://localhost:5000/api/wishlist', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            const data = await res.json();
-            if (res.ok && data && data.data) {
-                setWishlistItems(data.data.map(item => ({
-                    ...item.product,
-                    id: item.product_id,
-                    wishlistItemId: item.id
-                })));
-            } else {
-                setWishlistItems([]);
-            }
-        } catch (e) {
-            setWishlistItems([]);
-        }
-    };
     useEffect(() => {
         fetchProducts();
-        fetchCart();
-        fetchWishlist();
-        // eslint-disable-next-line
     }, [search, sort, priceRange, selectedRating, selectedBrands, selectedAttributes]);
 
     const handleApplyFilters = () => {
@@ -211,55 +169,23 @@ function WashingMachines() {
         fetchProducts();
     };
 
-    const addToCart = async (product, quantity = 1) => {
-        alert('addToCart called');
-        console.log('addToCart called', product, quantity);
-        try {
-            const response = await fetch('http://localhost:5000/api/cart/items', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    product_id: product.id,
-                    quantity
-                })
-            });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.message || 'Failed to add to cart');
-            await fetchCart();
-            alert('Added to cart successfully!');
-        } catch (error) {
-            alert(error.message || 'Failed to add to cart');
-            console.error('addToCart error', error);
+    // CartContext-based addToCart and addToWishlist
+    const handleAddToCart = async (product, quantity = 1) => {
+        await addToCart(product.id, quantity);
+    };
+    const handleAddToWishlist = async (product) => {
+        const isInWishlist = wishlist?.some(item => item.product_id === product.id);
+        if (isInWishlist) {
+            const item = wishlist.find(item => item.product_id === product.id);
+            await removeFromWishlist(item.id);
+        } else {
+            await addToWishlist(product.id, 1);
         }
     };
-    const addToWishlist = async (product) => {
-        const isInWishlist = wishlistItems.some(item => item.id === product.id);
-        try {
-            if (isInWishlist) {
-                const item = wishlistItems.find(item => item.id === product.id);
-                await fetch(`http://localhost:5000/api/wishlist/${item.wishlistItemId}`, {
-                    method: 'DELETE',
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-            } else {
-                await fetch('http://localhost:5000/api/wishlist', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ product_id: product.id })
-                });
-            }
-            await fetchWishlist();
-        } catch (error) {
-            alert('Failed to update wishlist');
-            console.error('addToWishlist error', error);
-        }
-    };
+
+    // Prepare cartItems and wishlistItems for ProductCard
+    const cartItems = cart?.items?.map(i => ({ ...i.product, id: i.product_id })) || [];
+    const wishlistItems = wishlist?.map(i => ({ ...i.product, id: i.product_id })) || [];
 
     return (
         <div className='min-h-screen'>
@@ -369,7 +295,7 @@ function WashingMachines() {
                 )}
                 <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 mt-4">
                     {products.map(product => (
-                        <ProductCard key={product.id} product={product} onQuickView={setQuickViewProduct} addToCart={addToCart} addToWishlist={addToWishlist} cartItems={cartItems} wishlistItems={wishlistItems} />
+                        <ProductCard key={product.id} product={product} onQuickView={setQuickViewProduct} addToCart={handleAddToCart} addToWishlist={handleAddToWishlist} cartItems={cartItems} wishlistItems={wishlistItems} />
                     ))}
                 </div>
             </div>

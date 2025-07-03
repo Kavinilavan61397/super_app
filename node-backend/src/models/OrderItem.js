@@ -33,11 +33,11 @@ const OrderItem = sequelize.define('OrderItem', {
     type: DataTypes.DECIMAL(10, 2),
     allowNull: false
   },
-  product_data: {
+  product_snapshot: {
     type: DataTypes.JSON,
     allowNull: false,
-    field: 'product_data',
-    comment: 'Snapshot of product data at time of order'
+    defaultValue: {},
+    field: 'product_snapshot',
   },
   createdAt: {
     type: DataTypes.DATE,

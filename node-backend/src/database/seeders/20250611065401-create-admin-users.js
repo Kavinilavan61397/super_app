@@ -87,18 +87,17 @@ module.exports = {
       }
     ];
 
-    // First, remove any existing admin users to avoid conflicts
-    await queryInterface.bulkDelete('users', {
-      email: [
-        'vendor@example.com',
-        'admin@example.com',
-        'ecommerce@example.com',
-        'grocery@example.com',
-        'taxi@example.com',
-        'hotel@example.com',
-        'user@example.com'
-      ]
-    });
+    // First, remove any existing data from dependent tables to avoid foreign key constraints
+    await queryInterface.bulkDelete('order_items', null, {});
+    await queryInterface.bulkDelete('orders', null, {});
+    await queryInterface.bulkDelete('user_profiles', null, {});
+    await queryInterface.bulkDelete('wishlists', null, {});
+    await queryInterface.bulkDelete('gcart_items', null, {});
+    await queryInterface.bulkDelete('gwhishlist', null, {});
+    // Add any other dependent tables here if needed
+    
+    // Then remove any existing users (without truncating to avoid FK constraints)
+    await queryInterface.bulkDelete('users', null, {});
 
     // Insert new admin users
     await queryInterface.bulkInsert('users', adminUsers);

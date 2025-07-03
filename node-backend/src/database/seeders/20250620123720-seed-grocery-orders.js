@@ -1,10 +1,21 @@
 'use strict';
 
 module.exports = {
-  up: async (queryInterface) => {
+  up: async (queryInterface, Sequelize) => {
+    // Get a user ID dynamically
+    const users = await queryInterface.sequelize.query(
+      'SELECT id FROM users LIMIT 1',
+      { type: Sequelize.QueryTypes.SELECT }
+    );
+
+    if (users.length === 0) {
+      console.log('No users found. Please run user seeders first.');
+      return;
+    }
+
     await queryInterface.bulkInsert('grocery_orders', [
       {
-        user_id: 1,
+        user_id: users[0].id,
         total_amount: 150.00,
         status: 'pending',
         payment_status: 'pending',

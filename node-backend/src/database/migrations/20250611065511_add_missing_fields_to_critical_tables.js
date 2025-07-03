@@ -2,19 +2,12 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    // Only add product_data to order_items if it doesn't exist
-    try {
-      await queryInterface.addColumn('order_items', 'product_data', {
-        type: Sequelize.JSON,
-        allowNull: false,
-        defaultValue: {}
-      });
-    } catch (err) {
-      if (!err.message.includes('Duplicate column name')) throw err;
-    }
+    // No longer needed: product_data is deprecated in favor of product_snapshot
+    return Promise.resolve();
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.removeColumn('order_items', 'product_data');
+    // No-op
+    return Promise.resolve();
   }
 }; 

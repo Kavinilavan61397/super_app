@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Screen1 from '../Splash/Screen1';
 import Screen2 from '../Splash/Screen2';
@@ -139,165 +139,194 @@ import PrivacyPolicyG from '../Grocery/Pages/PrivacyPolicy';
 import AboutG from '../Grocery/Pages/About';
 import EditAllAddressG from '../Grocery/Pages/EditAllAddress';
 import EditAddressValuesG from '../Grocery/Pages/EditAddressValues';
+import LocationPrompt from './LocationPrompt';
 
 function Navbar() {
+    const [locationError, setLocationError] = useState('');
+    const [showPrompt, setShowPrompt] = useState(true);
+
+    const handleAllow = () => {
+        setShowPrompt(false);
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    setLocationError('');
+                },
+                (error) => {
+                    setLocationError('Location access denied. Some features may not work properly.');
+                }
+            );
+        } else {
+            setLocationError('Geolocation is not supported by your browser.');
+        }
+    };
+
+    const handleDeny = () => {
+        setShowPrompt(false);
+        setLocationError('Location access was denied. Some features may not work properly.');
+    };
+
     return (
-        <BrowserRouter>
-            <Routes>
-                <Route path='/' element={<Screen1 />} />
-                <Route path='/step' element={<Screen2 />} />
-                <Route path='/register' element={<Register />} />
-                <Route path='/login' element={<Login />} />
-                <Route path='/otp' element={<OTP />} />
-                <Route path='/set-password' element={<SetPassword />} />
-                <Route path='/home' element={<HomeScreen />} />
+        <>
+            {showPrompt && <LocationPrompt onAllow={handleAllow} onDeny={handleDeny} />}
+            <BrowserRouter>
+                <Routes>
+                    <Route path='/' element={<Login />} />
+                    {/* <Route path='/step' element={<Screen2 />} />
+                    <Route path='/register' element={<Register />} /> */}
+                    <Route path='/login' element={<Login />} />
+                    <Route path='/register' element={<Register />} />
+                    <Route path='/otp' element={<OTP />} />
+                    <Route path='/set-password' element={<SetPassword />} />
+                    <Route path='/home' element={<HomeScreen />} />
 
-                {/* Clothes */}
-                <Route path='/home-clothes' element={<HomeC />} />
-                <Route path='/home-clothes/detail-page' element={<DetailPage />} />
-                <Route path='/home-clothes/single-product-page' element={<SingleProductPage />} />
-                <Route path='/home-clothes/address' element={<Address />} />
-                <Route path='/home-clothes/all-addresses' element={<AllAddresses />} />
-                <Route path='/home-clothes/edit-all-addresses' element={<EditAllAddress />} />
-                <Route path='/home-clothes/edit-address-values' element={<EditAddressValues />} />
-                <Route path='/home-clothes/product-detail' element={<ProductDetails />} />
-                <Route path='/home-clothes/payment' element={<Payment />} />
-                <Route path='/home-clothes/order' element={<OrderPlaced />} />
-                <Route path='/home-clothes/order-list' element={<Myorders />} />
-                <Route path='/home-clothes/order-list-filter' element={<MyordersFilter />} />
-                <Route path='/home-clothes/cart' element={<Cart />} />
-                <Route path='/home-clothes/account' element={<Account />} />
-                <Route path='/home-clothes/categories' element={<Categories />} />
-                <Route path='/home-clothes/profile' element={<Profile />} />
-                <Route path='/home-clothes/wishlist' element={<Wishlist />} />
-                <Route path='/home-clothes/settings' element={<Settings />} />
-                <Route path='/home-clothes/notification' element={<Notification />} />
-                <Route path='/home-clothes/terms-conditions' element={<TermsConditions />} />
-                <Route path='/home-clothes/privacy-policy' element={<PrivacyPolicy />} />
-                <Route path='/home-clothes/about' element={<About />} />
-                <Route path='/categories/mens-wear' element={<MenClothings/>}/>
-                <Route path='/categories/mens-wear/tops' element={<MenTops />} />
-                <Route path='/categories/mens-wear/bottoms' element={<Bottoms />} />
-                <Route path='/categories/mens-wear/outerwear' element={<Outerwear />} />
-                <Route path='/categories/mens-wear/suits-formals' element={<SuitsFormals />} />
-                <Route path='/categories/mens-wear/underwear-loungewear' element={<UnderwearLoungewear />} />
-                <Route path='/categories/mens-wear/footwear' element={<Footwear />} />
-                <Route path='/categories/mens-wear/accessories' element={<Accessories />} />
-                <Route path='/categories/mens-wear/seasonal-collections' element={<SeasonalCollections />} />
-                <Route path='/categories/mens-wear/new-arrivals' element={<NewArrivals />} />
-                <Route path='/categories/vegetables' element={<Vegetables/>}/>
-            
-                <Route path='/categories/fruits' element={<Fruits/>}/>
-                {/* <Route path='/categories/cosmetics' element={<Cosmetics/>}/>                         */} 
-                <Route path='/categories/fruitdetail' element={<Fruitdetail/>}/>
-                <Route path='/categories/homeappliances' element={<Homeappliances/>}/>
-                <Route path="/categories/homeappliances/refrigerators" element={<Refrigerators />} />
-                <Route path="/categories/homeappliances/washing-machines" element={<WashingMachines />} />
-                <Route path="/categories/homeappliances/air-conditioners-coolers" element={<AirConditionersCoolers />} />
-                <Route path="/categories/homeappliances/kitchen-appliances" element={<KitchenAppliances />} />
-                <Route path="/categories/homeappliances/televisions" element={<Televisions />} />
-                <Route path="/categories/homeappliances/fans-other" element={<FansOther />} />
+                    {/* Clothes */}
+                    <Route path='/home-clothes' element={<HomeC />} />
+                    <Route path='/home-clothes/detail-page' element={<DetailPage />} />
+                    <Route path='/home-clothes/single-product-page' element={<SingleProductPage />} />
+                    <Route path='/home-clothes/address' element={<Address />} />
+                    <Route path='/home-clothes/all-addresses' element={<AllAddresses />} />
+                    <Route path='/home-clothes/edit-all-addresses' element={<EditAllAddress />} />
+                    <Route path='/home-clothes/edit-address-values' element={<EditAddressValues />} />
+                    <Route path='/home-clothes/product-detail' element={<ProductDetails />} />
+                    <Route path='/home-clothes/payment' element={<Payment />} />
+                    <Route path='/home-clothes/order' element={<OrderPlaced />} />
+                    <Route path='/home-clothes/order-list' element={<Myorders />} />
+                    <Route path='/home-clothes/order-list-filter' element={<MyordersFilter />} />
+                    <Route path='/home-clothes/cart' element={<Cart />} />
+                    <Route path='/home-clothes/account' element={<Account />} />
+                    <Route path='/home-clothes/categories' element={<Categories />} />
+                    <Route path='/home-clothes/profile' element={<Profile />} />
+                    <Route path='/home-clothes/wishlist' element={<Wishlist />} />
+                    <Route path='/home-clothes/settings' element={<Settings />} />
+                    <Route path='/home-clothes/notification' element={<Notification />} />
+                    <Route path='/home-clothes/terms-conditions' element={<TermsConditions />} />
+                    <Route path='/home-clothes/privacy-policy' element={<PrivacyPolicy />} />
+                    <Route path='/home-clothes/about' element={<About />} />
+                    <Route path='/categories/mens-wear' element={<MenClothings/>}/>
+                    <Route path='/categories/mens-wear/tops' element={<MenTops />} />
+                    <Route path='/categories/mens-wear/bottoms' element={<Bottoms />} />
+                    <Route path='/categories/mens-wear/outerwear' element={<Outerwear />} />
+                    <Route path='/categories/mens-wear/suits-formals' element={<SuitsFormals />} />
+                    <Route path='/categories/mens-wear/underwear-loungewear' element={<UnderwearLoungewear />} />
+                    <Route path='/categories/mens-wear/footwear' element={<Footwear />} />
+                    <Route path='/categories/mens-wear/accessories' element={<Accessories />} />
+                    <Route path='/categories/mens-wear/seasonal-collections' element={<SeasonalCollections />} />
+                    <Route path='/categories/mens-wear/new-arrivals' element={<NewArrivals />} />
+                    <Route path='/categories/vegetables' element={<Vegetables/>}/>
+                
+                    <Route path='/categories/fruits' element={<Fruits/>}/>
+                    {/* <Route path='/categories/cosmetics' element={<Cosmetics/>}/>                         */} 
+                    <Route path='/categories/fruitdetail' element={<Fruitdetail/>}/>
+                    <Route path='/categories/homeappliances' element={<Homeappliances/>}/>
+                    <Route path="/categories/homeappliances/refrigerators" element={<Refrigerators />} />
+                    <Route path="/categories/homeappliances/washing-machines" element={<WashingMachines />} />
+                    <Route path="/categories/homeappliances/air-conditioners-coolers" element={<AirConditionersCoolers />} />
+                    <Route path="/categories/homeappliances/kitchen-appliances" element={<KitchenAppliances />} />
+                    <Route path="/categories/homeappliances/televisions" element={<Televisions />} />
+                    <Route path="/categories/homeappliances/fans-other" element={<FansOther />} />
 
-                 {/* Groceries */}
-                <Route path='/home-grocery' element={<HomeG />} />
-                <Route path='/home-grocery/address' element={<AddressG />} />
-                <Route path='/home-grocery/edit-all-addresses' element={<EditAllAddressG />} />
-                <Route path='/home-grocery/edit-address-values' element={<EditAddressValuesG />} />
-                <Route path='/home-grocery/payment' element={<PaymentG />} />
-                <Route path='/home-grocery/order' element={<OrderPlacedG />} />
-                <Route path='/home-grocery/order-list' element={<MyordersG />} />
-                <Route path='/home-grocery/invoice/:orderId' element={<InvoiceG />} />
-                <Route path='/home-grocery/order-list-filter' element={<MyordersFilterG />} />
-                <Route path='/home-grocery/cart' element={<CartG />} />
-                <Route path='/home-grocery/account' element={<AccountG />} />
-                <Route path='/home-grocery/profile' element={<ProfileG />} />
-                <Route path='/home-grocery/wishlist' element={<WishlistG />} />
-                <Route path='/home-grocery/settings' element={<SettingsG />} />
-                <Route path='/home-grocery/notification' element={<NotificationG />} />
-                <Route path='/home-grocery/terms-conditions' element={<TermsConditionsG />} />
-                <Route path='/home-grocery/privacy-policy' element={<PrivacyPolicyG />} />
-                <Route path='/home-grocery/about' element={<AboutG />} />
-                {/* <Route path='categories/homeappliances' element={<Homeappliances/>}/> */}
-                 <Route path ='categories/cosmetics' element={<Cosmetic/>}/>        
-                <Route path ='cosmetics/lipstick' element={<Lipstick/>}/>  
-                  <Route path ='cosmetics/foundation' element={<Foundation/>}/>
-                  <Route path ='cosmetics/primer' element={<Primer/>}/>
-                 <Route path ='cosmetics/sunscreen' element={<Sunscreen/>}/> 
-                 <Route path ='cosmetics/shampoo' element ={<Shampoo/>}/> 
-                 <Route path ='cosmetics/conditioner' element={<Conditioner/>}/> 
+                     {/* Groceries */}
+                    <Route path='/home-grocery' element={<HomeG />} />
+                    <Route path='/home-grocery/address' element={<AddressG />} />
+                    <Route path='/home-grocery/edit-all-addresses' element={<EditAllAddressG />} />
+                    <Route path='/home-grocery/edit-address-values' element={<EditAddressValuesG />} />
+                    <Route path='/home-grocery/payment' element={<PaymentG />} />
+                    <Route path='/home-grocery/order' element={<OrderPlacedG />} />
+                    <Route path='/home-grocery/order-list' element={<MyordersG />} />
+                    <Route path='/home-grocery/invoice/:orderId' element={<InvoiceG />} />
+                    <Route path='/home-grocery/order-list-filter' element={<MyordersFilterG />} />
+                    <Route path='/home-grocery/cart' element={<CartG />} />
+                    <Route path='/home-grocery/account' element={<AccountG />} />
+                    <Route path='/home-grocery/profile' element={<ProfileG />} />
+                    <Route path='/home-grocery/wishlist' element={<WishlistG />} />
+                    <Route path='/home-grocery/settings' element={<SettingsG />} />
+                    <Route path='/home-grocery/notification' element={<NotificationG />} />
+                    <Route path='/home-grocery/terms-conditions' element={<TermsConditionsG />} />
+                    <Route path='/home-grocery/privacy-policy' element={<PrivacyPolicyG />} />
+                    <Route path='/home-grocery/about' element={<AboutG />} />
+                    {/* <Route path='categories/homeappliances' element={<Homeappliances/>}/> */}
+                     <Route path ='categories/cosmetics' element={<Cosmetic/>}/>        
+                    <Route path ='cosmetics/lipstick' element={<Lipstick/>}/>  
+                      <Route path ='cosmetics/foundation' element={<Foundation/>}/>
+                      <Route path ='cosmetics/primer' element={<Primer/>}/>
+                     <Route path ='cosmetics/sunscreen' element={<Sunscreen/>}/> 
+                     <Route path ='cosmetics/shampoo' element ={<Shampoo/>}/> 
+                     <Route path ='cosmetics/conditioner' element={<Conditioner/>}/> 
 
-                 <Route path ='cosmetics/eyeshadow' element={<Eyeshadow/>}/>
-                 <Route path ='cosmetics/compactpowder' element={<CompactPowder/>}/>
-                 <Route path ='cosmetics/kajal' element={<Kajal/>}/>
-                 <Route path ='cosmetics/settingspray' element={<Settingspray/>}/>
-                 <Route path ='cosmetics/highlighter' element={<Highlighter/>}/>
-                 {/* <Route path ='/cosmetics/eyelinear' element={<EyeLinear/>}/> */}
-                 <Route path ='cosmetics/mascara' element={<Mascara/>}/>
-                 {/* <Route path ='cosmetics/productdetail' element={<ProductDetail/>}/> */}
-                  <Route path='/categories' element={<Categories />} />
-                <Route path='/categories/womens-wear' element={<WomensClothing/>} /> 
-                {/* <Route path= '/categories/womens-wear/kurti' element={<Kurti/>}/> */}
-                 {/* <Route path='cosmetics/womens-wear' element={<Womenswear/>}/> */}
-                  <Route path ='/categories/womens-wear/kurti' element={<Kurti/>}/>  
-                  <Route path ='/categories/womens-wear/tops' element={<Tops/>}/>   
-                  <Route path = '/categories/womens-wear/maxidress' element={<Maxidress/>}/> 
-                  <Route path ='/categories/womens-wear/leggin' element={<Leggin/>}/>
-                  <Route path ='/categories/womens-wear/jean' element={<Jean/>}/ >   
-                  <Route path = '/categories/womens-wear/saree' element={<Saree/>}/>   
-                  <Route path = '/categories/womens-wear/tshirt' element={<Tshirt/>}/>  
-                  <Route path = '/categories/womens-wear/trackpantwomen' element={<Trackpantwomen/>}/>  
-                  <Route path = '/categories/womens-wear/womenfootwear' element={<Womenfootwear/>}/> 
-                  <Route path = '/categories/womens-wear/womenseasonaldress' element={<Womenseasonaldress/>}/> 
-                  <Route path ='/categories/womens-wear/palazzopant' element={<Palazzopant/>}/>
- 
+                     <Route path ='cosmetics/eyeshadow' element={<Eyeshadow/>}/>
+                     <Route path ='cosmetics/compactpowder' element={<CompactPowder/>}/>
+                     <Route path ='cosmetics/kajal' element={<Kajal/>}/>
+                     <Route path ='cosmetics/settingspray' element={<Settingspray/>}/>
+                     <Route path ='cosmetics/highlighter' element={<Highlighter/>}/>
+                     {/* <Route path ='/cosmetics/eyelinear' element={<EyeLinear/>}/> */}
+                     <Route path ='cosmetics/mascara' element={<Mascara/>}/>
+                     {/* <Route path ='cosmetics/productdetail' element={<ProductDetail/>}/> */}
+                      <Route path='/categories' element={<Categories />} />
+                    <Route path='/categories/womens-wear' element={<WomensClothing/>} /> 
+                    {/* <Route path= '/categories/womens-wear/kurti' element={<Kurti/>}/> */}
+                     {/* <Route path='cosmetics/womens-wear' element={<Womenswear/>}/> */}
+                      <Route path ='/categories/womens-wear/kurti' element={<Kurti/>}/>  
+                      <Route path ='/categories/womens-wear/tops' element={<Tops/>}/>   
+                      <Route path = '/categories/womens-wear/maxidress' element={<Maxidress/>}/> 
+                      <Route path ='/categories/womens-wear/leggin' element={<Leggin/>}/>
+                      <Route path ='/categories/womens-wear/jean' element={<Jean/>}/ >   
+                      <Route path = '/categories/womens-wear/saree' element={<Saree/>}/>   
+                      <Route path = '/categories/womens-wear/tshirt' element={<Tshirt/>}/>  
+                      <Route path = '/categories/womens-wear/trackpantwomen' element={<Trackpantwomen/>}/>  
+                      <Route path = '/categories/womens-wear/womenfootwear' element={<Womenfootwear/>}/> 
+                      <Route path = '/categories/womens-wear/womenseasonaldress' element={<Womenseasonaldress/>}/> 
+                      <Route path ='/categories/womens-wear/palazzopant' element={<Palazzopant/>}/>
+
 
                 
-                {/* Food */}
-                <Route path='/home-food' element={<HomeScreenF />} />
-                <Route path='/home-food/detail-page' element={<DetailPageF />} />
-                <Route path='/home-food/restaurent-list-based-on-category/:restaurentCategoryName' element={<RestaurentPageCategory />} />
-                <Route path='/home-food/single-product-details/:vendorId' element={<SingleProductFood />} />
-                <Route path='/home-food/dishes-list-based-on-category-and-hotel/:vendorId/:restaurentCategoryName' element={<DishesListBasedOnCategory />} />
-                <Route path='/home-food/cart' element={<CartFood />} />
-                <Route path='/home-food/choose-address' element={<ChooseAddressFood />} />
-                <Route path='/home-food/add-address' element={<AddDilveryAddressFood />} />
-                <Route path='/home-food/product-details' element={<ProductDetailsFood />} />
-                <Route path='/home-food/payment-type' element={<PaymentFood />} />
-                <Route path='/home-food/order-placed' element={<OrderPlacedFood />} />
-                <Route path='/home-food/orders-history' element={<OrdersHistoryFood />} />
-                <Route path='/home-food/account' element={<AccountFood />} />
-                <Route path='/home-food/food-order-tracking' element={<TrackOrderFood />} />
-                <Route path='/home-food/customerProfile-details' element={<CustomerProfileFood />} />
-                <Route path='/home-food/edit-option-all-address' element={<EditOptionforalladdresses />} />
-                <Route path='/home-food/settings' element={<SettingsFood />} />
-                <Route path='/home-food/about' element={<AboutFood />} />
-                <Route path='/home-food/terms-conditions' element={<TermsConditionFood />} />
-                <Route path='/home-food/privacy' element={<PrivacyPolicyFood />} />
-                <Route path='/home-food/notification' element={<NotificationFood />} />
-                <Route path='/home-food/categories' element={<CategoriesFood />} />
-                <Route path='/home-food/edit-dilvery-address' element={<EditDilveryAddressFood />} />
+                    {/* Food */}
+                    <Route path='/home-food' element={<HomeScreenF />} />
+                    <Route path='/home-food/detail-page' element={<DetailPageF />} />
+                    <Route path='/home-food/restaurent-list-based-on-category/:restaurentCategoryName' element={<RestaurentPageCategory />} />
+                    <Route path='/home-food/single-product-details/:vendorId' element={<SingleProductFood />} />
+                    <Route path='/home-food/dishes-list-based-on-category-and-hotel/:vendorId/:restaurentCategoryName' element={<DishesListBasedOnCategory />} />
+                    <Route path='/home-food/cart' element={<CartFood />} />
+                    <Route path='/home-food/choose-address' element={<ChooseAddressFood />} />
+                    <Route path='/home-food/add-address' element={<AddDilveryAddressFood />} />
+                    <Route path='/home-food/product-details' element={<ProductDetailsFood />} />
+                    <Route path='/home-food/payment-type' element={<PaymentFood />} />
+                    <Route path='/home-food/order-placed' element={<OrderPlacedFood />} />
+                    <Route path='/home-food/orders-history' element={<OrdersHistoryFood />} />
+                    <Route path='/home-food/account' element={<AccountFood />} />
+                    <Route path='/home-food/food-order-tracking' element={<TrackOrderFood />} />
+                    <Route path='/home-food/customerProfile-details' element={<CustomerProfileFood />} />
+                    <Route path='/home-food/edit-option-all-address' element={<EditOptionforalladdresses />} />
+                    <Route path='/home-food/settings' element={<SettingsFood />} />
+                    <Route path='/home-food/about' element={<AboutFood />} />
+                    <Route path='/home-food/terms-conditions' element={<TermsConditionFood />} />
+                    <Route path='/home-food/privacy' element={<PrivacyPolicyFood />} />
+                    <Route path='/home-food/notification' element={<NotificationFood />} />
+                    <Route path='/home-food/categories' element={<CategoriesFood />} />
+                    <Route path='/home-food/edit-dilvery-address' element={<EditDilveryAddressFood />} />
 
-                {/* taxi */}
-                <Route path='/home-taxi' element={<HomeScreenTaxi />} />
-                <Route path='/home-taxi/src-dest' element={<LocationSrcDes />} />
-                <Route path='/home-taxi/settings' element={<SettingsTaxi />} />
-                <Route path='/home-taxi/account' element={<AccountTaxi />} />
-                <Route path='/home-taxi/profile' element={<ProfileTaxi />} />
-                <Route path='/home-taxi/notification' element={<NotificationTaxi />} />
-                <Route path='/home-taxi/terms-conditions' element={<TermsConditionsTaxi />} />
-                <Route path='/home-taxi/privacy' element={<PrivacyTaxi />} />
-                <Route path='/home-taxi/about' element={<AboutTaxi />} />
-                <Route path='/home-taxi/payment' element={<PaymentTaxi />} />
-                <Route path='/home-taxi/my-rides' element={<MyRidesTaxi />} />
+                    {/* taxi */}
+                    <Route path='/home-taxi' element={<HomeScreenTaxi />} />
+                    <Route path='/home-taxi/src-dest' element={<LocationSrcDes />} />
+                    <Route path='/home-taxi/settings' element={<SettingsTaxi />} />
+                    <Route path='/home-taxi/account' element={<AccountTaxi />} />
+                    <Route path='/home-taxi/profile' element={<ProfileTaxi />} />
+                    <Route path='/home-taxi/notification' element={<NotificationTaxi />} />
+                    <Route path='/home-taxi/terms-conditions' element={<TermsConditionsTaxi />} />
+                    <Route path='/home-taxi/privacy' element={<PrivacyTaxi />} />
+                    <Route path='/home-taxi/about' element={<AboutTaxi />} />
+                    <Route path='/home-taxi/payment' element={<PaymentTaxi />} />
+                    <Route path='/home-taxi/my-rides' element={<MyRidesTaxi />} />
 
-                {/* Hotel room */}
-                <Route path='/home-hotel' element={<HomeH />} />
-                <Route path='/home-hotel/particular-hotel-details' element={<ParticularHotelDetails />} />
-                <Route path='/home-hotel/review-summary' element={<ReviewSummary />} />
-                <Route path='/home-hotel/total-rooms' element={<Rooms />} />
-                <Route path='/home-hotel/favourite' element={<Favourites />} />
-            </Routes>
-        </BrowserRouter>
+                    {/* Hotel room */}
+                    <Route path='/home-hotel' element={<HomeH />} />
+                    <Route path='/home-hotel/particular-hotel-details' element={<ParticularHotelDetails />} />
+                    <Route path='/home-hotel/review-summary' element={<ReviewSummary />} />
+                    <Route path='/home-hotel/total-rooms' element={<Rooms />} />
+                    <Route path='/home-hotel/favourite' element={<Favourites />} />
+                </Routes>
+            </BrowserRouter>
+        </>
     )
 }
 export default Navbar;

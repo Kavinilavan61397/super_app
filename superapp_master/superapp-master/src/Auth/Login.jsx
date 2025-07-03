@@ -1,97 +1,72 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { EyeIcon, EyeOffIcon } from 'lucide-react';
 import logo from "../Images/Logo/E-STORE.svg";
 
 function Login() {
     const navigate = useNavigate();
-    const [showPassword, setShowPassword] = useState(false);
+
     const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [phone, setPhone] = useState('');
+    const [otp, setOtp] = useState('');
 
-    const handleLogin = async () => {
-        try {
-            const response = await fetch('http://localhost:5000/api/auth/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, password }),
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                alert('Login successful!');
-                localStorage.setItem('token', data.data.token);
-                localStorage.setItem('userId', data.data.user.id); // Store user ID
-                navigate('/home'); 
-            } else {
-                alert(data.message || 'Invalid email or password');
-            }
-        } catch (error) {
-            console.error('Login error:', error);
-            alert('Something went wrong during login. Please try again later.');
+    const handleLogin = () => {
+        if (email && phone && otp) {
+            alert('Login successful!');
+            navigate('/home');
+        } else {
+            alert('Please fill all the fields');
         }
     };
 
     return (
-        <div className="w-full h-screen flex flex-col items-center justify-center">
+        <div className="w-full min-h-screen flex flex-col items-center justify-center bg-white relative px-2 py-6 sm:px-0">
             {/* Gradient Background */}
-            <div className="absolute top-0 w-full h-40 bg-gradient-to-b from-[#d6a1ef] to-white"></div>
+            <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-[#d6a1ef] to-white z-0"></div>
 
             {/* Centered Form Container */}
-            <div className="w-full max-w-sm px-4 py-8 bg-white flex flex-col items-center">
+            <div className="w-full max-w-sm px-4 py-8 bg-white flex flex-col items-center rounded-xl shadow-lg z-10 relative mt-8 mb-8 sm:mt-0 sm:mb-0">
                 {/* Logo */}
-                <img src={logo} alt="E-STORE" className="w-32 mb-6" />
+                <img src={logo} alt="E-STORE" className="w-24 sm:w-32 mb-6" />
 
                 {/* Email Field */}
-                <label className="block text-sm text-gray-600 w-full">Enter your email ID</label>
+                <label className="block text-sm text-gray-600 w-full mt-2">Enter your email ID</label>
                 <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full p-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#5C3FFF] mt-1"
+                    className="w-full p-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#5C3FFF] mt-1 text-base"
                 />
 
-                {/* Password Field */}
-                <label className="block text-sm text-gray-600 w-full mt-4">Enter your password</label>
-                <div className="relative w-full">
-                    <input
-                        type={showPassword ? "text" : "password"}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="w-full p-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#5C3FFF] mt-1"
-                    />
-                    <span
-                        className="absolute inset-y-0 right-3 flex items-center cursor-pointer"
-                        onClick={() => setShowPassword(!showPassword)}
-                    >
-                        {showPassword ? <EyeOffIcon size={20} /> : <EyeIcon size={20} />}
-                    </span>
-                </div>
+                {/* Phone Number Field */}
+                <label className="block text-sm text-gray-600 w-full mt-4">Enter your phone number</label>
+                <input
+                    type="text"
+                    value={phone}
+                    onChange={(e) => {
+                        const val = e.target.value;
+                        if (/^\d*$/.test(val)) setPhone(val); // Only digits
+                    }}
+                    className="w-full p-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#5C3FFF] mt-1 text-base"
+                />
 
-                {/* Signup Link */}
-                <div className="w-full text-right mt-4">
-                    <p className="text-sm text-gray-600">
-                        Don't have an account?{" "}
-                        <span
-                            className="text-[#5C3FFF] cursor-pointer"
-                            onClick={() => navigate('/register')}
-                        >
-                            Sign up here
-                        </span>
-                    </p>
-                </div>
-            </div>
+                {/* OTP Field */}
+                <label className="block text-sm text-gray-600 w-full mt-4">Enter your OTP</label>
+                <input
+                    type="text"
+                    value={otp}
+                    onChange={(e) => {
+                        const val = e.target.value;
+                        if (/^\d*$/.test(val)) setOtp(val); // Only digits
+                    }}
+                    className="w-full p-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#5C3FFF] mt-1 text-base"
+                />
 
-            {/* Continue Button */}
-            <div className="fixed left-0 right-0 bottom-16 px-4 flex justify-center">
+                {/* Login Button */}
                 <button
                     onClick={handleLogin}
-                    className="w-full max-w-sm h-12 bg-[#5C3FFF] text-white text-lg font-semibold rounded-full flex items-center justify-center transition duration-300 hover:bg-[#4A2FCC] hover:scale-105 active:scale-95"
+                    className="w-full h-12 bg-[#5C3FFF] text-white text-lg font-semibold rounded-full flex items-center justify-center transition duration-300 hover:bg-[#4A2FCC] hover:scale-105 active:scale-95 mt-6 mb-2"
                 >
-                    Continue
+                    Login
                 </button>
             </div>
         </div>

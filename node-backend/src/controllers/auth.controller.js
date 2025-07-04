@@ -64,8 +64,9 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Check if user exists
+    console.log('Login attempt:', email, password);
     const user = await User.findOne({ email });
+    console.log('User found:', user ? user.email : 'none', user ? user.password : 'no password');
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -75,6 +76,7 @@ exports.login = async (req, res) => {
 
     // Check password
     const isPasswordValid = await user.comparePassword(password);
+    console.log('Password valid:', isPasswordValid);
     if (!isPasswordValid) {
       return res.status(401).json({
         success: false,

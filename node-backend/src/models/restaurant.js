@@ -1,47 +1,58 @@
-'use strict';
-const {
-  Model
-} = require('sequelize');
-module.exports = (sequelize, DataTypes) => {
-  class Restaurant extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
-    static associate(models) {
-      Restaurant.belongsTo(models.RestaurantCategory, { foreignKey: 'categoryId', as: 'category' });
-      Restaurant.hasMany(models.Dish, { foreignKey: 'restaurantId', as: 'dishes' });
-    }
+const mongoose = require('mongoose');
+
+const restaurantSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: [true, 'Restaurant name is required'],
+    trim: true
+  },
+  slug: {
+    type: String,
+    required: [true, 'Slug is required'],
+    unique: true,
+    lowercase: true,
+    trim: true
+  },
+  description: {
+    type: String,
+    trim: true
+  },
+  image: {
+    type: String
+  },
+  category_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'RestaurantCategory',
+    required: [true, 'Category is required']
+  },
+  status: {
+    type: Boolean,
+    default: true
+  },
+  address: {
+    type: String,
+    trim: true
+  },
+  phone: {
+    type: String,
+    trim: true
   }
-  Restaurant.init({
-    name: DataTypes.STRING,
-    address: DataTypes.TEXT,
-    categoryId: {
-      type: DataTypes.INTEGER,
-      field: 'category_id'
-    },
-    image: DataTypes.STRING,
-    averageRating: {
-      type: DataTypes.FLOAT,
-      field: 'average_rating'
-    },
-    status: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: true
-    },
-    createdAt: {
-      type: DataTypes.DATE,
-      field: 'created_at'
-    },
-    updatedAt: {
-      type: DataTypes.DATE,
-      field: 'updated_at'
-    }
-  }, {
-    sequelize,
-    modelName: 'Restaurant',
-    underscored: true
-  });
-  return Restaurant;
-};
+}, {
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+});
+
+restaurantSchema.virtual('category', {
+  ref: 'RestaurantCategory',
+  localField: 'category_id',
+  foreignField: '_id',
+  justOne: true
+});
+
+restaurantSchema.index({ category_id: 1 });
+restaurantSchema.index({ status: 1 });
+
+const Restaurant = mongoose.model('Restaurant', restaurantSchema);
+
+module.exports = Restaurant;

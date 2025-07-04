@@ -1,5 +1,8 @@
-const { Order, OrderItem, User, Product, ProductVariation } = require('../models');
-const { Op } = require('sequelize');
+const Order = require('../models/Order');
+const OrderItem = require('../models/OrderItem');
+const User = require('../models/User');
+const Product = require('../models/Product');
+const ProductVariation = require('../models/ProductVariation');
 
 // Get all orders with advanced filtering (admin)
 exports.getAllOrders = async (req, res) => {
@@ -14,66 +17,63 @@ exports.getAllOrders = async (req, res) => {
       date_to,
       payment_status,
       payment_method,
-      sort_by = 'created_at',
+      sort_by = 'createdAt',
       sort_order = 'DESC'
     } = req.query;
     
-    const offset = (page - 1) * limit;
+    const skip = (page - 1) * limit;
     
-    // Build where clause
-    const whereClause = {};
-    if (status) whereClause.status = status;
-    if (payment_status) whereClause.payment_status = payment_status;
-    if (payment_method) whereClause.payment_method = payment_method;
+    // Build query
+    const query = {};
+    if (status) query.status = status;
+    if (payment_status) query.payment_status = payment_status;
+    if (payment_method) query.payment_method = payment_method;
     
     // Date range filter
     if (date_from || date_to) {
-      whereClause.created_at = {};
-      if (date_from) whereClause.created_at[Op.gte] = new Date(date_from);
-      if (date_to) whereClause.created_at[Op.lte] = new Date(date_to + ' 23:59:59');
+      query.createdAt = {};
+      if (date_from) query.createdAt.$gte = new Date(date_from);
+      if (date_to) query.createdAt.$lte = new Date(date_to + ' 23:59:59');
     }
 
-    // Search filter
-    let userWhereClause = {};
+    // Search filter - we'll handle this after population
+    let userQuery = {};
     if (search) {
-      userWhereClause = {
-        [Op.or]: [
-          { name: { [Op.like]: `%${search}%` } },
-          { email: { [Op.like]: `%${search}%` } },
-          { phone: { [Op.like]: `%${search}%` } }
+      userQuery = {
+        $or: [
+          { name: { $regex: search, $options: 'i' } },
+          { email: { $regex: search, $options: 'i' } },
+          { phone: { $regex: search, $options: 'i' } }
         ]
       };
     }
 
-    const includeClause = [{
-      model: OrderItem,
-      as: 'items'
-    }, {
-      model: User,
-      as: 'user',
-      attributes: ['id', 'name', 'email', 'phone'],
-      where: userWhereClause
-    }];
+    // First get orders
+    let orders = await Order.find(query)
+      .populate({
+        path: 'user_id',
+        select: 'name email phone',
+        match: userQuery
+      })
+      .populate('items')
+      .sort({ [sort_by]: sort_order === 'DESC' ? -1 : 1 })
+      .skip(skip)
+      .limit(parseInt(limit));
 
-    const orders = await Order.findAndCountAll({
-      where: whereClause,
-      include: includeClause,
-      order: [[sort_by, sort_order]],
-      limit: parseInt(limit),
-      offset: parseInt(offset),
-      distinct: true
-    });
-    if (orders.rows.length > 0) {
-      console.log('First order date fields:', orders.rows[0].created_at, orders.rows[0].createdAt, orders.rows[0].updated_at, orders.rows[0].updatedAt);
+    // Filter out orders where user doesn't match search criteria
+    if (search) {
+      orders = orders.filter(order => order.user_id);
     }
+
+    const total = await Order.countDocuments(query);
 
     res.json({
       success: true,
-      data: orders.rows,
+      data: orders,
       pagination: {
         current_page: parseInt(page),
-        total_pages: Math.ceil(orders.count / limit),
-        total_items: orders.count,
+        total_pages: Math.ceil(total / limit),
+        total_items: total,
         items_per_page: parseInt(limit)
       }
     });
@@ -90,16 +90,9 @@ exports.getAllOrders = async (req, res) => {
 // Get single order by ID (admin)
 exports.getOrderById = async (req, res) => {
   try {
-    const order = await Order.findByPk(req.params.id, {
-      include: [{
-        model: OrderItem,
-        as: 'items'
-      }, {
-        model: User,
-        as: 'user',
-        attributes: ['id', 'name', 'email', 'phone']
-      }]
-    });
+    const order = await Order.findById(req.params.id)
+      .populate('items')
+      .populate('user_id', 'name email phone');
 
     if (!order) {
       return res.status(404).json({
@@ -127,7 +120,7 @@ exports.updateOrderStatus = async (req, res) => {
   try {
     const { status, tracking_number, notes } = req.body;
     
-    const order = await Order.findByPk(req.params.id);
+    const order = await Order.findById(req.params.id);
     if (!order) {
       return res.status(404).json({
         success: false,
@@ -144,11 +137,10 @@ exports.updateOrderStatus = async (req, res) => {
       });
     }
 
-    await order.update({
-      status: status || order.status,
-      tracking_number: tracking_number || order.tracking_number,
-      notes: notes || order.notes
-    });
+    order.status = status || order.status;
+    order.tracking_number = tracking_number || order.tracking_number;
+    order.notes = notes || order.notes;
+    await order.save();
 
     res.json({
       success: true,
@@ -173,71 +165,48 @@ exports.getOrderStats = async (req, res) => {
     startDate.setDate(startDate.getDate() - parseInt(period));
 
     // Total orders
-    const totalOrders = await Order.count({
-      where: {
-        created_at: {
-          [Op.gte]: startDate
-        }
-      }
+    const totalOrders = await Order.countDocuments({
+      createdAt: { $gte: startDate }
     });
 
     // Orders by status
-    const ordersByStatus = await Order.findAll({
-      attributes: [
-        'status',
-        [sequelize.fn('COUNT', sequelize.col('id')), 'count']
-      ],
-      where: {
-        created_at: {
-          [Op.gte]: startDate
+    const ordersByStatus = await Order.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: startDate }
         }
       },
-      group: ['status']
-    });
+      {
+        $group: {
+          _id: '$status',
+          count: { $sum: 1 }
+        }
+      }
+    ]);
 
     // Total revenue
-    const totalRevenue = await Order.sum('total_amount', {
-      where: {
-        created_at: {
-          [Op.gte]: startDate
-        },
-        status: {
-          [Op.in]: ['confirmed', 'processing', 'shipped', 'delivered']
+    const revenueResult = await Order.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: startDate }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: '$total_amount' }
         }
       }
-    });
+    ]);
 
-    // Average order value
-    const avgOrderValue = await Order.findOne({
-      attributes: [
-        [sequelize.fn('AVG', sequelize.col('total_amount')), 'average']
-      ],
-      where: {
-        created_at: {
-          [Op.gte]: startDate
-        }
-      }
-    });
-
-    // Recent orders
-    const recentOrders = await Order.findAll({
-      include: [{
-        model: User,
-        as: 'user',
-        attributes: ['name', 'email']
-      }],
-      order: [['created_at', 'DESC']],
-      limit: 5
-    });
+    const totalRevenue = revenueResult.length > 0 ? revenueResult[0].total : 0;
 
     res.json({
       success: true,
       data: {
         total_orders: totalOrders,
-        total_revenue: totalRevenue || 0,
-        average_order_value: parseFloat(avgOrderValue?.dataValues?.average || 0).toFixed(2),
         orders_by_status: ordersByStatus,
-        recent_orders: recentOrders
+        total_revenue: totalRevenue
       }
     });
   } catch (error) {

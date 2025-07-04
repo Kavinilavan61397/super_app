@@ -3,58 +3,42 @@ const Color = require('../models/Color');
 // Get all colors
 exports.getAllColors = async (req, res) => {
   try {
-    const colors = await Color.findAll({
-      order: [['createdAt', 'DESC']]
-    });
+    const colors = await Color.find().sort({ createdAt: -1 });
     res.json(colors);
   } catch (error) {
-    console.error('Error fetching colors:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching colors',
-      error: error.message
-    });
+    res.status(500).json({ message: error.message });
   }
 };
 
 // Get color by ID
 exports.getColorById = async (req, res) => {
   try {
-    const color = await Color.findByPk(req.params.id);
+    const color = await Color.findById(req.params.id);
     if (!color) {
-      return res.status(404).json({
-        success: false,
-        message: 'Color not found'
-      });
+      return res.status(404).json({ message: 'Color not found' });
     }
     res.json(color);
   } catch (error) {
-    console.error('Error fetching color:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching color',
-      error: error.message
-    });
+    res.status(500).json({ message: error.message });
   }
 };
 
 // Create color
 exports.createColor = async (req, res) => {
   try {
-    const { color_name, color_code } = req.body;
-
-    const color = await Color.create({
-      color_name,
-      color_code
+    const { name, code, status } = req.body;
+    const color = new Color({
+      name,
+      code,
+      status: typeof status !== 'undefined' ? (String(status) === 'true') : true
     });
-
+    await color.save();
     res.status(201).json({
       success: true,
       message: 'Color created successfully',
       data: color
     });
   } catch (error) {
-    console.error('Error creating color:', error);
     res.status(500).json({
       success: false,
       message: 'Error creating color',
@@ -66,28 +50,23 @@ exports.createColor = async (req, res) => {
 // Update color
 exports.updateColor = async (req, res) => {
   try {
-    const color = await Color.findByPk(req.params.id);
+    const color = await Color.findById(req.params.id);
     if (!color) {
-      return res.status(404).json({
-        success: false,
-        message: 'Color not found'
-      });
+      return res.status(404).json({ message: 'Color not found' });
     }
 
-    const { color_name, color_code } = req.body;
+    const { name, code, status } = req.body;
+    color.name = name || color.name;
+    color.code = code || color.code;
+    color.status = typeof status !== 'undefined' ? (String(status) === 'true') : color.status;
 
-    await color.update({
-      color_name: color_name || color.color_name,
-      color_code: color_code || color.color_code
-    });
-
+    await color.save();
     res.json({
       success: true,
       message: 'Color updated successfully',
       data: color
     });
   } catch (error) {
-    console.error('Error updating color:', error);
     res.status(500).json({
       success: false,
       message: 'Error updating color',
@@ -99,22 +78,17 @@ exports.updateColor = async (req, res) => {
 // Delete color
 exports.deleteColor = async (req, res) => {
   try {
-    const color = await Color.findByPk(req.params.id);
+    const color = await Color.findById(req.params.id);
     if (!color) {
-      return res.status(404).json({
-        success: false,
-        message: 'Color not found'
-      });
+      return res.status(404).json({ message: 'Color not found' });
     }
 
-    await color.destroy();
-
+    await Color.findByIdAndDelete(req.params.id);
     res.json({
       success: true,
       message: 'Color deleted successfully'
     });
   } catch (error) {
-    console.error('Error deleting color:', error);
     res.status(500).json({
       success: false,
       message: 'Error deleting color',
@@ -134,21 +108,15 @@ exports.bulkDeleteColors = async (req, res) => {
       });
     }
 
-    await Color.destroy({
-      where: {
-        id: ids
-      }
-    });
-
+    await Color.deleteMany({ _id: { $in: ids } });
     res.json({
       success: true,
-      message: 'Colors deleted successfully'
+      message: `${ids.length} colors deleted successfully`
     });
   } catch (error) {
-    console.error('Error bulk deleting colors:', error);
     res.status(500).json({
       success: false,
-      message: 'Error bulk deleting colors',
+      message: 'Error deleting colors',
       error: error.message
     });
   }

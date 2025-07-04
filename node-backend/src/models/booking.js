@@ -1,65 +1,149 @@
-'use strict';
+const mongoose = require('mongoose');
 
-const { Model } = require('sequelize');
-
-module.exports = (sequelize, DataTypes) => {
-  class Booking extends Model {
-    static associate(models) {
-      Booking.belongsTo(models.User, { foreignKey: 'user_id' });
-      Booking.belongsTo(models.Room, { foreignKey: 'room_id' });
+const bookingSchema = new mongoose.Schema({
+  user_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: [true, 'User ID is required']
+  },
+  hotel_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Hotel',
+    required: [true, 'Hotel ID is required']
+  },
+  room_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Room',
+    required: [true, 'Room ID is required']
+  },
+  check_in_date: {
+    type: Date,
+    required: [true, 'Check-in date is required']
+  },
+  check_out_date: {
+    type: Date,
+    required: [true, 'Check-out date is required']
+  },
+  guests: {
+    adults: {
+      type: Number,
+      min: 1,
+      default: 1
+    },
+    children: {
+      type: Number,
+      min: 0,
+      default: 0
+    },
+    infants: {
+      type: Number,
+      min: 0,
+      default: 0
     }
+  },
+  total_nights: {
+    type: Number,
+    min: 1
+  },
+  price_per_night: {
+    type: Number,
+    required: [true, 'Price per night is required'],
+    min: 0
+  },
+  total_amount: {
+    type: Number,
+    required: [true, 'Total amount is required'],
+    min: 0
+  },
+  discount_amount: {
+    type: Number,
+    min: 0,
+    default: 0
+  },
+  final_amount: {
+    type: Number,
+    required: [true, 'Final amount is required'],
+    min: 0
+  },
+  payment_status: {
+    type: String,
+    enum: ['pending', 'paid', 'failed', 'refunded'],
+    default: 'pending'
+  },
+  payment_method: {
+    type: String,
+    enum: ['credit_card', 'debit_card', 'upi', 'net_banking', 'cash'],
+    default: 'credit_card'
+  },
+  booking_status: {
+    type: String,
+    enum: ['confirmed', 'pending', 'cancelled', 'completed', 'no_show'],
+    default: 'pending'
+  },
+  special_requests: {
+    type: String,
+    trim: true
+  },
+  cancellation_reason: {
+    type: String,
+    trim: true
+  },
+  cancellation_date: {
+    type: Date
+  },
+  refund_amount: {
+    type: Number,
+    min: 0,
+    default: 0
+  },
+  rating: {
+    type: Number,
+    min: 1,
+    max: 5
+  },
+  review: {
+    type: String,
+    trim: true
+  },
+  review_date: {
+    type: Date
   }
+}, {
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+});
 
-  Booking.init({
-    id: {
-      type: DataTypes.BIGINT.UNSIGNED,
-      primaryKey: true,
-      autoIncrement: true
-    },
-    user_id: {
-      type: DataTypes.BIGINT.UNSIGNED,
-      allowNull: false,
-      references: {
-        model: 'users',
-        key: 'id'
-      }
-    },
-    room_id: {
-      type: DataTypes.BIGINT.UNSIGNED,
-      allowNull: false,
-      references: {
-        model: 'rooms',
-        key: 'id'
-      }
-    },
-    check_in: {
-      type: DataTypes.DATE,
-      allowNull: false
-    },
-    check_out: {
-      type: DataTypes.DATE,
-      allowNull: false
-    },
-    status: {
-      type: DataTypes.INTEGER,
-      defaultValue: 1
-    },
-    createdAt: {
-      type: DataTypes.DATE,
-      field: 'created_at',
-      allowNull: false
-    },
-    updatedAt: {
-      type: DataTypes.DATE,
-      field: 'updated_at',
-      allowNull: false
-    }
-  }, {
-    sequelize,
-    modelName: 'Booking',
-    tableName: 'bookings',
-    underscored: true
-  });
+bookingSchema.virtual('user', {
+  ref: 'User',
+  localField: 'user_id',
+  foreignField: '_id',
+  justOne: true
+});
 
-  return Booking;
-}; 
+bookingSchema.virtual('hotel', {
+  ref: 'Hotel',
+  localField: 'hotel_id',
+  foreignField: '_id',
+  justOne: true
+});
+
+bookingSchema.virtual('room', {
+  ref: 'Room',
+  localField: 'room_id',
+  foreignField: '_id',
+  justOne: true
+});
+
+bookingSchema.index({ user_id: 1 });
+bookingSchema.index({ hotel_id: 1 });
+bookingSchema.index({ room_id: 1 });
+bookingSchema.index({ check_in_date: 1 });
+bookingSchema.index({ check_out_date: 1 });
+bookingSchema.index({ booking_status: 1 });
+bookingSchema.index({ payment_status: 1 });
+bookingSchema.index({ createdAt: -1 });
+
+const Booking = mongoose.model('Booking', bookingSchema);
+
+module.exports = Booking; 

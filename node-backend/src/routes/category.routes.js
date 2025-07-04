@@ -6,8 +6,7 @@ const {
   getCategoryById,
   createCategory,
   updateCategory,
-  deleteCategory,
-  toggleStatus
+  deleteCategory
 } = require('../controllers/category.controller');
 const upload = require('../middlewares/upload.middleware');
 const { validateImage } = require('../middlewares/imageValidation.middleware');
@@ -20,6 +19,5 @@ router.get('/:id', getCategoryById);
 router.post('/', protect, authorize('admin', 'ecommerce_admin'), upload.single('category_image'), validateImage, createCategory);
 router.put('/:id', protect, authorize('admin', 'ecommerce_admin'), upload.single('category_image'), updateCategory);
 router.delete('/:id', protect, authorize('admin', 'ecommerce_admin'), deleteCategory);
-router.patch('/:id/toggle-status', protect, authorize('admin', 'ecommerce_admin'), toggleStatus);
 
 module.exports = router; 

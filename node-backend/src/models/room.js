@@ -1,70 +1,109 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const mongoose = require('mongoose');
 
-const Room = sequelize.define('Room', {
-  id: {
-    type: DataTypes.BIGINT.UNSIGNED,
-    primaryKey: true,
-    autoIncrement: true
-  },
+const roomSchema = new mongoose.Schema({
   hotel_id: {
-    type: DataTypes.BIGINT.UNSIGNED,
-    allowNull: false,
-    references: {
-      model: 'hotels',
-      key: 'id'
-    }
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Hotel',
+    required: [true, 'Hotel ID is required']
+  },
+  name: {
+    type: String,
+    required: [true, 'Room name is required'],
+    trim: true
+  },
+  description: {
+    type: String,
+    trim: true
   },
   type: {
-    type: DataTypes.STRING,
-    allowNull: false
+    type: String,
+    required: [true, 'Room type is required'],
+    enum: ['single', 'double', 'triple', 'suite', 'deluxe', 'presidential']
+  },
+  capacity: {
+    type: Number,
+    required: [true, 'Room capacity is required'],
+    min: 1
+  },
+  price_per_night: {
+    type: Number,
+    required: [true, 'Price per night is required'],
+    min: 0
+  },
+  discount_percentage: {
+    type: Number,
+    min: 0,
+    max: 100,
+    default: 0
+  },
+  amenities: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Amenity'
+  }],
+  images: [{
+    type: String
+  }],
+  main_image: {
+    type: String
   },
   size: {
-    type: DataTypes.STRING,
-    allowNull: true
+    type: Number,
+    min: 0
   },
-  price: {
-    type: DataTypes.DECIMAL(10, 2),
-    allowNull: false
+  floor: {
+    type: Number,
+    min: 0
   },
-  bed: {
-    type: DataTypes.STRING,
-    allowNull: true
-  },
-  view: {
-    type: DataTypes.STRING,
-    allowNull: true
-  },
-  images: {
-    type: DataTypes.JSON,
-    allowNull: true
-  },
-  available: {
-    type: DataTypes.INTEGER,
-    defaultValue: 0
+  room_number: {
+    type: String,
+    trim: true
   },
   status: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: true
+    type: String,
+    enum: ['available', 'occupied', 'maintenance', 'reserved'],
+    default: 'available'
   },
-  createdAt: {
-    type: DataTypes.DATE,
-    field: 'created_at',
-    allowNull: false
+  is_smoking_allowed: {
+    type: Boolean,
+    default: false
   },
-  updatedAt: {
-    type: DataTypes.DATE,
-    field: 'updated_at',
-    allowNull: false
+  has_balcony: {
+    type: Boolean,
+    default: false
+  },
+  has_sea_view: {
+    type: Boolean,
+    default: false
+  },
+  has_mountain_view: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true,
-  tableName: 'rooms',
-  underscored: true
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
 
-Room.associate = (models) => {
-  Room.belongsTo(models.Hotel, { foreignKey: 'hotel_id', as: 'hotel' });
-};
+roomSchema.virtual('hotel', {
+  ref: 'Hotel',
+  localField: 'hotel_id',
+  foreignField: '_id',
+  justOne: true
+});
+
+roomSchema.virtual('bookings', {
+  ref: 'Booking',
+  localField: '_id',
+  foreignField: 'room_id'
+});
+
+roomSchema.index({ hotel_id: 1 });
+roomSchema.index({ status: 1 });
+roomSchema.index({ type: 1 });
+roomSchema.index({ price_per_night: 1 });
+roomSchema.index({ room_number: 1 });
+
+const Room = mongoose.model('Room', roomSchema);
 
 module.exports = Room; 

@@ -1,30 +1,24 @@
-const { Cart, CartItem, Product, ProductVariation } = require('../models');
+const Cart = require('../models/Cart');
+const CartItem = require('../models/CartItem');
+const Product = require('../models/Product');
+const ProductVariation = require('../models/ProductVariation');
 
-// Get user's active cart
-exports.getCart = async (req, res) => {
+// Get user's cart
+exports.getUserCart = async (req, res) => {
   try {
-    let cart = await Cart.findOne({
-      where: {
-        user_id: req.user.id,
-        status: 'active'
-      },
-      include: [{
-        model: CartItem,
-        as: 'items',
-        include: [
-          {
-            model: Product,
-            as: 'product'
-          }
+    const userId = req.user.id;
+    let cart = await Cart.findOne({ user_id: userId })
+      .populate({
+        path: 'items',
+        populate: [
+          { path: 'product_id', model: 'Product' },
+          { path: 'variation_id', model: 'ProductVariation' }
         ]
-      }]
-    });
+      });
 
     if (!cart) {
-      cart = await Cart.create({
-        user_id: req.user.id,
-        status: 'active'
-      });
+      cart = new Cart({ user_id: userId, items: [] });
+      await cart.save();
     }
 
     res.json({
@@ -42,21 +36,13 @@ exports.getCart = async (req, res) => {
 };
 
 // Add item to cart
-exports.addItem = async (req, res) => {
+exports.addToCart = async (req, res) => {
   try {
-    console.log('Adding item to cart:', {
-      product_id: req.body.product_id,
-      quantity: req.body.quantity,
-      user_id: req.user?.id
-    });
+    const userId = req.user.id;
+    const { product_id, variation_id, quantity } = req.body;
 
-    const { product_id, quantity } = req.body;
-
-    // Log the database operations
-    console.log('Validating product...');
-    let product = await Product.findByPk(product_id);
-    console.log('Product found:', product ? product.toJSON() : 'not found');
-
+    // Validate product exists
+    const product = await Product.findById(product_id);
     if (!product) {
       return res.status(404).json({
         success: false,
@@ -64,79 +50,58 @@ exports.addItem = async (req, res) => {
       });
     }
 
-    // // Validate product exists
-    //  product = await Product.findByPk(product_id);
-    // if (!product) {
-    //   return res.status(404).json({
-    //     success: false,
-    //     message: 'Product not found'
-    //   });
-    // }
-
-    // Get or create active cart
-    let cart = await Cart.findOne({
-      where: {
-        user_id: req.user.id,
-        status: 'active'
+    // Validate variation if provided
+    if (variation_id) {
+      const variation = await ProductVariation.findById(variation_id);
+      if (!variation) {
+        return res.status(404).json({
+          success: false,
+          message: 'Product variation not found'
+        });
       }
-    });
+    }
 
+    // Find or create cart
+    let cart = await Cart.findOne({ user_id: userId });
     if (!cart) {
-      cart = await Cart.create({
-        user_id: req.user.id,
-        status: 'active'
-      });
+      cart = new Cart({ user_id: userId, items: [] });
+      await cart.save();
     }
 
     // Check if item already exists in cart
-    let cartItem = await CartItem.findOne({
-      where: {
-        cart_id: cart.id,
-        product_id
-      }
+    const existingItem = await CartItem.findOne({
+      cart_id: cart._id,
+      product_id,
+      variation_id: variation_id || null
     });
 
-    const price = product.price;
-
-    if (cartItem) {
-      // Update quantity and total price
-      cartItem = await cartItem.update({
-        quantity: quantity || cartItem.quantity + 1,
-        price,
-        total_price: price * (quantity || cartItem.quantity + 1)
-      });
+    if (existingItem) {
+      // Update quantity
+      existingItem.quantity += quantity || 1;
+      await existingItem.save();
     } else {
       // Create new cart item
-      cartItem = await CartItem.create({
-        cart_id: cart.id,
+      const cartItem = new CartItem({
+        cart_id: cart._id,
         product_id,
+        variation_id: variation_id || null,
         quantity: quantity || 1,
-        price,
-        total_price: price * (quantity || 1)
+        price: product.price
       });
+      await cartItem.save();
+      cart.items.push(cartItem._id);
+      await cart.save();
     }
 
-    // Update cart total
-    const cartItems = await CartItem.findAll({
-      where: { cart_id: cart.id }
-    });
-
-    const total = cartItems.reduce((sum, item) => sum + Number(item.total_price), 0);
-    await cart.update({ total_amount: total });
-
-    // Fetch updated cart with items
-    const updatedCart = await Cart.findByPk(cart.id, {
-      include: [{
-        model: CartItem,
-        as: 'items',
-        include: [
-          {
-            model: Product,
-            as: 'product'
-          }
+    // Return updated cart
+    const updatedCart = await Cart.findById(cart._id)
+      .populate({
+        path: 'items',
+        populate: [
+          { path: 'product_id', model: 'Product' },
+          { path: 'variation_id', model: 'ProductVariation' }
         ]
-      }]
-    });
+      });
 
     res.json({
       success: true,
@@ -144,148 +109,112 @@ exports.addItem = async (req, res) => {
       data: updatedCart
     });
   } catch (error) {
-    console.error('Error adding item to cart:', error);
-    if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
-      return res.status(400).json({
-        success: false,
-        message: 'Validation error',
-        errors: error.errors ? error.errors.map(e => e.message) : error.message
-      });
-    }
+    console.error('Error adding to cart:', error);
     res.status(500).json({
       success: false,
-      message: error.message,
-      stack: error.stack,
-      fullError: error
+      message: 'Error adding to cart',
+      error: error.message
     });
   }
 };
 
 // Update cart item quantity
-exports.updateItem = async (req, res) => {
+exports.updateCartItem = async (req, res) => {
   try {
+    const userId = req.user.id;
+    const { item_id } = req.params;
     const { quantity } = req.body;
-    const cartItemId = req.params.itemId;
 
-    const cartItem = await CartItem.findOne({
-      where: { id: cartItemId },
-      include: [
-        {
-          model: Cart,
-          as: 'cart',
-          where: { user_id: req.user.id, status: 'active' }
-        }
-      ]
-    });
+    // Find cart item and verify ownership
+    const cartItem = await CartItem.findById(item_id)
+      .populate({
+        path: 'cart_id',
+        match: { user_id: userId }
+      });
 
-    if (!cartItem) {
+    if (!cartItem || !cartItem.cart_id) {
       return res.status(404).json({
         success: false,
         message: 'Cart item not found'
       });
     }
 
-    if (quantity < 1) {
-      await cartItem.destroy();
+    if (quantity <= 0) {
+      // Remove item if quantity is 0 or less
+      await CartItem.findByIdAndDelete(item_id);
+      
+      // Remove from cart items array
+      const cart = await Cart.findById(cartItem.cart_id._id);
+      cart.items = cart.items.filter(item => item.toString() !== item_id);
+      await cart.save();
     } else {
-      await cartItem.update({
-        quantity,
-        total_price: cartItem.price * quantity
-      });
+      // Update quantity
+      cartItem.quantity = quantity;
+      await cartItem.save();
     }
 
-    // Update cart total
-    const cartItems = await CartItem.findAll({
-      where: { cart_id: cartItem.cart_id }
-    });
-
-    const total = cartItems.reduce((sum, item) => sum + Number(item.total_price), 0);
-    await cartItem.cart.update({ total_amount: total });
-
-    // Fetch updated cart
-    const updatedCart = await Cart.findByPk(cartItem.cart_id, {
-      include: [{
-        model: CartItem,
-        as: 'items',
-        include: [
-          {
-            model: Product,
-            as: 'product'
-          }
+    // Return updated cart
+    const updatedCart = await Cart.findById(cartItem.cart_id._id)
+      .populate({
+        path: 'items',
+        populate: [
+          { path: 'product_id', model: 'Product' },
+          { path: 'variation_id', model: 'ProductVariation' }
         ]
-      }]
-    });
+      });
 
     res.json({
       success: true,
-      message: quantity < 1 ? 'Item removed from cart' : 'Cart item updated successfully',
+      message: 'Cart item updated successfully',
       data: updatedCart
     });
   } catch (error) {
     console.error('Error updating cart item:', error);
-    if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
-      return res.status(400).json({
-        success: false,
-        message: 'Validation error',
-        errors: error.errors ? error.errors.map(e => e.message) : error.message
-      });
-    }
     res.status(500).json({
       success: false,
-      message: error.message,
-      stack: error.stack,
-      fullError: error
+      message: 'Error updating cart item',
+      error: error.message
     });
   }
 };
 
 // Remove item from cart
-exports.removeItem = async (req, res) => {
+exports.removeFromCart = async (req, res) => {
   try {
-    const cartItemId = req.params.itemId;
+    const userId = req.user.id;
+    const { item_id } = req.params;
 
-    const cartItem = await CartItem.findOne({
-      where: { id: cartItemId },
-      include: [
-        {
-          model: Cart,
-          as: 'cart',
-          where: { user_id: req.user.id, status: 'active' }
-        }
-      ]
-    });
+    // Find cart item and verify ownership
+    const cartItem = await CartItem.findById(item_id)
+      .populate({
+        path: 'cart_id',
+        match: { user_id: userId }
+      });
 
-    if (!cartItem) {
+    if (!cartItem || !cartItem.cart_id) {
       return res.status(404).json({
         success: false,
         message: 'Cart item not found'
       });
     }
 
-    const cartId = cartItem.cart_id;
-    await cartItem.destroy();
+    // Remove item
+    await CartItem.findByIdAndDelete(item_id);
+    
+    // Remove from cart items array
+    const cart = await Cart.findById(cartItem.cart_id._id);
+    cart.items = cart.items.filter(item => item.toString() !== item_id);
+    await cart.save();
 
-    // Update cart total
-    const cartItems = await CartItem.findAll({
-      where: { cart_id: cartId }
-    });
-
-    const total = cartItems.reduce((sum, item) => sum + Number(item.total_price), 0);
-    await cartItem.cart.update({ total_amount: total });
-
-    // Fetch updated cart
-    const updatedCart = await Cart.findByPk(cartId, {
-      include: [{
-        model: CartItem,
-        as: 'items',
-        include: [
-          {
-            model: Product,
-            as: 'product'
-          }
+    // Return updated cart
+    const updatedCart = await Cart.findById(cart._id)
+      .populate({
+        path: 'items',
+        populate: [
+          { path: 'product_id', model: 'Product' },
+          { path: 'variation_id', model: 'ProductVariation' }
         ]
-      }]
-    });
+      });
 
     res.json({
       success: true,
@@ -293,19 +222,11 @@ exports.removeItem = async (req, res) => {
       data: updatedCart
     });
   } catch (error) {
-    console.error('Error removing cart item:', error);
-    if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
-      return res.status(400).json({
-        success: false,
-        message: 'Validation error',
-        errors: error.errors ? error.errors.map(e => e.message) : error.message
-      });
-    }
+    console.error('Error removing from cart:', error);
     res.status(500).json({
       success: false,
-      message: error.message,
-      stack: error.stack,
-      fullError: error
+      message: 'Error removing from cart',
+      error: error.message
     });
   }
 };
@@ -313,25 +234,22 @@ exports.removeItem = async (req, res) => {
 // Clear cart
 exports.clearCart = async (req, res) => {
   try {
-    const cart = await Cart.findOne({
-      where: {
-        user_id: req.user.id,
-        status: 'active'
-      }
-    });
+    const userId = req.user.id;
 
+    const cart = await Cart.findOne({ user_id: userId });
     if (!cart) {
       return res.status(404).json({
         success: false,
-        message: 'Active cart not found'
+        message: 'Cart not found'
       });
     }
 
-    await CartItem.destroy({
-      where: { cart_id: cart.id }
-    });
-
-    await cart.update({ total_amount: 0 });
+    // Remove all cart items
+    await CartItem.deleteMany({ cart_id: cart._id });
+    
+    // Clear cart items array
+    cart.items = [];
+    await cart.save();
 
     res.json({
       success: true,
@@ -340,18 +258,10 @@ exports.clearCart = async (req, res) => {
     });
   } catch (error) {
     console.error('Error clearing cart:', error);
-    if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
-      return res.status(400).json({
-        success: false,
-        message: 'Validation error',
-        errors: error.errors ? error.errors.map(e => e.message) : error.message
-      });
-    }
     res.status(500).json({
       success: false,
-      message: error.message,
-      stack: error.stack,
-      fullError: error
+      message: 'Error clearing cart',
+      error: error.message
     });
   }
 }; 

@@ -1,14 +1,19 @@
 const express = require('express');
 const router = express.Router();
-const gcartController = require('../controllers/gcart.controller');
+const {
+  getUserGroceryCart,
+  addToGroceryCart,
+  updateGroceryCartItem,
+  removeFromGroceryCart,
+  clearGroceryCart
+} = require('../controllers/gcart.controller');
 const { protect } = require('../middlewares/auth.middleware');
 
-router.get('/', protect, gcartController.getCartItems);
-router.post('/', protect, gcartController.addToCart);
-// New routes for cart management
-router.put('/:groceryId', protect, gcartController.updateCartItem);
-router.delete('/:groceryId', protect, gcartController.removeCartItem);
-router.post('/clear', protect, gcartController.clearCart);
+router.get('/', protect, getUserGroceryCart);
+router.post('/', protect, addToGroceryCart);
+router.put('/:groceryId', protect, updateGroceryCartItem);
+router.delete('/:groceryId', protect, removeFromGroceryCart);
+router.post('/clear', protect, clearGroceryCart);
 
 module.exports = router;
 

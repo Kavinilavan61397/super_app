@@ -1,49 +1,40 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const mongoose = require('mongoose');
 
-const Policy = sequelize.define('Policy', {
-  id: {
-    type: DataTypes.BIGINT.UNSIGNED,
-    primaryKey: true,
-    autoIncrement: true
+const policySchema = new mongoose.Schema({
+  hotel_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Hotel',
+    required: [true, 'Hotel ID is required']
   },
   title: {
-    type: DataTypes.STRING,
-    allowNull: false
+    type: String,
+    required: [true, 'Policy title is required'],
+    trim: true
   },
   description: {
-    type: DataTypes.TEXT,
-    allowNull: true
+    type: String,
+    trim: true
   },
   status: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: true
-  },
-  createdAt: {
-    type: DataTypes.DATE,
-    field: 'created_at',
-    allowNull: false
-  },
-  updatedAt: {
-    type: DataTypes.DATE,
-    field: 'updated_at',
-    allowNull: false
+    type: Boolean,
+    default: true
   }
 }, {
   timestamps: true,
-  tableName: 'policies',
-  underscored: true
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
 
-Policy.associate = (models) => {
-  Policy.belongsToMany(models.Hotel, { 
-    through: 'hotel_policies', 
-    foreignKey: 'policy_id', 
-    otherKey: 'hotel_id',
-    as: 'hotels',
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE'
-  });
-};
+policySchema.virtual('hotel', {
+  ref: 'Hotel',
+  localField: 'hotel_id',
+  foreignField: '_id',
+  justOne: true
+});
+
+policySchema.index({ hotel_id: 1 });
+policySchema.index({ status: 1 });
+
+const Policy = mongoose.models.Policy || mongoose.model('Policy', policySchema);
 
 module.exports = Policy; 

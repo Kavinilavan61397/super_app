@@ -27,6 +27,5 @@ router.get('/:id', getBrandById);
 router.post('/save_brand', protect, authorize('admin', 'ecommerce_admin'), upload.single('brand_image'), validateImage, createBrand);
 router.put('/update_brand_by_id/:id', protect, authorize('admin', 'ecommerce_admin'), upload.single('brand_image'), updateBrand);
 router.delete('/delete_brand_by_id/:id', protect, authorize('admin', 'ecommerce_admin'), deleteBrand);
-router.delete('/delete_brands', protect, authorize('admin', 'ecommerce_admin'), bulkDeleteBrands);
 
 module.exports = router; 

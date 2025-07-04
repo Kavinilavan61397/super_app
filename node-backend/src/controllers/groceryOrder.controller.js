@@ -1,141 +1,207 @@
-const { GroceryOrder, GroceryOrderItem, User } = require('../models');
+const GroceryOrder = require('../models/grocery_order');
+const GroceryOrderItem = require('../models/grocery_order_item');
+const User = require('../models/User');
 
-module.exports = {
-  // Create Order
-  async create(req, res) {
-    try {
-      const { total_amount, shipping_address, items } = req.body;
-      const user_id = req.user.id; // Get user ID from authenticated token
+// Get user's grocery orders
+exports.getUserGroceryOrders = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const orders = await GroceryOrder.find({ user_id: userId })
+      .populate({
+        path: 'items',
+        populate: {
+          path: 'grocery_id'
+        }
+      })
+      .sort({ createdAt: -1 });
 
-      const order = await GroceryOrder.create({
-        user_id,
-        total_amount,
-        shipping_address
-      });
+    res.json({
+      success: true,
+      data: orders
+    });
+  } catch (error) {
+    console.error('Error fetching grocery orders:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching grocery orders',
+      error: error.message
+    });
+  }
+};
 
-      const orderItems = items.map(item => ({
-        ...item,
-        order_id: order.id
-      }));
-
-      await GroceryOrderItem.bulkCreate(orderItems);
-
-      res.status(201).json({ message: 'Order created successfully', order });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'Internal Server Error' });
-    }
-  },
-
-  // Get Orders by User ID (for authenticated user)
-  async getMyOrders(req, res) {
-    try {
-      const user_id = req.user.id; // Get user ID from authenticated token
-      const orders = await GroceryOrder.findAll({ 
-        where: { user_id },
-        include: [{ model: GroceryOrderItem, as: 'items' }],
-        order: [['created_at', 'DESC']]
-      });
-      res.status(200).json(orders);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'Internal Server Error' });
-    }
-  },
-
-  // Get All Orders
-  async getAll(req, res) {
-    try {
-      const orders = await GroceryOrder.findAll({ include: [{ model: GroceryOrderItem, as: 'items' }] });
-      res.status(200).json(orders);
-    } catch (error) {
-      res.status(500).json({ message: 'Internal Server Error' });
-    }
-  },
-
-  // Get Single Order
-  async getOne(req, res) {
-    try {
-      const { id } = req.params;
-      const order = await GroceryOrder.findByPk(id, { 
-        include: [
-          { model: GroceryOrderItem, as: 'items' },
-          { model: User,as: 'user', attributes: ['name', 'email'] }
-        ]
-      });
-
-      if (!order) return res.status(404).json({ message: 'Order not found' });
-      res.status(200).json(order);
-    } catch (error) {
-      console.error('Order fetch error:', error); // <--- Add this line
-      res.status(500).json({ message: error.message, stack: error.stack });
-    }
-  },
-
-  // Update Order
-  async update(req, res) {
-    try {
-      const { id } = req.params;
-      const { status, payment_status } = req.body;
-
-      const order = await GroceryOrder.findByPk(id);
-      if (!order) return res.status(404).json({ message: 'Order not found' });
-
-      order.status = status ?? order.status;
-      order.payment_status = payment_status ?? order.payment_status;
-      await order.save();
-
-      res.status(200).json({ message: 'Order updated', order });
-    } catch (error) {
-      res.status(500).json({ message: 'Internal Server Error' });
-    }
-  },
-
-  // Update Order Status
-  async updateStatus(req, res) {
-    try {
-      const { id } = req.params;
-      const { status } = req.body;
-
-      const order = await GroceryOrder.findByPk(id);
-      if (!order) return res.status(404).json({ message: 'Order not found' });
-
-      // Validate status
-      const validStatuses = ['pending', 'processing', 'out_for_delivery', 'delivered', 'cancelled'];
-      if (!validStatuses.includes(status)) {
-        return res.status(400).json({ message: 'Invalid status' });
-      }
-
-      order.status = status;
-      await order.save();
-
-      res.status(200).json({ 
-        message: 'Order status updated successfully', 
-        order: {
-          id: order.id,
-          status: order.status,
-          updated_at: order.updated_at
+// Get grocery order by ID
+exports.getGroceryOrderById = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const order = await GroceryOrder.findOne({ _id: req.params.id, user_id: userId })
+      .populate({
+        path: 'items',
+        populate: {
+          path: 'grocery_id'
         }
       });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'Internal Server Error' });
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Grocery order not found'
+      });
     }
-  },
 
-  // Delete Order
-  async delete(req, res) {
-    try {
-      const { id } = req.params;
-      const order = await GroceryOrder.findByPk(id);
-      if (!order) return res.status(404).json({ message: 'Order not found' });
+    res.json({
+      success: true,
+      data: order
+    });
+  } catch (error) {
+    console.error('Error fetching grocery order:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching grocery order',
+      error: error.message
+    });
+  }
+};
 
-      await GroceryOrderItem.destroy({ where: { order_id: id } });
-      await order.destroy();
+// Create grocery order
+exports.createGroceryOrder = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { items, shipping_address, payment_method, notes } = req.body;
 
-      res.status(200).json({ message: 'Order deleted' });
-    } catch (error) {
-      res.status(500).json({ message: 'Internal Server Error' });
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Order items are required'
+      });
     }
+
+    // Calculate order total
+    let total = 0;
+    const orderItems = [];
+
+    for (const item of items) {
+      const { grocery_id, quantity, price } = item;
+      const itemTotal = price * quantity;
+      total += itemTotal;
+
+      // Create order item
+      const orderItem = new GroceryOrderItem({
+        grocery_id,
+        quantity,
+        price,
+        total_price: itemTotal
+      });
+      await orderItem.save();
+      orderItems.push(orderItem._id);
+    }
+
+    // Create order
+    const order = new GroceryOrder({
+      user_id: userId,
+      order_number: `GORD-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      items: orderItems,
+      total_amount: total,
+      shipping_address,
+      payment_method: payment_method || 'cod',
+      status: 'pending',
+      notes
+    });
+
+    await order.save();
+
+    // Return created order with populated items
+    const createdOrder = await GroceryOrder.findById(order._id)
+      .populate({
+        path: 'items',
+        populate: {
+          path: 'grocery_id'
+        }
+      });
+
+    res.status(201).json({
+      success: true,
+      message: 'Grocery order created successfully',
+      data: createdOrder
+    });
+  } catch (error) {
+    console.error('Error creating grocery order:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error creating grocery order',
+      error: error.message
+    });
+  }
+};
+
+// Cancel grocery order
+exports.cancelGroceryOrder = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const order = await GroceryOrder.findOne({ _id: req.params.id, user_id: userId });
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Grocery order not found'
+      });
+    }
+
+    if (order.status === 'cancelled') {
+      return res.status(400).json({
+        success: false,
+        message: 'Order is already cancelled'
+      });
+    }
+
+    if (order.status === 'shipped' || order.status === 'delivered') {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot cancel order that has been shipped or delivered'
+      });
+    }
+
+    order.status = 'cancelled';
+    await order.save();
+
+    res.json({
+      success: true,
+      message: 'Grocery order cancelled successfully',
+      data: order
+    });
+  } catch (error) {
+    console.error('Error cancelling grocery order:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error cancelling grocery order',
+      error: error.message
+    });
+  }
+};
+
+// Get grocery order status
+exports.getGroceryOrderStatus = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const order = await GroceryOrder.findOne({ _id: req.params.id, user_id: userId })
+      .select('status order_number total_amount createdAt');
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Grocery order not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: order
+    });
+  } catch (error) {
+    console.error('Error fetching grocery order status:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching grocery order status',
+      error: error.message
+    });
   }
 };

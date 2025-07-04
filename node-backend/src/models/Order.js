@@ -1,87 +1,111 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const mongoose = require('mongoose');
 
-const Order = sequelize.define('Order', {
-  id: {
-    type: DataTypes.BIGINT.UNSIGNED,
-    primaryKey: true,
-    autoIncrement: true
-  },
+const orderSchema = new mongoose.Schema({
   user_id: {
-    type: DataTypes.BIGINT.UNSIGNED,
-    allowNull: false
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: [true, 'User ID is required']
   },
   order_number: {
-    type: DataTypes.STRING,
-    unique: true,
-    allowNull: false
+    type: String,
+    required: [true, 'Order number is required'],
+    unique: true
   },
   status: {
-    type: DataTypes.ENUM('pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'),
-    defaultValue: 'pending'
+    type: String,
+    enum: ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'],
+    default: 'pending'
   },
   total_amount: {
-    type: DataTypes.DECIMAL(10, 2),
-    allowNull: false
+    type: Number,
+    required: [true, 'Total amount is required'],
+    min: [0, 'Total amount cannot be negative']
   },
   subtotal: {
-    type: DataTypes.DECIMAL(10, 2),
-    allowNull: false
+    type: Number,
+    required: [true, 'Subtotal is required'],
+    min: [0, 'Subtotal cannot be negative']
   },
   tax_amount: {
-    type: DataTypes.DECIMAL(10, 2),
-    defaultValue: 0
+    type: Number,
+    default: 0
   },
   shipping_amount: {
-    type: DataTypes.DECIMAL(10, 2),
-    defaultValue: 0
+    type: Number,
+    default: 0
   },
   discount_amount: {
-    type: DataTypes.DECIMAL(10, 2),
-    defaultValue: 0
+    type: Number,
+    default: 0
   },
   shipping_address: {
-    type: DataTypes.JSON,
-    allowNull: false
+    address_line1: String,
+    address_line2: String,
+    city: String,
+    state: String,
+    country: String,
+    pincode: String,
+    phone: String
   },
   billing_address: {
-    type: DataTypes.JSON,
-    allowNull: false
+    address_line1: String,
+    address_line2: String,
+    city: String,
+    state: String,
+    country: String,
+    pincode: String,
+    phone: String
   },
   payment_method: {
-    type: DataTypes.STRING,
-    allowNull: false
+    type: String,
+    enum: ['cod', 'card', 'upi', 'netbanking'],
+    default: 'cod'
   },
   payment_status: {
-    type: DataTypes.ENUM('pending', 'paid', 'failed', 'refunded'),
-    defaultValue: 'pending'
+    type: String,
+    enum: ['pending', 'paid', 'failed', 'refunded'],
+    default: 'pending'
   },
   payment_details: {
-    type: DataTypes.JSON,
-    allowNull: true
+    type: mongoose.Schema.Types.Mixed
+  },
+  shipping_method: {
+    type: String,
+    default: 'standard'
   },
   tracking_number: {
-    type: DataTypes.STRING,
-    allowNull: true
+    type: String
   },
   notes: {
-    type: DataTypes.TEXT,
-    allowNull: true
-  },
-  createdAt: {
-    type: DataTypes.DATE,
-    field: 'created_at',
-    allowNull: false
-  },
-  updatedAt: {
-    type: DataTypes.DATE,
-    field: 'updated_at',
-    allowNull: false
+    type: String
   }
 }, {
   timestamps: true,
-  tableName: 'orders',
-  underscored: true
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
+
+// Virtual for user relationship
+orderSchema.virtual('user', {
+  ref: 'User',
+  localField: 'user_id',
+  foreignField: '_id',
+  justOne: true
+});
+
+// Virtual for order items
+orderSchema.virtual('items', {
+  ref: 'OrderItem',
+  localField: '_id',
+  foreignField: 'order_id'
+});
+
+// Indexes for better query performance
+orderSchema.index({ user_id: 1 });
+orderSchema.index({ status: 1 });
+orderSchema.index({ payment_status: 1 });
+orderSchema.index({ createdAt: -1 });
+
+const Order = mongoose.model('Order', orderSchema);
 
 module.exports = Order; 

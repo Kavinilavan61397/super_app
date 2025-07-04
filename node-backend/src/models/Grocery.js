@@ -1,54 +1,61 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const mongoose = require('mongoose');
 
-const Grocery = sequelize.define('Grocery', {
+const grocerySchema = new mongoose.Schema({
   name: {
-    type: DataTypes.STRING,
-    allowNull: false,
+    type: String,
+    required: [true, 'Grocery name is required'],
+    trim: true
   },
   description: {
-    type: DataTypes.TEXT,
+    type: String,
+    trim: true
   },
   original_price: {
-    type: DataTypes.DECIMAL(10, 2),
+    type: Number,
+    min: 0
   },
   discounted_price: {
-    type: DataTypes.DECIMAL(10, 2),
+    type: Number,
+    min: 0
   },
   image: {
-    type: DataTypes.STRING,
+    type: String
   },
   rating: {
-    type: DataTypes.DECIMAL(3, 2),
+    type: Number,
+    min: 0,
+    max: 5,
+    default: 0
   },
   is_best_seller: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: false,
+    type: Boolean,
+    default: false
   },
   quantity: {
-    type: DataTypes.INTEGER,
+    type: Number,
+    min: 0,
+    default: 0
   },
   category: {
-    type: DataTypes.STRING,
+    type: String,
+    trim: true
   },
   status: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: true,
-  },
-  createdAt: {
-    type: DataTypes.DATE,
-    field: 'created_at',
-    allowNull: false
-  },
-  updatedAt: {
-    type: DataTypes.DATE,
-    field: 'updated_at',
-    allowNull: false
+    type: Boolean,
+    default: true
   }
 }, {
-  tableName: 'groceries',
   timestamps: true,
-  underscored: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
+
+grocerySchema.index({ name: 1 });
+grocerySchema.index({ category: 1 });
+grocerySchema.index({ status: 1 });
+grocerySchema.index({ is_best_seller: 1 });
+grocerySchema.index({ rating: -1 });
+
+const Grocery = mongoose.model('Grocery', grocerySchema);
 
 module.exports = Grocery;

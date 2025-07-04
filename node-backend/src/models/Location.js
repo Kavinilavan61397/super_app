@@ -1,49 +1,57 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const mongoose = require('mongoose');
 
-const Location = sequelize.define('Location', {
-  id: {
-    type: DataTypes.BIGINT.UNSIGNED,
-    primaryKey: true,
-    autoIncrement: true
+const locationSchema = new mongoose.Schema({
+  hotel_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Hotel',
+    required: [true, 'Hotel ID is required']
   },
-  name: {
-    type: DataTypes.STRING,
-    allowNull: false
+  address: {
+    type: String,
+    trim: true
   },
-  description: {
-    type: DataTypes.TEXT,
-    allowNull: true
+  city: {
+    type: String,
+    trim: true
+  },
+  state: {
+    type: String,
+    trim: true
+  },
+  country: {
+    type: String,
+    trim: true
+  },
+  pincode: {
+    type: String,
+    trim: true
+  },
+  latitude: {
+    type: Number
+  },
+  longitude: {
+    type: Number
   },
   status: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: true
-  },
-  createdAt: {
-    type: DataTypes.DATE,
-    field: 'created_at',
-    allowNull: false
-  },
-  updatedAt: {
-    type: DataTypes.DATE,
-    field: 'updated_at',
-    allowNull: false
+    type: Boolean,
+    default: true
   }
 }, {
   timestamps: true,
-  tableName: 'locations',
-  underscored: true
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
 
-Location.associate = (models) => {
-  Location.belongsToMany(models.Hotel, { 
-    through: 'hotel_locations', 
-    foreignKey: 'location_id', 
-    otherKey: 'hotel_id',
-    as: 'hotels',
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE'
-  });
-};
+locationSchema.virtual('hotel', {
+  ref: 'Hotel',
+  localField: 'hotel_id',
+  foreignField: '_id',
+  justOne: true
+});
+
+locationSchema.index({ hotel_id: 1 });
+locationSchema.index({ status: 1 });
+
+const Location = mongoose.models.Location || mongoose.model('Location', locationSchema);
 
 module.exports = Location; 

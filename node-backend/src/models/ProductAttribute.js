@@ -1,53 +1,39 @@
 // models/ProductAttribute.js
 
-const ProductAttribute = (sequelize, DataTypes) => {
-  const ProductAttribute = sequelize.define('ProductAttribute', {
-    id: {
-      type: DataTypes.BIGINT.UNSIGNED,
-      allowNull: false,
-      primaryKey: true,
-      autoIncrement: true
-    },
-    product_id: {
-      type: DataTypes.BIGINT.UNSIGNED,
-      allowNull: false,
-      references: {
-        model: 'products',
-        key: 'id'
-      },
-      onDelete: 'CASCADE',
-      onUpdate: 'CASCADE'
-    },
-    attribute_name: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
-    attribute_value: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
-    created_at: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
-    },
-    updated_at: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: sequelize.literal('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP')
-    }
-  }, {
-    tableName: 'product_attributes',
-    timestamps: false,
-    underscored: true,
-    engine: 'InnoDB',
-    charset: 'utf8mb4',
-    collate: 'utf8mb4_unicode_ci'
-  });
+const mongoose = require('mongoose');
 
-  // Do NOT define any associations here. All associations are set in models/index.js
+const productAttributeSchema = new mongoose.Schema({
+  product_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Product',
+    required: [true, 'Product ID is required']
+  },
+  name: {
+    type: String,
+    required: [true, 'Attribute name is required'],
+    trim: true
+  },
+  value: {
+    type: String,
+    required: [true, 'Attribute value is required'],
+    trim: true
+  }
+}, {
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+});
 
-  return ProductAttribute;
-};
+productAttributeSchema.virtual('product', {
+  ref: 'Product',
+  localField: 'product_id',
+  foreignField: '_id',
+  justOne: true
+});
+
+productAttributeSchema.index({ product_id: 1 });
+productAttributeSchema.index({ name: 1 });
+
+const ProductAttribute = mongoose.model('ProductAttribute', productAttributeSchema);
 
 module.exports = ProductAttribute;

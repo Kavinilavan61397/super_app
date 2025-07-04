@@ -2,7 +2,7 @@
 const express = require('express');
 const router  = express.Router();
 
-const { Gwhishlist } = require('../models');            // Sequelize model
+const Gwhishlist = require('../models/gwhishlist');            // Sequelize model
 const { protect }   = require('../middlewares/auth.middleware'); // JWT‑auth middleware
 
 // ---------------------------------------------------------------------------

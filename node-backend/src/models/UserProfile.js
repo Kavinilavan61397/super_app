@@ -1,58 +1,55 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const mongoose = require('mongoose');
 
-const UserProfile = sequelize.define('UserProfile', {
-  id: {
-    type: DataTypes.BIGINT.UNSIGNED,
-    primaryKey: true,
-    autoIncrement: true
-  },
+const userProfileSchema = new mongoose.Schema({
   user_id: {
-    type: DataTypes.BIGINT.UNSIGNED,
-    allowNull: false
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: [true, 'User ID is required']
   },
-  address_line1: {
-    type: DataTypes.STRING,
-    allowNull: true
-  },
-  address_line2: {
-    type: DataTypes.STRING,
-    allowNull: true
+  address: {
+    type: String,
+    trim: true
   },
   city: {
-    type: DataTypes.STRING(100),
-    allowNull: true
+    type: String,
+    trim: true
   },
   state: {
-    type: DataTypes.STRING(100),
-    allowNull: true
+    type: String,
+    trim: true
   },
   country: {
-    type: DataTypes.STRING(100),
-    allowNull: true
+    type: String,
+    trim: true
   },
   pincode: {
-    type: DataTypes.STRING(20),
-    allowNull: true
+    type: String,
+    trim: true
   },
-  profile_picture: {
-    type: DataTypes.STRING,
-    allowNull: true
+  phone: {
+    type: String,
+    trim: true
   },
-  createdAt: {
-    type: DataTypes.DATE,
-    field: 'created_at',
-    allowNull: false
-  },
-  updatedAt: {
-    type: DataTypes.DATE,
-    field: 'updated_at',
-    allowNull: false
+  avatar: {
+    type: String
   }
 }, {
-  tableName: 'user_profiles',
   timestamps: true,
-  underscored: true
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
+
+// Virtual for user relationship
+userProfileSchema.virtual('user', {
+  ref: 'User',
+  localField: 'user_id',
+  foreignField: '_id',
+  justOne: true
+});
+
+// Index for better query performance
+userProfileSchema.index({ user_id: 1 });
+
+const UserProfile = mongoose.model('UserProfile', userProfileSchema);
 
 module.exports = UserProfile; 

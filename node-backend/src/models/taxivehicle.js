@@ -1,69 +1,69 @@
-'use strict';
-const {
-  Model
-} = require('sequelize');
-module.exports = (sequelize, DataTypes) => {
-  class TaxiVehicle extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
-    static associate(models) {
-      TaxiVehicle.belongsTo(models.TaxiDriver, { foreignKey: 'driver_id', as: 'driver' });
-      TaxiVehicle.hasMany(models.TaxiRide, { foreignKey: 'vehicle_id', as: 'rides' });
-    }
+const mongoose = require('mongoose');
+
+const taxiVehicleSchema = new mongoose.Schema({
+  driver_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'TaxiDriver',
+    required: [true, 'Driver ID is required']
+  },
+  vehicle_number: {
+    type: String,
+    required: [true, 'Vehicle number is required'],
+    unique: true,
+    trim: true
+  },
+  model: {
+    type: String,
+    required: [true, 'Vehicle model is required'],
+    trim: true
+  },
+  make: {
+    type: String,
+    required: [true, 'Vehicle make is required'],
+    trim: true
+  },
+  year: {
+    type: Number,
+    min: 1900,
+    max: new Date().getFullYear() + 1
+  },
+  color: {
+    type: String,
+    trim: true
+  },
+  capacity: {
+    type: Number,
+    min: 1,
+    default: 4
+  },
+  status: {
+    type: String,
+    enum: ['active', 'maintenance', 'inactive'],
+    default: 'active'
+  },
+  insurance_expiry: {
+    type: Date
+  },
+  registration_expiry: {
+    type: Date
   }
-  TaxiVehicle.init({
-    id: {
-      type: DataTypes.BIGINT,
-      primaryKey: true,
-      autoIncrement: true
-    },
-    driver_id: {
-      type: DataTypes.BIGINT,
-      allowNull: false,
-      references: {
-        model: 'taxi_drivers',
-        key: 'id'
-      }
-    },
-    make: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
-    model: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
-    plate_number: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
-    color: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
-    status: {
-      type: DataTypes.INTEGER,
-      allowNull: false
-    },
-    createdAt: {
-      type: DataTypes.DATE,
-      field: 'created_at',
-      allowNull: false
-    },
-    updatedAt: {
-      type: DataTypes.DATE,
-      field: 'updated_at',
-      allowNull: false
-    }
-  }, {
-    sequelize,
-    modelName: 'TaxiVehicle',
-    tableName: 'taxi_vehicles',
-    underscored: true,
-    timestamps: true
-  });
-  return TaxiVehicle;
-};
+}, {
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+});
+
+taxiVehicleSchema.virtual('driver', {
+  ref: 'TaxiDriver',
+  localField: 'driver_id',
+  foreignField: '_id',
+  justOne: true
+});
+
+taxiVehicleSchema.index({ driver_id: 1 });
+taxiVehicleSchema.index({ vehicle_number: 1 });
+taxiVehicleSchema.index({ status: 1 });
+
+const TaxiVehicle = mongoose.model('TaxiVehicle', taxiVehicleSchema);
+
+module.exports = TaxiVehicle;

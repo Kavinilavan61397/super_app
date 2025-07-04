@@ -1,29 +1,24 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const mongoose = require('mongoose');
 
-const Size = sequelize.define('Size', {
-  size_name: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    unique: true
+const sizeSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: [true, 'Size name is required'],
+    trim: true
   },
   status: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: true
-  },
-  createdAt: {
-    type: DataTypes.DATE,
-    field: 'created_at',
-    allowNull: false
-  },
-  updatedAt: {
-    type: DataTypes.DATE,
-    field: 'updated_at',
-    allowNull: false
+    type: Boolean,
+    default: true
   }
 }, {
   timestamps: true,
-  tableName: 'sizes'
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
+
+sizeSchema.index({ name: 1 });
+sizeSchema.index({ status: 1 });
+
+const Size = mongoose.model('Size', sizeSchema);
 
 module.exports = Size; 

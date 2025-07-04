@@ -22,7 +22,7 @@ exports.protect = async (req, res, next) => {
       const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-super-secret-jwt-key');
 
       // Get user from token
-      const user = await User.findByPk(decoded.id);
+      const user = await User.findById(decoded.id);
       if (!user) {
         return res.status(401).json({
           success: false,

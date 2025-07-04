@@ -27,8 +27,11 @@ const {
 } = require('../controllers/product.controller');
 
 // Product routes
+router.get('/', getAllProducts); // Simple GET /api/products
 router.get('/get_all_product', getAllProducts);
 router.get('/appliances', getApplianceProductsWithAttributes); // custom appliances endpoint
+router.get('/category/:categoryId', getProductsByCategory);
+router.get('/category/name/:categorySlug', getProductsByCategoryName);
 router.get('/:id', getProductById);
 router.post('/save_product', protect, authorize('admin'), upload.single('product_image'), validateImage, createProduct);
 router.put('/update_product_by_id/:id', protect, authorize('admin'), upload.single('product_image'), updateProduct);
@@ -48,6 +51,4 @@ router.put('/update_product_variation_stock_by_id/:id', protect, authorize('admi
 router.get('/getStockByProductVariation/:id', getStockByProductVariation);
 router.delete('/delete_stock_management/:id', protect, authorize('admin'), deleteStockManagement);
 
-router.get('/category/:categoryId', getProductsByCategory);
-router.get('/category/name/:categorySlug', getProductsByCategoryName);
 module.exports = router;

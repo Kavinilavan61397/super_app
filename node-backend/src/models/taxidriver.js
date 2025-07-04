@@ -1,57 +1,74 @@
-'use strict';
-const {
-  Model
-} = require('sequelize');
-module.exports = (sequelize, DataTypes) => {
-  class TaxiDriver extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
-    static associate(models) {
-      TaxiDriver.hasMany(models.TaxiVehicle, { foreignKey: 'driver_id', as: 'vehicles' });
-      TaxiDriver.hasMany(models.TaxiRide, { foreignKey: 'driver_id', as: 'rides' });
-    }
+const mongoose = require('mongoose');
+
+const taxiDriverSchema = new mongoose.Schema({
+  user_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: [true, 'User ID is required']
+  },
+  name: {
+    type: String,
+    required: [true, 'Driver name is required'],
+    trim: true
+  },
+  phone: {
+    type: String,
+    required: [true, 'Phone number is required'],
+    trim: true
+  },
+  email: {
+    type: String,
+    trim: true
+  },
+  license_number: {
+    type: String,
+    required: [true, 'License number is required'],
+    trim: true
+  },
+  vehicle_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'TaxiVehicle'
+  },
+  status: {
+    type: String,
+    enum: ['active', 'inactive', 'offline'],
+    default: 'active'
+  },
+  rating: {
+    type: Number,
+    min: 0,
+    max: 5,
+    default: 0
+  },
+  total_rides: {
+    type: Number,
+    default: 0
   }
-  TaxiDriver.init({
-    id: {
-      type: DataTypes.BIGINT,
-      primaryKey: true,
-      autoIncrement: true
-    },
-    name: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
-    phone: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
-    license_no: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
-    status: {
-      type: DataTypes.INTEGER,
-      allowNull: false
-    },
-    createdAt: {
-      type: DataTypes.DATE,
-      field: 'created_at',
-      allowNull: false
-    },
-    updatedAt: {
-      type: DataTypes.DATE,
-      field: 'updated_at',
-      allowNull: false
-    }
-  }, {
-    sequelize,
-    modelName: 'TaxiDriver',
-    tableName: 'taxi_drivers',
-    underscored: true,
-    timestamps: true
-  });
-  return TaxiDriver;
-};
+}, {
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+});
+
+taxiDriverSchema.virtual('user', {
+  ref: 'User',
+  localField: 'user_id',
+  foreignField: '_id',
+  justOne: true
+});
+
+taxiDriverSchema.virtual('vehicle', {
+  ref: 'TaxiVehicle',
+  localField: 'vehicle_id',
+  foreignField: '_id',
+  justOne: true
+});
+
+taxiDriverSchema.index({ user_id: 1 });
+taxiDriverSchema.index({ vehicle_id: 1 });
+taxiDriverSchema.index({ status: 1 });
+taxiDriverSchema.index({ license_number: 1 });
+
+const TaxiDriver = mongoose.model('TaxiDriver', taxiDriverSchema);
+
+module.exports = TaxiDriver;

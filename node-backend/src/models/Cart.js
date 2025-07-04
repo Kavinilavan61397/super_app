@@ -1,42 +1,41 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const mongoose = require('mongoose');
 
-const Cart = sequelize.define('Cart', {
-  id: {
-    type: DataTypes.BIGINT.UNSIGNED,
-    primaryKey: true,
-    autoIncrement: true
-  },
+const cartSchema = new mongoose.Schema({
   user_id: {
-    type: DataTypes.BIGINT.UNSIGNED,
-    allowNull: false,
-    references: {
-      model: 'users',
-      key: 'id'
-    }
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: [true, 'User ID is required']
   },
   status: {
-    type: DataTypes.ENUM('active', 'completed', 'abandoned'),
-    defaultValue: 'active'
-  },
-  total_amount: {
-    type: DataTypes.DECIMAL(10, 2),
-    defaultValue: 0.00
-  },
-  createdAt: {
-    type: DataTypes.DATE,
-    field: 'created_at',
-    allowNull: false
-  },
-  updatedAt: {
-    type: DataTypes.DATE,
-    field: 'updated_at',
-    allowNull: false
+    type: String,
+    enum: ['active', 'abandoned', 'converted'],
+    default: 'active'
   }
 }, {
-  tableName: 'carts',
   timestamps: true,
-  underscored: true
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
+
+// Virtual for user relationship
+cartSchema.virtual('user', {
+  ref: 'User',
+  localField: 'user_id',
+  foreignField: '_id',
+  justOne: true
+});
+
+// Virtual for cart items
+cartSchema.virtual('items', {
+  ref: 'CartItem',
+  localField: '_id',
+  foreignField: 'cart_id'
+});
+
+// Indexes for better query performance
+cartSchema.index({ user_id: 1 });
+cartSchema.index({ status: 1 });
+
+const Cart = mongoose.model('Cart', cartSchema);
 
 module.exports = Cart;

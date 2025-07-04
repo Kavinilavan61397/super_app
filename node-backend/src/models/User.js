@@ -1,64 +1,85 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
-const User = sequelize.define('User', {
-  id: {
-    type: DataTypes.BIGINT.UNSIGNED,
-    primaryKey: true,
-    autoIncrement: true
-  },
+const userSchema = new mongoose.Schema({
   name: {
-    type: DataTypes.STRING,
-    allowNull: false
+    type: String,
+    required: [true, 'Name is required'],
+    trim: true
   },
   email: {
-    type: DataTypes.STRING,
-    allowNull: false,
+    type: String,
+    required: [true, 'Email is required'],
     unique: true,
-    validate: {
-      isEmail: true
-    }
+    lowercase: true,
+    trim: true,
+    match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
   },
   password: {
-    type: DataTypes.STRING,
-    allowNull: false
+    type: String,
+    required: [true, 'Password is required'],
+    minlength: [6, 'Password must be at least 6 characters']
   },
   phone: {
-    type: DataTypes.STRING,
-    allowNull: true
+    type: String,
+    trim: true
   },
   role: {
-    type: DataTypes.ENUM('user', 'admin', 'ecommerce_admin', 'grocery_admin', 'taxi_admin', 'hotel_admin'),
-    defaultValue: 'user'
+    type: String,
+    enum: ['user', 'admin', 'ecommerce_admin', 'grocery_admin', 'taxi_admin', 'hotel_admin', 'restaurant_admin'],
+    default: 'user'
   },
   status: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: true
+    type: Boolean,
+    default: true
   },
   last_login: {
-    type: DataTypes.DATE,
-    allowNull: true
+    type: Date
   }
 }, {
   timestamps: true,
-  tableName: 'users',
-  underscored: true
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
 
-User.beforeCreate(async (user) => {
-  if (user.password) {
+// Virtual for profile relationship
+userSchema.virtual('profile', {
+  ref: 'UserProfile',
+  localField: '_id',
+  foreignField: 'user_id',
+  justOne: true
+});
+
+// Virtual for staff relationship
+userSchema.virtual('staff', {
+  ref: 'Staff',
+  localField: '_id',
+  foreignField: 'user_id',
+  justOne: true
+});
+
+// Hash password before saving
+userSchema.pre('save', async function(next) {
+  if (!this.isModified('password')) return next();
+  
+  try {
     const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(user.password, salt);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (error) {
+    next(error);
   }
 });
 
-User.prototype.comparePassword = async function(candidatePassword) {
+// Compare password method
+userSchema.methods.comparePassword = async function(candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
-User.associate = (models) => {
-  User.hasOne(models.Staff, { foreignKey: 'user_id', as: 'staff' });
-};
+// Index for better query performance
+userSchema.index({ role: 1 });
+userSchema.index({ status: 1 });
+
+const User = mongoose.model('User', userSchema);
 
 module.exports = User;

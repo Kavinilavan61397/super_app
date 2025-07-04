@@ -1,28 +1,41 @@
-'use strict';
+const mongoose = require('mongoose');
 
-module.exports = (sequelize, DataTypes) => {
-  const Gwhishlist = sequelize.define('gwhishlist', {
-    id: {
-      type: DataTypes.BIGINT.UNSIGNED,
-      autoIncrement: true,
-      primaryKey: true
-    },
-    user_id: DataTypes.BIGINT.UNSIGNED,
-    grocery_id: DataTypes.BIGINT.UNSIGNED,
-    name: DataTypes.STRING,
-    image: DataTypes.STRING,
-    category: DataTypes.STRING,
-    original_price: DataTypes.DECIMAL(10, 2),
-    discounted_price: DataTypes.DECIMAL(10, 2),
-    quantity: {
-      type: DataTypes.INTEGER,
-      defaultValue: 1
-    }
-  }, {
-    tableName: 'gwhishlist',
-    timestamps: true,       // ✅ Sequelize will auto-manage createdAt/updatedAt
-    underscored: true       // ✅ Maps to `created_at`, `updated_at` in MySQL
-  });
+const gwhishlistSchema = new mongoose.Schema({
+  user_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: [true, 'User ID is required']
+  },
+  product_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Product',
+    required: [true, 'Product ID is required']
+  }
+}, {
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+});
 
-  return Gwhishlist;
-};
+gwhishlistSchema.virtual('user', {
+  ref: 'User',
+  localField: 'user_id',
+  foreignField: '_id',
+  justOne: true
+});
+
+gwhishlistSchema.virtual('product', {
+  ref: 'Product',
+  localField: 'product_id',
+  foreignField: '_id',
+  justOne: true
+});
+
+gwhishlistSchema.index({ user_id: 1 });
+gwhishlistSchema.index({ product_id: 1 });
+
+gwhishlistSchema.index({ user_id: 1, product_id: 1 }, { unique: true });
+
+const Gwhishlist = mongoose.model('Gwhishlist', gwhishlistSchema);
+
+module.exports = Gwhishlist;

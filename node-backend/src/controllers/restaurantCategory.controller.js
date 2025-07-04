@@ -1,25 +1,44 @@
-const { RestaurantCategory } = require('../models');
+const RestaurantCategory = require('../models/restaurantcategory');
 const { processImage } = require('../utils/imageProcessor');
 
 module.exports = {
   // List all categories
   async getAll(req, res) {
     try {
-      const categories = await RestaurantCategory.findAll();
-      res.json(categories);
+      const categories = await RestaurantCategory.find().sort({ createdAt: -1 });
+      res.json({
+        success: true,
+        data: categories
+      });
     } catch (err) {
-      res.status(500).json({ error: 'Failed to fetch categories', details: err.message });
+      res.status(500).json({ 
+        success: false,
+        error: 'Failed to fetch categories', 
+        details: err.message 
+      });
     }
   },
 
   // Get category by ID
   async getById(req, res) {
     try {
-      const category = await RestaurantCategory.findByPk(req.params.id);
-      if (!category) return res.status(404).json({ error: 'Category not found' });
-      res.json(category);
+      const category = await RestaurantCategory.findById(req.params.id);
+      if (!category) {
+        return res.status(404).json({ 
+          success: false,
+          error: 'Category not found' 
+        });
+      }
+      res.json({
+        success: true,
+        data: category
+      });
     } catch (err) {
-      res.status(500).json({ error: 'Failed to fetch category', details: err.message });
+      res.status(500).json({ 
+        success: false,
+        error: 'Failed to fetch category', 
+        details: err.message 
+      });
     }
   },
 
@@ -35,16 +54,26 @@ module.exports = {
         imagePath = `/uploads/restaurant_categories/${processedImage.filename}`;
       }
 
-      const category = await RestaurantCategory.create({ 
+      const category = new RestaurantCategory({ 
         name, 
         description, 
         image: imagePath,
         status: status === 'true' || status === true
       });
       
-      res.status(201).json(category);
+      await category.save();
+      
+      res.status(201).json({
+        success: true,
+        message: 'Restaurant category created successfully',
+        data: category
+      });
     } catch (err) {
-      res.status(400).json({ error: 'Failed to create category', details: err.message });
+      res.status(400).json({ 
+        success: false,
+        error: 'Failed to create category', 
+        details: err.message 
+      });
     }
   },
 
@@ -52,9 +81,14 @@ module.exports = {
   async update(req, res) {
     try {
       const { name, description, status } = req.body;
-      const category = await RestaurantCategory.findByPk(req.params.id);
+      const category = await RestaurantCategory.findById(req.params.id);
       
-      if (!category) return res.status(404).json({ error: 'Category not found' });
+      if (!category) {
+        return res.status(404).json({ 
+          success: false,
+          error: 'Category not found' 
+        });
+      }
       
       // Handle image upload
       let imagePath = category.image; // Keep existing image if no new one
@@ -63,28 +97,48 @@ module.exports = {
         imagePath = `/uploads/restaurant_categories/${processedImage.filename}`;
       }
 
-      await category.update({ 
-        name, 
-        description, 
-        image: imagePath,
-        status: status === 'true' || status === true
-      });
+      category.name = name || category.name;
+      category.description = description || category.description;
+      category.image = imagePath;
+      category.status = status === 'true' || status === true;
       
-      res.json(category);
+      await category.save();
+      
+      res.json({
+        success: true,
+        message: 'Restaurant category updated successfully',
+        data: category
+      });
     } catch (err) {
-      res.status(400).json({ error: 'Failed to update category', details: err.message });
+      res.status(400).json({ 
+        success: false,
+        error: 'Failed to update category', 
+        details: err.message 
+      });
     }
   },
 
   // Delete category
   async delete(req, res) {
     try {
-      const category = await RestaurantCategory.findByPk(req.params.id);
-      if (!category) return res.status(404).json({ error: 'Category not found' });
-      await category.destroy();
-      res.json({ message: 'Category deleted' });
+      const category = await RestaurantCategory.findById(req.params.id);
+      if (!category) {
+        return res.status(404).json({ 
+          success: false,
+          error: 'Category not found' 
+        });
+      }
+      await RestaurantCategory.findByIdAndDelete(req.params.id);
+      res.json({ 
+        success: true,
+        message: 'Category deleted successfully' 
+      });
     } catch (err) {
-      res.status(500).json({ error: 'Failed to delete category', details: err.message });
+      res.status(500).json({ 
+        success: false,
+        error: 'Failed to delete category', 
+        details: err.message 
+      });
     }
   }
 }; 

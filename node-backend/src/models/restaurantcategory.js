@@ -1,38 +1,37 @@
-'use strict';
-const {
-  Model
-} = require('sequelize');
-module.exports = (sequelize, DataTypes) => {
-  class RestaurantCategory extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
-    static associate(models) {
-      RestaurantCategory.hasMany(models.Restaurant, { foreignKey: 'categoryId', as: 'restaurants' });
-    }
+const mongoose = require('mongoose');
+
+const restaurantCategorySchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: [true, 'Category name is required'],
+    trim: true
+  },
+  slug: {
+    type: String,
+    required: [true, 'Slug is required'],
+    unique: true,
+    lowercase: true,
+    trim: true
+  },
+  description: {
+    type: String,
+    trim: true
+  },
+  image: {
+    type: String
+  },
+  status: {
+    type: Boolean,
+    default: true
   }
-  RestaurantCategory.init({
-    name: DataTypes.STRING,
-    description: DataTypes.TEXT,
-    image: DataTypes.STRING,
-    status: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: true
-    },
-    createdAt: {
-      type: DataTypes.DATE,
-      field: 'created_at'
-    },
-    updatedAt: {
-      type: DataTypes.DATE,
-      field: 'updated_at'
-    }
-  }, {
-    sequelize,
-    modelName: 'RestaurantCategory',
-    underscored: true
-  });
-  return RestaurantCategory;
-};
+}, {
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+});
+
+restaurantCategorySchema.index({ status: 1 });
+
+const RestaurantCategory = mongoose.model('RestaurantCategory', restaurantCategorySchema);
+
+module.exports = RestaurantCategory;

@@ -1,38 +1,31 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const mongoose = require('mongoose');
 
-const Amenity = sequelize.define('Amenity', {
-  id: {
-    type: DataTypes.BIGINT.UNSIGNED,
-    primaryKey: true,
-    autoIncrement: true
-  },
+const amenitySchema = new mongoose.Schema({
   name: {
-    type: DataTypes.STRING,
-    allowNull: false
+    type: String,
+    required: [true, 'Amenity name is required'],
+    trim: true
+  },
+  description: {
+    type: String,
+    trim: true
   },
   icon: {
-    type: DataTypes.STRING,
-    allowNull: true
+    type: String
   },
   status: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: true
-  },
-  createdAt: {
-    type: DataTypes.DATE,
-    field: 'created_at',
-    allowNull: false
-  },
-  updatedAt: {
-    type: DataTypes.DATE,
-    field: 'updated_at',
-    allowNull: false
+    type: Boolean,
+    default: true
   }
 }, {
   timestamps: true,
-  tableName: 'amenities',
-  underscored: true
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
+
+amenitySchema.index({ name: 1 });
+amenitySchema.index({ status: 1 });
+
+const Amenity = mongoose.models.Amenity || mongoose.model('Amenity', amenitySchema);
 
 module.exports = Amenity; 

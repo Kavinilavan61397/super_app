@@ -1,99 +1,105 @@
-'use strict';
-const {
-  Model
-} = require('sequelize');
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const mongoose = require('mongoose');
 
-module.exports = (sequelize, DataTypes) => {
-  class TaxiRide extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
-    static associate(models) {
-      TaxiRide.belongsTo(models.TaxiDriver, { foreignKey: 'driver_id', as: 'driver' });
-      TaxiRide.belongsTo(models.TaxiVehicle, { foreignKey: 'vehicle_id', as: 'vehicle' });
-      TaxiRide.belongsTo(models.User, { foreignKey: 'user_id', as: 'user' });
-    }
+const taxiRideSchema = new mongoose.Schema({
+  user_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: [true, 'User ID is required']
+  },
+  driver_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'TaxiDriver',
+    required: [true, 'Driver ID is required']
+  },
+  vehicle_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'TaxiVehicle',
+    required: [true, 'Vehicle ID is required']
+  },
+  pickup_location: {
+    address: String,
+    latitude: Number,
+    longitude: Number
+  },
+  dropoff_location: {
+    address: String,
+    latitude: Number,
+    longitude: Number
+  },
+  distance: {
+    type: Number,
+    min: 0
+  },
+  duration: {
+    type: Number,
+    min: 0
+  },
+  fare: {
+    type: Number,
+    required: [true, 'Fare is required'],
+    min: 0
+  },
+  status: {
+    type: String,
+    enum: ['pending', 'accepted', 'started', 'completed', 'cancelled'],
+    default: 'pending'
+  },
+  payment_status: {
+    type: String,
+    enum: ['pending', 'paid', 'failed'],
+    default: 'pending'
+  },
+  payment_method: {
+    type: String,
+    enum: ['cash', 'card', 'upi'],
+    default: 'cash'
+  },
+  rating: {
+    type: Number,
+    min: 1,
+    max: 5
+  },
+  review: {
+    type: String,
+    trim: true
+  },
+  scheduled_time: {
+    type: Date
   }
+}, {
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+});
 
-  TaxiRide.init({
-    id: {
-      type: DataTypes.BIGINT,
-      primaryKey: true,
-      autoIncrement: true
-    },
-    user_id: {
-      type: DataTypes.BIGINT,
-      allowNull: false,
-      references: {
-        model: 'users',
-        key: 'id'
-      }
-    },
-    driver_id: {
-      type: DataTypes.BIGINT,
-      allowNull: false,
-      references: {
-        model: 'taxi_drivers',
-        key: 'id'
-      }
-    },
-    vehicle_id: {
-      type: DataTypes.BIGINT,
-      allowNull: false,
-      references: {
-        model: 'taxi_vehicles',
-        key: 'id'
-      }
-    },
-    pickup_location: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
-    dropoff_location: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
-    fare: {
-      type: DataTypes.DECIMAL(10, 2),
-      allowNull: false
-    },
-    status: {
-      type: DataTypes.INTEGER,
-      allowNull: false
-    },
-    requested_at: {
-      type: DataTypes.DATE,
-      allowNull: false
-    },
-    started_at: {
-      type: DataTypes.DATE,
-      allowNull: true
-    },
-    completed_at: {
-      type: DataTypes.DATE,
-      allowNull: true
-    },
-    createdAt: {
-      type: DataTypes.DATE,
-      field: 'created_at',
-      allowNull: false
-    },
-    updatedAt: {
-      type: DataTypes.DATE,
-      field: 'updated_at',
-      allowNull: false
-    }
-  }, {
-    sequelize,
-    modelName: 'TaxiRide',
-    tableName: 'taxi_rides',
-    underscored: true,
-    timestamps: true
-  });
+taxiRideSchema.virtual('user', {
+  ref: 'User',
+  localField: 'user_id',
+  foreignField: '_id',
+  justOne: true
+});
 
-  return TaxiRide;
-};
+taxiRideSchema.virtual('driver', {
+  ref: 'TaxiDriver',
+  localField: 'driver_id',
+  foreignField: '_id',
+  justOne: true
+});
+
+taxiRideSchema.virtual('vehicle', {
+  ref: 'TaxiVehicle',
+  localField: 'vehicle_id',
+  foreignField: '_id',
+  justOne: true
+});
+
+taxiRideSchema.index({ user_id: 1 });
+taxiRideSchema.index({ driver_id: 1 });
+taxiRideSchema.index({ vehicle_id: 1 });
+taxiRideSchema.index({ status: 1 });
+taxiRideSchema.index({ payment_status: 1 });
+taxiRideSchema.index({ createdAt: -1 });
+
+const TaxiRide = mongoose.model('TaxiRide', taxiRideSchema);
+
+module.exports = TaxiRide;

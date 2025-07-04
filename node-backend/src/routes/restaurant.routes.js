@@ -1,8 +1,20 @@
 const express = require('express');
 const router = express.Router();
-const restaurantController = require('../controllers/restaurant.controller');
+const {
+  getAllRestaurants,
+  getRestaurantById,
+  createRestaurant,
+  updateRestaurant,
+  deleteRestaurant
+} = require('../controllers/restaurant.controller');
 const restaurantCategoryController = require('../controllers/restaurantCategory.controller');
-const dishController = require('../controllers/dish.controller');
+const {
+  getAllDishes,
+  getDishById,
+  createDish,
+  updateDish,
+  deleteDish
+} = require('../controllers/dish.controller');
 const { protect, authorize } = require('../middlewares/auth.middleware');
 const upload = require('../middlewares/upload.middleware');
 const { validateImage } = require('../middlewares/imageValidation.middleware');
@@ -15,17 +27,17 @@ router.put('/categories/:id', protect, authorize('admin', 'restaurant_admin'), u
 router.delete('/categories/:id', protect, authorize('admin', 'restaurant_admin'), restaurantCategoryController.delete);
 
 // Restaurant Routes
-router.get('/', protect, authorize('admin', 'restaurant_admin'), restaurantController.getAll);
-router.get('/:id', protect, authorize('admin', 'restaurant_admin'), restaurantController.getById);
-router.post('/', protect, authorize('admin', 'restaurant_admin'), upload.single('image'), validateImage, restaurantController.create);
-router.put('/:id', protect, authorize('admin', 'restaurant_admin'), upload.single('image'), restaurantController.update);
-router.delete('/:id', protect, authorize('admin', 'restaurant_admin'), restaurantController.delete);
+router.get('/', protect, authorize('admin', 'restaurant_admin'), getAllRestaurants);
+router.get('/:id', protect, authorize('admin', 'restaurant_admin'), getRestaurantById);
+router.post('/', protect, authorize('admin', 'restaurant_admin'), upload.single('image'), validateImage, createRestaurant);
+router.put('/:id', protect, authorize('admin', 'restaurant_admin'), upload.single('image'), updateRestaurant);
+router.delete('/:id', protect, authorize('admin', 'restaurant_admin'), deleteRestaurant);
 
 // Dish Routes
-router.get('/dishes', protect, authorize('admin', 'restaurant_admin'), dishController.getAll);
-router.get('/dishes/:id', protect, authorize('admin', 'restaurant_admin'), dishController.getById);
-router.post('/dishes', protect, authorize('admin', 'restaurant_admin'), upload.single('image'), validateImage, dishController.create);
-router.put('/dishes/:id', protect, authorize('admin', 'restaurant_admin'), upload.single('image'), dishController.update);
-router.delete('/dishes/:id', protect, authorize('admin', 'restaurant_admin'), dishController.delete);
+router.get('/dishes', protect, authorize('admin', 'restaurant_admin'), getAllDishes);
+router.get('/dishes/:id', protect, authorize('admin', 'restaurant_admin'), getDishById);
+router.post('/dishes', protect, authorize('admin', 'restaurant_admin'), upload.single('image'), validateImage, createDish);
+router.put('/dishes/:id', protect, authorize('admin', 'restaurant_admin'), upload.single('image'), updateDish);
+router.delete('/dishes/:id', protect, authorize('admin', 'restaurant_admin'), deleteDish);
 
 module.exports = router; 

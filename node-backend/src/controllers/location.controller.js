@@ -1,38 +1,35 @@
 const Location = require('../models/Location');
-const { Op } = require('sequelize');
 
 // Get all locations
 const getAllLocations = async (req, res) => {
   try {
     const { page = 1, limit = 10, search = '', status } = req.query;
-    const offset = (page - 1) * limit;
+    const skip = (page - 1) * limit;
 
-    let whereClause = {};
+    let query = {};
     if (search) {
-      whereClause = {
-        [Op.or]: [
-          { name: { [Op.like]: `%${search}%` } },
-          { description: { [Op.like]: `%${search}%` } }
-        ]
-      };
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } }
+      ];
     }
     if (status !== undefined && status !== 'all') {
-      whereClause.status = status === 'true';
+      query.status = status === 'true';
     }
 
-    const locations = await Location.findAndCountAll({
-      where: whereClause,
-      limit: parseInt(limit),
-      offset: parseInt(offset),
-      order: [['createdAt', 'DESC']]
-    });
+    const locations = await Location.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    const total = await Location.countDocuments(query);
 
     res.json({
       success: true,
-      data: locations.rows,
-      total: locations.count,
+      data: locations,
+      total: total,
       currentPage: parseInt(page),
-      totalPages: Math.ceil(locations.count / limit)
+      totalPages: Math.ceil(total / limit)
     });
   } catch (error) {
     console.error('Error fetching locations:', error);
@@ -44,7 +41,7 @@ const getAllLocations = async (req, res) => {
 const getLocationById = async (req, res) => {
   try {
     const { id } = req.params;
-    const location = await Location.findByPk(id);
+    const location = await Location.findById(id);
     if (!location) {
       return res.status(404).json({ success: false, message: 'Location not found' });
     }
@@ -79,14 +76,13 @@ const updateLocation = async (req, res) => {
   try {
     const { id } = req.params;
     const { name, description } = req.body;
-    const location = await Location.findByPk(id);
+    const location = await Location.findById(id);
     if (!location) {
       return res.status(404).json({ success: false, message: 'Location not found' });
     }
-    await location.update({
-      name: name || location.name,
-      description: description !== undefined ? description : location.description
-    });
+    location.name = name || location.name;
+    location.description = description !== undefined ? description : location.description;
+    await location.save();
     res.json({ success: true, data: location });
   } catch (error) {
     console.error('Error updating location:', error);
@@ -98,11 +94,12 @@ const updateLocation = async (req, res) => {
 const toggleLocationStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const location = await Location.findByPk(id);
+    const location = await Location.findById(id);
     if (!location) {
       return res.status(404).json({ success: false, message: 'Location not found' });
     }
-    await location.update({ status: !location.status });
+    location.status = !location.status;
+    await location.save();
     res.json({ success: true, data: location });
   } catch (error) {
     console.error('Error toggling location status:', error);
@@ -114,11 +111,11 @@ const toggleLocationStatus = async (req, res) => {
 const deleteLocation = async (req, res) => {
   try {
     const { id } = req.params;
-    const location = await Location.findByPk(id);
+    const location = await Location.findById(id);
     if (!location) {
       return res.status(404).json({ success: false, message: 'Location not found' });
     }
-    await location.destroy();
+    await location.deleteOne();
     res.json({ success: true, message: 'Location deleted successfully' });
   } catch (error) {
     console.error('Error deleting location:', error);

@@ -1,47 +1,53 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const mongoose = require('mongoose');
 
-const Brand = sequelize.define('Brand', {
-  id: {
-    type: DataTypes.BIGINT.UNSIGNED,
-    primaryKey: true,
-    autoIncrement: true
+const brandSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: [true, 'Brand name is required'],
+    trim: true
   },
-  brand_name: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    unique: true
+  slug: {
+    type: String,
+    required: [true, 'Brand slug is required'],
+    unique: true,
+    lowercase: true,
+    trim: true
   },
-  photo: {
-    type: DataTypes.STRING,
-    allowNull: true
+  description: {
+    type: String,
+    trim: true
+  },
+  logo: {
+    type: String
   },
   status: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: true
+    type: Boolean,
+    default: true
   },
-  createdAt: {
-    type: DataTypes.DATE,
-    field: 'created_at',
-    allowNull: false
+  meta_title: {
+    type: String,
+    trim: true
   },
-  updatedAt: {
-    type: DataTypes.DATE,
-    field: 'updated_at',
-    allowNull: false
+  meta_description: {
+    type: String,
+    trim: true
   }
 }, {
   timestamps: true,
-  tableName: 'brands',
-  underscored: true
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
 
-// Define associations
-Brand.associate = (models) => {
-  Brand.hasMany(models.Product, {
-    foreignKey: 'brand_id',
-    as: 'products'
-  });
-};
+// Virtual for products of this brand
+brandSchema.virtual('brandProducts', {
+  ref: 'Product',
+  localField: '_id',
+  foreignField: 'brand_id'
+});
+
+// Indexes for better query performance
+brandSchema.index({ status: 1 });
+
+const Brand = mongoose.model('Brand', brandSchema);
 
 module.exports = Brand; 

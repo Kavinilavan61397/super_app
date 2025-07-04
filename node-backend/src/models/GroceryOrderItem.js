@@ -1,10 +1,10 @@
 const mongoose = require('mongoose');
 
-const gCartItemSchema = new mongoose.Schema({
-  user_id: {
+const groceryOrderItemSchema = new mongoose.Schema({
+  order_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: [true, 'User ID is required']
+    ref: 'GroceryOrder',
+    required: [true, 'Order ID is required']
   },
   product_id: {
     type: mongoose.Schema.Types.ObjectId,
@@ -14,8 +14,7 @@ const gCartItemSchema = new mongoose.Schema({
   quantity: {
     type: Number,
     required: [true, 'Quantity is required'],
-    min: [1, 'Quantity must be at least 1'],
-    default: 1
+    min: [1, 'Quantity must be at least 1']
   },
   price: {
     type: Number,
@@ -28,23 +27,23 @@ const gCartItemSchema = new mongoose.Schema({
   toObject: { virtuals: true }
 });
 
-gCartItemSchema.virtual('user', {
-  ref: 'User',
-  localField: 'user_id',
+groceryOrderItemSchema.virtual('order', {
+  ref: 'GroceryOrder',
+  localField: 'order_id',
   foreignField: '_id',
   justOne: true
 });
 
-gCartItemSchema.virtual('product', {
+groceryOrderItemSchema.virtual('product', {
   ref: 'Product',
   localField: 'product_id',
   foreignField: '_id',
   justOne: true
 });
 
-gCartItemSchema.index({ user_id: 1 });
-gCartItemSchema.index({ product_id: 1 });
+groceryOrderItemSchema.index({ order_id: 1 });
+groceryOrderItemSchema.index({ product_id: 1 });
 
-const GCartItem = mongoose.model('GCartItem', gCartItemSchema);
+const GroceryOrderItem = mongoose.model('GroceryOrderItem', groceryOrderItemSchema);
 
-module.exports = GCartItem;
+module.exports = GroceryOrderItem; 

@@ -1,67 +1,74 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const mongoose = require('mongoose');
 
-const Category = sequelize.define('Category', {
-  id: {
-    type: DataTypes.BIGINT.UNSIGNED,
-    primaryKey: true,
-    autoIncrement: true
-  },
+const categorySchema = new mongoose.Schema({
   name: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  description: {
-    type: DataTypes.TEXT,
-    allowNull: true
+    type: String,
+    required: [true, 'Category name is required'],
+    trim: true
   },
   slug: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    unique: true
+    type: String,
+    required: [true, 'Category slug is required'],
+    unique: true,
+    lowercase: true,
+    trim: true
+  },
+  description: {
+    type: String,
+    trim: true
   },
   image: {
-    type: DataTypes.STRING,
-    allowNull: true
-  },
-  status: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: true
+    type: String
   },
   parent_id: {
-    type: DataTypes.BIGINT.UNSIGNED,
-    allowNull: true
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Category',
+    default: null
+  },
+  status: {
+    type: Boolean,
+    default: true
   },
   meta_title: {
-    type: DataTypes.STRING,
-    allowNull: true
+    type: String,
+    trim: true
   },
   meta_description: {
-    type: DataTypes.TEXT,
-    allowNull: true
-  },
-  createdAt: {
-    type: DataTypes.DATE,
-    field: 'created_at',
-    allowNull: false
-  },
-  updatedAt: {
-    type: DataTypes.DATE,
-    field: 'updated_at',
-    allowNull: false
+    type: String,
+    trim: true
   }
 }, {
-  tableName: 'categories',
   timestamps: true,
-  indexes: [
-    {
-      fields: ['parent_id']
-    }
-  ]
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
 
-// Self-referencing associations for parent/subcategories
-Category.hasMany(Category, { as: 'subcategories', foreignKey: 'parent_id' });
-Category.belongsTo(Category, { as: 'parent', foreignKey: 'parent_id' });
+// Virtual for child categories
+categorySchema.virtual('childCategories', {
+  ref: 'Category',
+  localField: '_id',
+  foreignField: 'parent_id'
+});
+
+// Virtual for parent category
+categorySchema.virtual('parentCategory', {
+  ref: 'Category',
+  localField: 'parent_id',
+  foreignField: '_id',
+  justOne: true
+});
+
+// Virtual for products in this category
+categorySchema.virtual('categoryProducts', {
+  ref: 'Product',
+  localField: '_id',
+  foreignField: 'category_id'
+});
+
+// Indexes for better query performance
+categorySchema.index({ parent_id: 1 });
+categorySchema.index({ status: 1 });
+
+const Category = mongoose.model('Category', categorySchema);
 
 module.exports = Category; 

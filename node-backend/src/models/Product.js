@@ -1,102 +1,114 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
-const Brand = require('./Brand'); // Only needed for field definition, not association here
-const Category = require('./Category'); // Only needed for field definition, not association here
-// ProductAttribute association will be set in models/index.js to avoid circular dependency
+const mongoose = require('mongoose');
 
-const Product = sequelize.define('Product', {
-  id: {
-    type: DataTypes.BIGINT.UNSIGNED,
-    primaryKey: true,
-    autoIncrement: true
-  },
+const productSchema = new mongoose.Schema({
   name: {
-    type: DataTypes.STRING,
-    allowNull: false
+    type: String,
+    required: [true, 'Product name is required'],
+    trim: true
   },
   description: {
-    type: DataTypes.TEXT,
-    allowNull: true
+    type: String,
+    trim: true
   },
   slug: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    unique: true
+    type: String,
+    required: [true, 'Product slug is required'],
+    unique: true,
+    lowercase: true,
+    trim: true
   },
   sku: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    unique: true
+    type: String,
+    required: [true, 'Product SKU is required'],
+    unique: true,
+    trim: true
   },
   price: {
-    type: DataTypes.DECIMAL(10, 2),
-    allowNull: false
+    type: Number,
+    required: [true, 'Product price is required'],
+    min: [0, 'Price cannot be negative']
   },
   sale_price: {
-    type: DataTypes.DECIMAL(10, 2),
-    allowNull: true
+    type: Number,
+    min: [0, 'Sale price cannot be negative']
   },
   stock: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    defaultValue: 0
+    type: Number,
+    required: [true, 'Product stock is required'],
+    min: [0, 'Stock cannot be negative'],
+    default: 0
   },
   category_id: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    references: {
-      model: 'categories',
-      key: 'id'
-    }
-  },
-  featured_image: {
-    type: DataTypes.STRING,
-    allowNull: true
-  },
-  status: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: true
-  },
-  meta_title: {
-    type: DataTypes.STRING,
-    allowNull: true
-  },
-  meta_description: {
-    type: DataTypes.TEXT,
-    allowNull: true
-  },
-  photo: {
-    type: DataTypes.STRING,
-    allowNull: true
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Category',
+    required: [true, 'Category is required']
   },
   brand_id: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    references: {
-      model: 'brands',
-      key: 'id'
-    }
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Brand',
+    required: [true, 'Brand is required']
   },
-  createdAt: {
-    type: DataTypes.DATE,
-    field: 'created_at',
-    allowNull: false
+  featured_image: {
+    type: String
   },
-  updatedAt: {
-    type: DataTypes.DATE,
-    field: 'updated_at',
-    allowNull: false
+  photo: {
+    type: String
+  },
+  status: {
+    type: Boolean,
+    default: true
+  },
+  meta_title: {
+    type: String,
+    trim: true
+  },
+  meta_description: {
+    type: String,
+    trim: true
   }
 }, {
-  tableName: 'products',
   timestamps: true,
-  indexes: [
-    {
-      fields: ['category_id']
-    }
-  ]
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
 
-// Do NOT define any associations here. All associations are set in models/index.js
+// Virtual for category relationship
+productSchema.virtual('category', {
+  ref: 'Category',
+  localField: 'category_id',
+  foreignField: '_id',
+  justOne: true
+});
+
+// Virtual for brand relationship
+productSchema.virtual('brand', {
+  ref: 'Brand',
+  localField: 'brand_id',
+  foreignField: '_id',
+  justOne: true
+});
+
+// Virtual for product variations
+productSchema.virtual('productVariations', {
+  ref: 'ProductVariation',
+  localField: '_id',
+  foreignField: 'product_id'
+});
+
+// Virtual for product attributes
+productSchema.virtual('attributes', {
+  ref: 'ProductAttribute',
+  localField: '_id',
+  foreignField: 'product_id'
+});
+
+// Indexes for better query performance
+productSchema.index({ category_id: 1 });
+productSchema.index({ brand_id: 1 });
+productSchema.index({ status: 1 });
+productSchema.index({ price: 1 });
+productSchema.index({ stock: 1 });
+
+const Product = mongoose.model('Product', productSchema);
 
 module.exports = Product;

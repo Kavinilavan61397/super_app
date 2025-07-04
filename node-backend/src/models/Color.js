@@ -1,33 +1,28 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const mongoose = require('mongoose');
 
-const Color = sequelize.define('Color', {
-  color_name: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    unique: true
+const colorSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: [true, 'Color name is required'],
+    trim: true
   },
-  color_code: {
-    type: DataTypes.STRING,
-    allowNull: false
+  hex: {
+    type: String,
+    trim: true
   },
   status: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: true
-  },
-  createdAt: {
-    type: DataTypes.DATE,
-    field: 'created_at',
-    allowNull: false
-  },
-  updatedAt: {
-    type: DataTypes.DATE,
-    field: 'updated_at',
-    allowNull: false
+    type: Boolean,
+    default: true
   }
 }, {
   timestamps: true,
-  tableName: 'colors'
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
+
+colorSchema.index({ name: 1 });
+colorSchema.index({ status: 1 });
+
+const Color = mongoose.model('Color', colorSchema);
 
 module.exports = Color; 

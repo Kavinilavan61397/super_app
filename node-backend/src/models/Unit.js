@@ -1,33 +1,28 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const mongoose = require('mongoose');
 
-const Unit = sequelize.define('Unit', {
-  unit_name: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    unique: true
+const unitSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: [true, 'Unit name is required'],
+    trim: true
   },
-  unit_symbol: {
-    type: DataTypes.STRING,
-    allowNull: false
+  symbol: {
+    type: String,
+    trim: true
   },
   status: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: true
-  },
-  createdAt: {
-    type: DataTypes.DATE,
-    field: 'created_at',
-    allowNull: false
-  },
-  updatedAt: {
-    type: DataTypes.DATE,
-    field: 'updated_at',
-    allowNull: false
+    type: Boolean,
+    default: true
   }
 }, {
   timestamps: true,
-  tableName: 'units'
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
+
+unitSchema.index({ name: 1 });
+unitSchema.index({ status: 1 });
+
+const Unit = mongoose.model('Unit', unitSchema);
 
 module.exports = Unit; 

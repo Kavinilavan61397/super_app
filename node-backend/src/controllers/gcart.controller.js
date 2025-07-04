@@ -1,100 +1,177 @@
-const { GCartItem } = require('../models');
+const GCartItem = require('../models/gcart_items');
 
-exports.getCartItems = async (req, res) => {
+// Get user's grocery cart
+exports.getUserGroceryCart = async (req, res) => {
   try {
     const userId = req.user.id;
+    const cartItems = await GCartItem.find({ user_id: userId })
+      .populate('grocery_id')
+      .sort({ createdAt: -1 });
 
-    const items = await GCartItem.findAll({
-      where: { user_id: userId }
+    res.json({
+      success: true,
+      data: cartItems,
+      count: cartItems.length
     });
-
-    res.json(items);
   } catch (error) {
-    console.error('❌ Error fetching GCartItems:', error);
-    res.status(500).json({ error: error.message });
+    console.error('Error fetching grocery cart:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching grocery cart',
+      error: error.message
+    });
   }
 };
 
-exports.addToCart = async (req, res) => {
+// Add item to grocery cart
+exports.addToGroceryCart = async (req, res) => {
   try {
     const userId = req.user.id;
-    const {
-      groceryId,
-      name,
-      image,
-      category,
-      original_price,
-      discounted_price,
-      quantity
-    } = req.body;
+    const { grocery_id, quantity } = req.body;
 
-    const [item, created] = await GCartItem.findOrCreate({
-      where: { user_id: userId, grocery_id: groceryId },
-      defaults: {
-        name,
-        image,
-        category,
-        original_price,
-        discounted_price,
-        quantity
-      }
+    // Check if item already exists in cart
+    const existingItem = await GCartItem.findOne({
+      user_id: userId,
+      grocery_id
     });
 
-    if (!created) {
-      item.quantity += quantity;
-      await item.save();
+    if (existingItem) {
+      // Update quantity
+      existingItem.quantity += quantity || 1;
+      await existingItem.save();
+    } else {
+      // Create new cart item
+      const cartItem = new GCartItem({
+        user_id: userId,
+        grocery_id,
+        quantity: quantity || 1
+      });
+      await cartItem.save();
     }
 
-    res.status(201).json(item);
+    // Return updated cart
+    const updatedCart = await GCartItem.find({ user_id: userId })
+      .populate('grocery_id')
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      message: 'Item added to grocery cart successfully',
+      data: updatedCart
+    });
   } catch (error) {
-    console.error('❌ Error adding to GCartItem:', error);
-    res.status(500).json({ error: error.message });
+    console.error('Error adding to grocery cart:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error adding to grocery cart',
+      error: error.message
+    });
   }
 };
 
-exports.updateCartItem = async (req, res) => {
+// Update grocery cart item quantity
+exports.updateGroceryCartItem = async (req, res) => {
   try {
     const userId = req.user.id;
-    const groceryId = req.params.groceryId;
+    const { item_id } = req.params;
     const { quantity } = req.body;
-    if (typeof quantity !== 'number' || quantity < 1) {
-      return res.status(400).json({ error: 'Quantity must be a positive number.' });
+
+    // Find cart item and verify ownership
+    const cartItem = await GCartItem.findOne({ _id: item_id, user_id: userId });
+
+    if (!cartItem) {
+      return res.status(404).json({
+        success: false,
+        message: 'Cart item not found'
+      });
     }
-    const item = await GCartItem.findOne({ where: { user_id: userId, grocery_id: groceryId } });
-    if (!item) {
-      return res.status(404).json({ error: 'Cart item not found.' });
+
+    if (quantity <= 0) {
+      // Remove item if quantity is 0 or less
+      await GCartItem.findByIdAndDelete(item_id);
+    } else {
+      // Update quantity
+      cartItem.quantity = quantity;
+      await cartItem.save();
     }
-    item.quantity = quantity;
-    await item.save();
-    res.json(item);
+
+    // Return updated cart
+    const updatedCart = await GCartItem.find({ user_id: userId })
+      .populate('grocery_id')
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      message: 'Grocery cart item updated successfully',
+      data: updatedCart
+    });
   } catch (error) {
-    console.error('❌ Error updating GCartItem:', error);
-    res.status(500).json({ error: error.message });
+    console.error('Error updating grocery cart item:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error updating grocery cart item',
+      error: error.message
+    });
   }
 };
 
-exports.removeCartItem = async (req, res) => {
+// Remove item from grocery cart
+exports.removeFromGroceryCart = async (req, res) => {
   try {
     const userId = req.user.id;
-    const groceryId = req.params.groceryId;
-    const deleted = await GCartItem.destroy({ where: { user_id: userId, grocery_id: groceryId } });
+    const { grocery_id } = req.params;
+
+    // Find and remove cart item
+    const deleted = await GCartItem.findOneAndDelete({
+      user_id: userId,
+      grocery_id
+    });
+
     if (!deleted) {
-      return res.status(404).json({ error: 'Cart item not found.' });
+      return res.status(404).json({
+        success: false,
+        message: 'Cart item not found'
+      });
     }
-    res.json({ message: 'Cart item removed.' });
+
+    // Return updated cart
+    const updatedCart = await GCartItem.find({ user_id: userId })
+      .populate('grocery_id')
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      message: 'Item removed from grocery cart successfully',
+      data: updatedCart
+    });
   } catch (error) {
-    console.error('❌ Error removing GCartItem:', error);
-    res.status(500).json({ error: error.message });
+    console.error('Error removing from grocery cart:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error removing from grocery cart',
+      error: error.message
+    });
   }
 };
 
-exports.clearCart = async (req, res) => {
+// Clear grocery cart
+exports.clearGroceryCart = async (req, res) => {
   try {
     const userId = req.user.id;
-    await GCartItem.destroy({ where: { user_id: userId } });
-    res.json({ message: 'Cart cleared.' });
+
+    await GCartItem.deleteMany({ user_id: userId });
+
+    res.json({
+      success: true,
+      message: 'Grocery cart cleared successfully',
+      data: []
+    });
   } catch (error) {
-    console.error('❌ Error clearing GCartItems:', error);
-    res.status(500).json({ error: error.message });
+    console.error('Error clearing grocery cart:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error clearing grocery cart',
+      error: error.message
+    });
   }
 };

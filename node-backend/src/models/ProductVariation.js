@@ -1,43 +1,66 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
-const Product = require('./Product');
+const mongoose = require('mongoose');
 
-
-const ProductVariation = sequelize.define('ProductVariation', {
+const productVariationSchema = new mongoose.Schema({
   product_id: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    references: {
-      model: 'products',
-      key: 'id'
-    }
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Product',
+    required: [true, 'Product ID is required']
   },
-
-  price: {
-    type: DataTypes.DECIMAL(10, 2),
-    allowNull: false
-  },
-  stock: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    defaultValue: 0
+  name: {
+    type: String,
+    required: [true, 'Variation name is required'],
+    trim: true
   },
   sku: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    unique: true
+    type: String,
+    required: [true, 'Variation SKU is required'],
+    unique: true,
+    trim: true
+  },
+  price: {
+    type: Number,
+    required: [true, 'Variation price is required'],
+    min: [0, 'Price cannot be negative']
+  },
+  sale_price: {
+    type: Number,
+    min: [0, 'Sale price cannot be negative']
+  },
+  stock: {
+    type: Number,
+    required: [true, 'Variation stock is required'],
+    min: [0, 'Stock cannot be negative'],
+    default: 0
+  },
+  attributes: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {}
+  },
+  image: {
+    type: String
   },
   status: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: true
+    type: Boolean,
+    default: true
   }
 }, {
   timestamps: true,
-  tableName: 'product_variations'
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
 
-// Define associations
-ProductVariation.belongsTo(Product, { foreignKey: 'product_id', as: 'product' });
+// Virtual for product relationship
+productVariationSchema.virtual('baseProduct', {
+  ref: 'Product',
+  localField: 'product_id',
+  foreignField: '_id',
+  justOne: true
+});
 
+// Indexes for better query performance
+productVariationSchema.index({ product_id: 1 });
+productVariationSchema.index({ status: 1 });
+
+const ProductVariation = mongoose.model('ProductVariation', productVariationSchema);
 
 module.exports = ProductVariation; 

@@ -1,58 +1,48 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const mongoose = require('mongoose');
 
-const Staff = sequelize.define('Staff', {
-  id: {
-    type: DataTypes.BIGINT.UNSIGNED,
-    primaryKey: true,
-    autoIncrement: true
-  },
+const staffSchema = new mongoose.Schema({
   user_id: {
-    type: DataTypes.BIGINT.UNSIGNED,
-    allowNull: false,
-    references: {
-      model: 'users',
-      key: 'id'
-    }
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: [true, 'User ID is required']
   },
-  department: {
-    type: DataTypes.STRING,
-    allowNull: true
+  name: {
+    type: String,
+    required: [true, 'Staff name is required'],
+    trim: true
   },
-  position: {
-    type: DataTypes.STRING,
-    allowNull: true
+  role: {
+    type: String,
+    trim: true
   },
-  hire_date: {
-    type: DataTypes.DATE,
-    allowNull: true
+  phone: {
+    type: String,
+    trim: true
   },
-  salary: {
-    type: DataTypes.DECIMAL(10, 2),
-    allowNull: true
+  email: {
+    type: String,
+    trim: true
   },
   status: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: true
-  },
-  createdAt: {
-    type: DataTypes.DATE,
-    field: 'created_at',
-    allowNull: false
-  },
-  updatedAt: {
-    type: DataTypes.DATE,
-    field: 'updated_at',
-    allowNull: false
+    type: Boolean,
+    default: true
   }
 }, {
   timestamps: true,
-  tableName: 'staff',
-  underscored: true
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
 
-Staff.associate = (models) => {
-  Staff.belongsTo(models.User, { foreignKey: 'user_id', as: 'user' });
-};
+staffSchema.virtual('user', {
+  ref: 'User',
+  localField: 'user_id',
+  foreignField: '_id',
+  justOne: true
+});
+
+staffSchema.index({ user_id: 1 });
+staffSchema.index({ status: 1 });
+
+const Staff = mongoose.model('Staff', staffSchema);
 
 module.exports = Staff; 

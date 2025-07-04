@@ -3,58 +3,41 @@ const Unit = require('../models/Unit');
 // Get all units
 exports.getAllUnits = async (req, res) => {
   try {
-    const units = await Unit.findAll({
-      order: [['createdAt', 'DESC']]
-    });
+    const units = await Unit.find().sort({ createdAt: -1 });
     res.json(units);
   } catch (error) {
-    console.error('Error fetching units:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching units',
-      error: error.message
-    });
+    res.status(500).json({ message: error.message });
   }
 };
 
 // Get unit by ID
 exports.getUnitById = async (req, res) => {
   try {
-    const unit = await Unit.findByPk(req.params.id);
+    const unit = await Unit.findById(req.params.id);
     if (!unit) {
-      return res.status(404).json({
-        success: false,
-        message: 'Unit not found'
-      });
+      return res.status(404).json({ message: 'Unit not found' });
     }
     res.json(unit);
   } catch (error) {
-    console.error('Error fetching unit:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching unit',
-      error: error.message
-    });
+    res.status(500).json({ message: error.message });
   }
 };
 
 // Create unit
 exports.createUnit = async (req, res) => {
   try {
-    const { unit_name, unit_symbol } = req.body;
-
-    const unit = await Unit.create({
-      unit_name,
-      unit_symbol
+    const { name, status } = req.body;
+    const unit = new Unit({
+      name,
+      status: typeof status !== 'undefined' ? (String(status) === 'true') : true
     });
-
+    await unit.save();
     res.status(201).json({
       success: true,
       message: 'Unit created successfully',
       data: unit
     });
   } catch (error) {
-    console.error('Error creating unit:', error);
     res.status(500).json({
       success: false,
       message: 'Error creating unit',
@@ -66,28 +49,22 @@ exports.createUnit = async (req, res) => {
 // Update unit
 exports.updateUnit = async (req, res) => {
   try {
-    const unit = await Unit.findByPk(req.params.id);
+    const unit = await Unit.findById(req.params.id);
     if (!unit) {
-      return res.status(404).json({
-        success: false,
-        message: 'Unit not found'
-      });
+      return res.status(404).json({ message: 'Unit not found' });
     }
 
-    const { unit_name, unit_symbol } = req.body;
+    const { name, status } = req.body;
+    unit.name = name || unit.name;
+    unit.status = typeof status !== 'undefined' ? (String(status) === 'true') : unit.status;
 
-    await unit.update({
-      unit_name: unit_name || unit.unit_name,
-      unit_symbol: unit_symbol || unit.unit_symbol
-    });
-
+    await unit.save();
     res.json({
       success: true,
       message: 'Unit updated successfully',
       data: unit
     });
   } catch (error) {
-    console.error('Error updating unit:', error);
     res.status(500).json({
       success: false,
       message: 'Error updating unit',
@@ -99,22 +76,17 @@ exports.updateUnit = async (req, res) => {
 // Delete unit
 exports.deleteUnit = async (req, res) => {
   try {
-    const unit = await Unit.findByPk(req.params.id);
+    const unit = await Unit.findById(req.params.id);
     if (!unit) {
-      return res.status(404).json({
-        success: false,
-        message: 'Unit not found'
-      });
+      return res.status(404).json({ message: 'Unit not found' });
     }
 
-    await unit.destroy();
-
+    await Unit.findByIdAndDelete(req.params.id);
     res.json({
       success: true,
       message: 'Unit deleted successfully'
     });
   } catch (error) {
-    console.error('Error deleting unit:', error);
     res.status(500).json({
       success: false,
       message: 'Error deleting unit',
@@ -134,21 +106,15 @@ exports.bulkDeleteUnits = async (req, res) => {
       });
     }
 
-    await Unit.destroy({
-      where: {
-        id: ids
-      }
-    });
-
+    await Unit.deleteMany({ _id: { $in: ids } });
     res.json({
       success: true,
-      message: 'Units deleted successfully'
+      message: `${ids.length} units deleted successfully`
     });
   } catch (error) {
-    console.error('Error bulk deleting units:', error);
     res.status(500).json({
       success: false,
-      message: 'Error bulk deleting units',
+      message: 'Error deleting units',
       error: error.message
     });
   }

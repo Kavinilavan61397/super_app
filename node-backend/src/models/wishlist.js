@@ -1,45 +1,41 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const mongoose = require('mongoose');
 
-const Wishlist = sequelize.define('Wishlist', {
-  id: {
-    type: DataTypes.BIGINT.UNSIGNED,
-    primaryKey: true,
-    autoIncrement: true
-  },
+const wishlistSchema = new mongoose.Schema({
   user_id: {
-    type: DataTypes.BIGINT.UNSIGNED,
-    allowNull: false,
-    references: {
-      model: 'users',
-      key: 'id'
-    }
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: [true, 'User ID is required']
   },
   product_id: {
-    type: DataTypes.BIGINT.UNSIGNED,
-    allowNull: false,
-    references: {
-      model: 'products',
-      key: 'id'
-    }
-  },
-  quantity: {
-    type: DataTypes.INTEGER,
-    defaultValue: 1,
-    validate: {
-      min: 1
-    }
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Product',
+    required: [true, 'Product ID is required']
   }
 }, {
-  tableName: 'wishlists',
   timestamps: true,
-  underscored: true,
-  indexes: [
-    {
-      unique: true,
-      fields: ['user_id', 'product_id']
-    }
-  ]
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
+
+// Virtual for user relationship
+wishlistSchema.virtual('user', {
+  ref: 'User',
+  localField: 'user_id',
+  foreignField: '_id',
+  justOne: true
+});
+
+// Virtual for product relationship
+wishlistSchema.virtual('product', {
+  ref: 'Product',
+  localField: 'product_id',
+  foreignField: '_id',
+  justOne: true
+});
+
+// Compound index to prevent duplicate wishlist items
+wishlistSchema.index({ user_id: 1, product_id: 1 }, { unique: true });
+
+const Wishlist = mongoose.model('Wishlist', wishlistSchema);
 
 module.exports = Wishlist; 

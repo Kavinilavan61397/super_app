@@ -1,68 +1,77 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const mongoose = require('mongoose');
 
-const OrderItem = sequelize.define('OrderItem', {
-  id: {
-    type: DataTypes.BIGINT.UNSIGNED,
-    primaryKey: true,
-    autoIncrement: true
-  },
+const orderItemSchema = new mongoose.Schema({
   order_id: {
-    type: DataTypes.BIGINT.UNSIGNED,
-    allowNull: false
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Order',
+    required: [true, 'Order ID is required']
   },
   product_id: {
-    type: DataTypes.BIGINT.UNSIGNED,
-    allowNull: false
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Product',
+    required: [true, 'Product ID is required']
   },
   variation_id: {
-    type: DataTypes.BIGINT.UNSIGNED,
-    allowNull: true
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'ProductVariation'
   },
   quantity: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    defaultValue: 1
+    type: Number,
+    required: [true, 'Quantity is required'],
+    min: [1, 'Quantity must be at least 1']
   },
   price: {
-    type: DataTypes.DECIMAL(10, 2),
-    allowNull: false,
-    field: 'price'
+    type: Number,
+    required: [true, 'Price is required'],
+    min: [0, 'Price cannot be negative']
   },
   total_price: {
-    type: DataTypes.DECIMAL(10, 2),
-    allowNull: false
+    type: Number,
+    required: [true, 'Total price is required'],
+    min: [0, 'Total price cannot be negative']
   },
+  // Product snapshot for historical reference
   product_snapshot: {
-    type: DataTypes.JSON,
-    allowNull: false,
-    defaultValue: {},
-    field: 'product_snapshot',
-  },
-  original_price: {
-    type: DataTypes.DECIMAL(10, 2),
-    allowNull: true,
-    field: 'original_price'
-  },
-  discounted_price: {
-    type: DataTypes.DECIMAL(10, 2),
-    allowNull: true,
-    field: 'discounted_price'
-  },
-  createdAt: {
-    type: DataTypes.DATE,
-    field: 'created_at',
-    allowNull: false
-  },
-  updatedAt: {
-    type: DataTypes.DATE,
-    field: 'updated_at',
-    allowNull: false
+    name: String,
+    sku: String,
+    image: String,
+    brand: String,
+    category: String
   }
 }, {
   timestamps: true,
-  tableName: 'order_items',
-  underscored: true
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
+
+// Virtual for order relationship
+orderItemSchema.virtual('order', {
+  ref: 'Order',
+  localField: 'order_id',
+  foreignField: '_id',
+  justOne: true
+});
+
+// Virtual for product relationship
+orderItemSchema.virtual('product', {
+  ref: 'Product',
+  localField: 'product_id',
+  foreignField: '_id',
+  justOne: true
+});
+
+// Virtual for variation relationship
+orderItemSchema.virtual('variation', {
+  ref: 'ProductVariation',
+  localField: 'variation_id',
+  foreignField: '_id',
+  justOne: true
+});
+
+// Indexes for better query performance
+orderItemSchema.index({ order_id: 1 });
+orderItemSchema.index({ product_id: 1 });
+
+const OrderItem = mongoose.model('OrderItem', orderItemSchema);
 
 module.exports = OrderItem; 

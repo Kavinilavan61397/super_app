@@ -1,5 +1,4 @@
 const OTP = require('../models/otp.model');
-const { Op } = require('sequelize');
 
 // Generate a random 4-digit OTP
 const generateOTP = () => {
@@ -19,7 +18,8 @@ exports.generateOTP = async (req, res) => {
         await OTP.create({
             email,
             otp,
-            expiresAt
+            expiresAt,
+            isUsed: false
         });
 
         // In a production environment, you would send this OTP via email/SMS
@@ -45,16 +45,11 @@ exports.verifyOTP = async (req, res) => {
 
         // Find the most recent valid OTP for the email
         const otpRecord = await OTP.findOne({
-            where: {
-                email,
-                otp,
-                expiresAt: {
-                    [Op.gt]: new Date()
-                },
-                isUsed: false
-            },
-            order: [['createdAt', 'DESC']]
-        });
+            email,
+            otp,
+            expiresAt: { $gt: new Date() },
+            isUsed: false
+        }).sort({ createdAt: -1 });
 
         if (!otpRecord) {
             return res.status(400).json({
@@ -64,7 +59,8 @@ exports.verifyOTP = async (req, res) => {
         }
 
         // Mark OTP as used
-        await otpRecord.update({ isUsed: true });
+        otpRecord.isUsed = true;
+        await otpRecord.save();
 
         res.json({
             success: true,

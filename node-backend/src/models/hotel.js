@@ -1,91 +1,107 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const mongoose = require('mongoose');
 
-const Hotel = sequelize.define('Hotel', {
-  id: {
-    type: DataTypes.BIGINT.UNSIGNED,
-    primaryKey: true,
-    autoIncrement: true
-  },
+const hotelSchema = new mongoose.Schema({
   name: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  address: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  city: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  state: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  country: {
-    type: DataTypes.STRING,
-    allowNull: false
+    type: String,
+    required: [true, 'Hotel name is required'],
+    trim: true
   },
   description: {
-    type: DataTypes.TEXT,
-    allowNull: true
+    type: String,
+    trim: true
   },
-  status: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: true
+  address: {
+    street: String,
+    city: String,
+    state: String,
+    country: String,
+    postal_code: String,
+    latitude: Number,
+    longitude: Number
   },
+  phone: {
+    type: String,
+    trim: true
+  },
+  email: {
+    type: String,
+    trim: true
+  },
+  website: {
+    type: String,
+    trim: true
+  },
+  rating: {
+    type: Number,
+    min: 0,
+    max: 5,
+    default: 0
+  },
+  total_reviews: {
+    type: Number,
+    default: 0
+  },
+  amenities: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Amenity'
+  }],
+  images: [{
+    type: String
+  }],
   main_image: {
-    type: DataTypes.STRING,
-    allowNull: true
+    type: String
   },
-  createdAt: {
-    type: DataTypes.DATE,
-    field: 'created_at',
-    allowNull: false
+  star_rating: {
+    type: Number,
+    min: 1,
+    max: 5
   },
-  updatedAt: {
-    type: DataTypes.DATE,
-    field: 'updated_at',
-    allowNull: false
+  check_in_time: {
+    type: String,
+    default: '14:00'
+  },
+  check_out_time: {
+    type: String,
+    default: '12:00'
+  },
+  policies: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Policy'
+  }],
+  status: {
+    type: String,
+    enum: ['active', 'inactive', 'maintenance'],
+    default: 'active'
+  },
+  owner_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
   }
 }, {
   timestamps: true,
-  tableName: 'hotels',
-  underscored: true
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
 
-Hotel.associate = (models) => {
-  Hotel.hasMany(models.Room, { foreignKey: 'hotel_id', as: 'rooms' });
-  
-  // Many-to-many associations with Policy and Location
-  Hotel.belongsToMany(models.Policy, { 
-    through: 'hotel_policies', 
-    foreignKey: 'hotel_id', 
-    otherKey: 'policy_id',
-    as: 'policies',
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE'
-  });
-  
-  Hotel.belongsToMany(models.Location, { 
-    through: 'hotel_locations', 
-    foreignKey: 'hotel_id', 
-    otherKey: 'location_id',
-    as: 'locations',
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE'
-  });
+hotelSchema.virtual('owner', {
+  ref: 'User',
+  localField: 'owner_id',
+  foreignField: '_id',
+  justOne: true
+});
 
-  // Many-to-many association with Amenity
-  Hotel.belongsToMany(models.Amenity, {
-    through: 'hotel_amenities',
-    foreignKey: 'hotel_id',
-    otherKey: 'amenity_id',
-    as: 'amenities',
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE'
-  });
-};
+hotelSchema.virtual('rooms', {
+  ref: 'Room',
+  localField: '_id',
+  foreignField: 'hotel_id'
+});
+
+hotelSchema.index({ name: 1 });
+hotelSchema.index({ status: 1 });
+hotelSchema.index({ 'address.city': 1 });
+hotelSchema.index({ rating: -1 });
+hotelSchema.index({ owner_id: 1 });
+
+const Hotel = mongoose.model('Hotel', hotelSchema);
 
 module.exports = Hotel; 

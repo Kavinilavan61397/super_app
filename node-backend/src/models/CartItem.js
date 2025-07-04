@@ -1,58 +1,65 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const mongoose = require('mongoose');
 
-const CartItem = sequelize.define('CartItem', {
-  id: {
-    type: DataTypes.BIGINT.UNSIGNED,
-    primaryKey: true,
-    autoIncrement: true
-  },
+const cartItemSchema = new mongoose.Schema({
   cart_id: {
-    type: DataTypes.BIGINT.UNSIGNED,
-    allowNull: false
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Cart',
+    required: [true, 'Cart ID is required']
   },
   product_id: {
-    type: DataTypes.BIGINT.UNSIGNED,
-    allowNull: false,
-    references: {
-      model: 'products',
-      key: 'id'
-    }
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Product',
+    required: [true, 'Product ID is required']
   },
   quantity: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    defaultValue: 1
+    type: Number,
+    required: [true, 'Quantity is required'],
+    min: [1, 'Quantity must be at least 1'],
+    default: 1
   },
   price: {
-    type: DataTypes.DECIMAL(10, 2),
-    allowNull: false
+    type: Number,
+    required: [true, 'Price is required'],
+    min: [0, 'Price cannot be negative']
   },
-  total_price: {
-    type: DataTypes.DECIMAL(10, 2),
-    allowNull: false
-  },
-  createdAt: {
-    type: DataTypes.DATE,
-    field: 'created_at',
-    allowNull: false
-  },
-  updatedAt: {
-    type: DataTypes.DATE,
-    field: 'updated_at',
-    allowNull: false
+  variation_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'ProductVariation'
   }
 }, {
-  tableName: 'cart_items',
   timestamps: true,
-  indexes: [
-    {
-      fields: ['cart_id']
-    },
-    {
-      fields: ['product_id']
-    }
-  ]
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
+
+// Virtual for cart relationship
+cartItemSchema.virtual('cart', {
+  ref: 'Cart',
+  localField: 'cart_id',
+  foreignField: '_id',
+  justOne: true
+});
+
+// Virtual for product relationship
+cartItemSchema.virtual('product', {
+  ref: 'Product',
+  localField: 'product_id',
+  foreignField: '_id',
+  justOne: true
+});
+
+// Virtual for variation relationship
+cartItemSchema.virtual('variation', {
+  ref: 'ProductVariation',
+  localField: 'variation_id',
+  foreignField: '_id',
+  justOne: true
+});
+
+// Indexes for better query performance
+cartItemSchema.index({ cart_id: 1 });
+cartItemSchema.index({ product_id: 1 });
+
+const CartItem = mongoose.model('CartItem', cartItemSchema);
 
 module.exports = CartItem; 

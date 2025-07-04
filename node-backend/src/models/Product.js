@@ -43,6 +43,10 @@ const productSchema = new mongoose.Schema({
     ref: 'Category',
     required: [true, 'Category is required']
   },
+  sub_category_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Category'
+  },
   brand_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Brand',

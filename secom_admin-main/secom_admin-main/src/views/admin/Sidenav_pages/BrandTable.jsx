@@ -43,7 +43,7 @@ const BrandTable = () => {
       return true; // 'all'
     })
     .filter(brand =>
-      brand.brand_name?.toLowerCase().includes(searchQuery.toLowerCase())
+      brand.name?.toLowerCase().includes(searchQuery.toLowerCase())
     )
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
@@ -222,7 +222,7 @@ const BrandTable = () => {
                   {brand.photo ? (
                     <img
                       src={`${API_CONFIG.BASE_URL}${brand.photo}`}
-                      alt={brand.brand_name}
+                      alt={brand.name}
                       className="h-10 w-10 rounded-full object-cover"
                     />
                   ) : (
@@ -232,7 +232,7 @@ const BrandTable = () => {
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {brand.brand_name}
+                  {brand.name}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${

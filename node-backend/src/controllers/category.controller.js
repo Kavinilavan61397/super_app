@@ -7,14 +7,10 @@ const fs = require('fs');
 // Get all categories
 exports.getAllCategories = async (req, res) => {
   try {
-    const categories = await Category.find({ parent_id: null })
-      .populate({
-        path: 'subcategories',
-        populate: {
-          path: 'subcategories'
-        }
-      });
-    res.json(categories);
+    // Return only subcategories (categories with a parent_id)
+    const subcategories = await Category.find({ parent_id: { $ne: null } })
+      .populate('parentCategory');
+    res.json(subcategories);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

@@ -14,8 +14,12 @@ const ProductAttribute = require('../models/ProductAttribute');
 exports.getAllProducts = async (req, res) => {
   try {
     const products = await Product.find()
+      .populate({
+        path: 'category',
+        populate: { path: 'parent_id' }
+      })
       .populate('brand')
-      .populate('category')
+      .populate('sub_category_id')
       .sort({ createdAt: -1 });
     res.json(products);
   } catch (error) {
@@ -32,8 +36,12 @@ exports.getProductsByCategory = async (req, res) => {
   try {
     const { categoryId } = req.params;
     const products = await Product.find({ category_id: categoryId })
+      .populate({
+        path: 'category',
+        populate: { path: 'parent_id' }
+      })
       .populate('brand')
-      .populate('category')
+      .populate('sub_category_id')
       .sort({ createdAt: -1 });
     res.json({
       success: true,
@@ -61,8 +69,12 @@ exports.getProductsByCategoryName = async (req, res) => {
       });
     }
     const products = await Product.find({ category_id: category._id })
+      .populate({
+        path: 'category',
+        populate: { path: 'parent_id' }
+      })
       .populate('brand')
-      .populate('category')
+      .populate('sub_category_id')
       .sort({ createdAt: -1 });
     res.json({
       success: true,
@@ -82,8 +94,12 @@ exports.getProductsByCategoryName = async (req, res) => {
 exports.getProductById = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id)
+      .populate({
+        path: 'category',
+        populate: { path: 'parent_id' }
+      })
       .populate('brand')
-      .populate('category');
+      .populate('sub_category_id');
     if (!product) {
       return res.status(404).json({
         success: false,

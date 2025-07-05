@@ -6,23 +6,25 @@ exports.getAllUsers = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
-    const offset = (page - 1) * limit;
+    const skip = (page - 1) * limit;
 
-    const { count, rows: users } = await User.findAndCountAll({
-      attributes: { exclude: ['password'] },
-      limit,
-      offset,
-      order: [['createdAt', 'DESC']]
-    });
+    // Get total count and users
+    const [users, total] = await Promise.all([
+      User.find({}, { password: 0 })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      User.countDocuments()
+    ]);
 
     res.json({
       success: true,
       data: {
         users,
         pagination: {
-          total: count,
+          total,
           page,
-          totalPages: Math.ceil(count / limit)
+          totalPages: Math.ceil(total / limit)
         }
       }
     });
@@ -39,9 +41,7 @@ exports.getAllUsers = async (req, res) => {
 // Get user by ID
 exports.getUserById = async (req, res) => {
   try {
-    const user = await User.findByPk(req.params.id, {
-      attributes: { exclude: ['password'] }
-    });
+    const user = await User.findById(req.params.id, { password: 0 });
 
     if (!user) {
       return res.status(404).json({
@@ -70,7 +70,7 @@ exports.createUser = async (req, res) => {
     const { name, email, password, phone, role, status } = req.body;
 
     // Check if user exists
-    const userExists = await User.findOne({ where: { email } });
+    const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({
         success: false,
@@ -79,7 +79,7 @@ exports.createUser = async (req, res) => {
     }
 
     // Create user
-    const user = await User.create({
+    const user = new User({
       name,
       email,
       password,
@@ -88,9 +88,11 @@ exports.createUser = async (req, res) => {
       status: status === 'true' || status === true
     });
 
+    await user.save();
+
     // Return user without password
     const userResponse = {
-      id: user.id,
+      id: user._id,
       name: user.name,
       email: user.email,
       phone: user.phone,
@@ -108,11 +110,11 @@ exports.createUser = async (req, res) => {
     });
   } catch (error) {
     console.error('Error creating user:', error);
-    if (error.name === 'SequelizeValidationError') {
+    if (error.name === 'ValidationError') {
       return res.status(400).json({
         success: false,
         message: 'Validation error',
-        errors: error.errors.map(e => e.message)
+        errors: Object.values(error.errors).map(e => e.message)
       });
     }
     res.status(500).json({
@@ -129,7 +131,7 @@ exports.updateUser = async (req, res) => {
     const { name, email, phone, role, status } = req.body;
     const userId = req.params.id;
 
-    const user = await User.findByPk(userId);
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -139,7 +141,7 @@ exports.updateUser = async (req, res) => {
 
     // Check if email is being changed and if it already exists
     if (email && email !== user.email) {
-      const emailExists = await User.findOne({ where: { email } });
+      const emailExists = await User.findOne({ email });
       if (emailExists) {
         return res.status(400).json({
           success: false,
@@ -149,17 +151,17 @@ exports.updateUser = async (req, res) => {
     }
 
     // Update user
-    await user.update({
-      name: name || user.name,
-      email: email || user.email,
-      phone: phone || user.phone,
-      role: role || user.role,
-      status: status === 'true' || status === true
-    });
+    user.name = name || user.name;
+    user.email = email || user.email;
+    user.phone = phone || user.phone;
+    user.role = role || user.role;
+    user.status = status === 'true' || status === true;
+
+    await user.save();
 
     // Return updated user without password
     const userResponse = {
-      id: user.id,
+      id: user._id,
       name: user.name,
       email: user.email,
       phone: user.phone,
@@ -177,11 +179,11 @@ exports.updateUser = async (req, res) => {
     });
   } catch (error) {
     console.error('Error updating user:', error);
-    if (error.name === 'SequelizeValidationError') {
+    if (error.name === 'ValidationError') {
       return res.status(400).json({
         success: false,
         message: 'Validation error',
-        errors: error.errors.map(e => e.message)
+        errors: Object.values(error.errors).map(e => e.message)
       });
     }
     res.status(500).json({
@@ -197,7 +199,7 @@ exports.deleteUser = async (req, res) => {
   try {
     const userId = req.params.id;
 
-    const user = await User.findByPk(userId);
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -213,7 +215,7 @@ exports.deleteUser = async (req, res) => {
       });
     }
 
-    await user.destroy();
+    await User.findByIdAndDelete(userId);
 
     res.json({
       success: true,
@@ -235,7 +237,7 @@ exports.updatePassword = async (req, res) => {
     const { currentPassword, newPassword } = req.body;
     const userId = req.params.id;
 
-    const user = await User.findByPk(userId);
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -257,7 +259,8 @@ exports.updatePassword = async (req, res) => {
     const hashedPassword = await bcrypt.hash(newPassword, salt);
 
     // Update password
-    await user.update({ password: hashedPassword });
+    user.password = hashedPassword;
+    await user.save();
 
     res.json({
       success: true,

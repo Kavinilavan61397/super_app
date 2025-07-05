@@ -30,16 +30,20 @@ const HotelTable = () => {
   const fetchHotels = async () => {
     try {
       setLoading(true);
-      console.log('Fetching hotels...');
+      console.log('HotelTable: Starting to fetch hotels...');
       const response = await HotelService.getAllHotels();
-      console.log('Hotels fetched successfully:', response);
-      setHotels(response.data.data || []);
+      console.log('HotelTable: Hotels fetched successfully:', response);
+      console.log('HotelTable: Response type:', typeof response);
+      console.log('HotelTable: Response length:', Array.isArray(response) ? response.length : 'Not an array');
+      setHotels(response || []);
+      console.log('HotelTable: Hotels state set to:', response || []);
     } catch (error) {
-      console.error('Error fetching hotels:', error);
-      console.error('Error details:', error.response?.data || error.message);
+      console.error('HotelTable: Error fetching hotels:', error);
+      console.error('HotelTable: Error details:', error.response?.data || error.message);
       toast.error('Failed to fetch hotels');
     } finally {
       setLoading(false);
+      console.log('HotelTable: Loading set to false');
     }
   };
 
@@ -51,7 +55,7 @@ const HotelTable = () => {
   const handleDelete = async () => {
     if (!deleteDialog.hotel) return;
     try {
-      await HotelService.deleteHotel(deleteDialog.hotel.id);
+      await HotelService.deleteHotel(deleteDialog.hotel._id || deleteDialog.hotel.id);
       toast.success('Hotel deleted successfully');
       fetchHotels();
       setDeleteDialog({ open: false, hotel: null });
@@ -70,19 +74,18 @@ const HotelTable = () => {
     } else if (typeof hotel.address === 'string') {
       addressString = hotel.address;
     }
+    
     const matchesSearch = hotel.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         hotel.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         hotel.state?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          addressString.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || 
-                         (statusFilter === 'active' && hotel.status) ||
-                         (statusFilter === 'inactive' && !hotel.status);
+    
+    const matchesStatus = statusFilter === 'all' || hotel.status === statusFilter;
+    
     return matchesSearch && matchesStatus;
   });
 
   // Navigate to add/edit form
   const navigateToForm = (hotel = null) => {
-    const path = hotel ? `/admin/hotel/edit/${hotel.id}` : '/admin/hotel/new';
+    const path = hotel ? `/admin/hotel/edit/${hotel._id || hotel.id}` : '/admin/hotel/new';
     window.location.href = path;
   };
 
@@ -127,6 +130,7 @@ const HotelTable = () => {
                 <option value="all">All Status</option>
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
+                <option value="maintenance">Maintenance</option>
               </select>
               <Button
                 color="blue"
@@ -176,7 +180,7 @@ const HotelTable = () => {
                   </th>
                   <th className="border-b border-blue-gray-50 py-3 px-6 text-left w-32">
                     <Typography variant="small" className="text-[11px] font-medium uppercase text-blue-gray-400">
-                      Locations
+                      Amenities
                     </Typography>
                   </th>
                   <th className="border-b border-blue-gray-50 py-3 px-6 text-left w-24">
@@ -218,16 +222,22 @@ const HotelTable = () => {
                     </td>
                     <td className="py-3 px-6 w-40">
                       <Typography variant="small" color="blue-gray" className="font-normal">
-                        {hotel.city}, {hotel.state}
+                        {hotel.address?.city && hotel.address?.state 
+                          ? `${hotel.address.city}, ${hotel.address.state}`
+                          : hotel.address?.city || hotel.address?.state || 'N/A'}
                       </Typography>
                     </td>
                     <td className="py-3 px-6 w-28 align-middle">
                       <span className={
                         `inline-flex items-center justify-center px-2 py-1 text-xs font-semibold rounded-full
-                        ${hotel.status === true ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}
+                        ${hotel.status === 'active' ? 'bg-green-100 text-green-800' : 
+                          hotel.status === 'inactive' ? 'bg-red-100 text-red-800' : 
+                          'bg-yellow-100 text-yellow-800'}
                         leading-tight min-w-[56px] h-6`
                       }>
-                        {hotel.status === true ? 'Active' : 'Inactive'}
+                        {hotel.status === 'active' ? 'Active' : 
+                         hotel.status === 'inactive' ? 'Inactive' : 
+                         hotel.status === 'maintenance' ? 'Maintenance' : 'Unknown'}
                       </span>
                     </td>
                     <td className="py-3 px-6 w-32">
@@ -235,7 +245,7 @@ const HotelTable = () => {
                         {hotel.policies && hotel.policies.length > 0 ? (
                           <div className="flex flex-wrap gap-1">
                             {hotel.policies.slice(0, 2).map(policy => (
-                              <span key={policy.id} className="inline-flex px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
+                              <span key={policy._id || policy.id} className="inline-flex px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
                                 {policy.title}
                               </span>
                             ))}
@@ -252,16 +262,16 @@ const HotelTable = () => {
                     </td>
                     <td className="py-3 px-6 w-32">
                       <Typography variant="small" color="blue-gray" className="font-normal">
-                        {hotel.locations && hotel.locations.length > 0 ? (
+                        {hotel.amenities && hotel.amenities.length > 0 ? (
                           <div className="flex flex-wrap gap-1">
-                            {hotel.locations.slice(0, 2).map(location => (
-                              <span key={location.id} className="inline-flex px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
-                                {location.name}
+                            {hotel.amenities.slice(0, 2).map(amenity => (
+                              <span key={amenity._id || amenity.id} className="inline-flex px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
+                                {amenity.name}
                               </span>
                             ))}
-                            {hotel.locations.length > 2 && (
+                            {hotel.amenities.length > 2 && (
                               <span className="inline-flex px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-full">
-                                +{hotel.locations.length - 2} more
+                                +{hotel.amenities.length - 2} more
                               </span>
                             )}
                           </div>

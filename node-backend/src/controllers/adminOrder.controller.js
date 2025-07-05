@@ -236,18 +236,15 @@ exports.bulkUpdateOrders = async (req, res) => {
     if (tracking_number) updateData.tracking_number = tracking_number;
     if (notes) updateData.notes = notes;
 
-    const result = await Order.update(updateData, {
-      where: {
-        id: {
-          [Op.in]: order_ids
-        }
-      }
-    });
+    const result = await Order.updateMany(
+      { _id: { $in: order_ids } },
+      updateData
+    );
 
     res.json({
       success: true,
-      message: `Updated ${result[0]} orders successfully`,
-      updated_count: result[0]
+      message: `Updated ${result.modifiedCount} orders successfully`,
+      updated_count: result.modifiedCount
     });
   } catch (error) {
     console.error('Bulk update orders error:', error);
@@ -264,38 +261,30 @@ exports.exportOrders = async (req, res) => {
   try {
     const { status, date_from, date_to, format = 'json' } = req.query;
     
-    const whereClause = {};
-    if (status) whereClause.status = status;
+    const query = {};
+    if (status) query.status = status;
     if (date_from || date_to) {
-      whereClause.created_at = {};
-      if (date_from) whereClause.created_at[Op.gte] = new Date(date_from);
-      if (date_to) whereClause.created_at[Op.lte] = new Date(date_to + ' 23:59:59');
+      query.createdAt = {};
+      if (date_from) query.createdAt.$gte = new Date(date_from);
+      if (date_to) query.createdAt.$lte = new Date(date_to + ' 23:59:59');
     }
 
-    const orders = await Order.findAll({
-      where: whereClause,
-      include: [{
-        model: OrderItem,
-        as: 'items'
-      }, {
-        model: User,
-        as: 'user',
-        attributes: ['name', 'email', 'phone']
-      }],
-      order: [['created_at', 'DESC']]
-    });
+    const orders = await Order.find(query)
+      .populate('items')
+      .populate('user_id', 'name email phone')
+      .sort({ createdAt: -1 });
 
     if (format === 'csv') {
       // Convert to CSV format
       const csvData = orders.map(order => ({
         'Order Number': order.order_number,
-        'Customer': order.user?.name,
-        'Email': order.user?.email,
+        'Customer': order.user_id?.name,
+        'Email': order.user_id?.email,
         'Status': order.status,
         'Total Amount': order.total_amount,
         'Payment Method': order.payment_method,
         'Payment Status': order.payment_status,
-        'Created Date': order.created_at,
+        'Created Date': order.createdAt,
         'Items Count': order.items?.length || 0
       }));
 

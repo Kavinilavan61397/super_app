@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 
 // MongoDB connection string
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/superapp_db';
-console.log('Connecting to MongoDB URI:===========================>', MONGODB_URI);
+
 // Mongoose connection options
 const mongooseOptions = {
   useNewUrlParser: true,

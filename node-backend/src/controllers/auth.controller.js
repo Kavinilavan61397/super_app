@@ -153,10 +153,9 @@ exports.updateProfile = async (req, res) => {
     }
 
     // Update user
-    await user.update({
-      name: name || user.name,
-      phone: phone || user.phone
-    });
+    user.name = name || user.name;
+    user.phone = phone || user.phone;
+    await user.save();
 
     res.json({
       success: true,

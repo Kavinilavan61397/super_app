@@ -102,6 +102,6 @@ hotelSchema.index({ 'address.city': 1 });
 hotelSchema.index({ rating: -1 });
 hotelSchema.index({ owner_id: 1 });
 
-const Hotel = mongoose.model('Hotel', hotelSchema);
+const Hotel = mongoose.models.Hotel || mongoose.model('Hotel', hotelSchema);
 
 module.exports = Hotel; 

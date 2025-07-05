@@ -61,7 +61,6 @@ taxiVehicleSchema.virtual('driver', {
 });
 
 taxiVehicleSchema.index({ driver_id: 1 });
-taxiVehicleSchema.index({ vehicle_number: 1 });
 taxiVehicleSchema.index({ status: 1 });
 
 const TaxiVehicle = mongoose.model('TaxiVehicle', taxiVehicleSchema);

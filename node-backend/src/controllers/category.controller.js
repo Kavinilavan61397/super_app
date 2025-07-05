@@ -1,4 +1,5 @@
 const Category = require('../models/Category');
+const Product = require('../models/Product');
 const { processImage } = require('../utils/imageProcessor');
 const path = require('path');
 const slugify = require('slugify');
@@ -21,9 +22,9 @@ exports.getCategoryById = async (req, res) => {
   try {
     const category = await Category.findById(req.params.id)
       .populate({
-        path: 'subcategories',
+        path: 'childCategories',
         populate: {
-          path: 'subcategories'
+          path: 'childCategories'
         }
       });
     if (!category) {
@@ -139,7 +140,7 @@ exports.deleteCategory = async (req, res) => {
     console.log('Attempting to delete category:', req.params.id);
     
     const category = await Category.findById(req.params.id)
-      .populate('subcategories');
+      .populate('childCategories');
     
     if (!category) {
       console.log('Category not found:', req.params.id);
@@ -147,8 +148,8 @@ exports.deleteCategory = async (req, res) => {
     }
 
     // Check if category has subcategories
-    if (category.subcategories && category.subcategories.length > 0) {
-      console.log('Category has subcategories:', category.subcategories.length);
+    if (category.childCategories && category.childCategories.length > 0) {
+      console.log('Category has subcategories:', category.childCategories.length);
       return res.status(400).json({
         message: 'Cannot delete category with subcategories. Please delete or reassign subcategories first.'
       });
@@ -181,7 +182,7 @@ exports.getCategoriesByParent = async (req, res) => {
   try {
     const { parent_id } = req.params;
     const categories = await Category.find({ parent_id })
-      .populate('subcategories');
+      .populate('childCategories');
     res.json(categories);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -209,10 +210,10 @@ exports.getActiveCategories = async (req, res) => {
   try {
     const categories = await Category.find({ status: true })
       .populate({
-        path: 'subcategories',
+        path: 'childCategories',
         match: { status: true },
         populate: {
-          path: 'subcategories',
+          path: 'childCategories',
           match: { status: true }
         }
       });

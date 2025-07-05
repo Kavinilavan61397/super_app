@@ -104,6 +104,6 @@ roomSchema.index({ type: 1 });
 roomSchema.index({ price_per_night: 1 });
 roomSchema.index({ room_number: 1 });
 
-const Room = mongoose.model('Room', roomSchema);
+const Room = mongoose.models.Room || mongoose.model('Room', roomSchema);
 
 module.exports = Room; 

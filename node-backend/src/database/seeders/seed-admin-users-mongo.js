@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
 const User = require('../../models/User');
+require('dotenv').config();
 
-const MONGO_URI = 'mongodb://localhost:27017/superapp_db';
+const MONGO_URI = process.env.MONGODB_URI;
 
 const adminUsers = [
   {
@@ -48,8 +49,8 @@ const adminUsers = [
 
 async function seedAdmins() {
   try {
-    await mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
-    console.log('Connected to MongoDB');
+    await mongoose.connect(MONGO_URI);
+    console.log('✅ Connected to MongoDB Atlas');
 
     for (const admin of adminUsers) {
       const existing = await User.findOne({ email: admin.email });

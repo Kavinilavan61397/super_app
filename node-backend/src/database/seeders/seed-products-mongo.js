@@ -3,8 +3,9 @@ const Brand = require('../../models/Brand');
 const Product = require('../../models/Product');
 const ProductVariation = require('../../models/ProductVariation');
 const Category = require('../../models/Category');
+require('dotenv').config();
 
-const MONGO_URI = 'mongodb://localhost:27017/superapp_db';
+const MONGO_URI = process.env.MONGODB_URI;
 
 // 1. Define all brands (from your brandNameToId mapping)
 const brands = [
@@ -1338,8 +1339,8 @@ const productVariations = [
 
 async function seed() {
   try {
-    await mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
-    console.log('Connected to MongoDB');
+    await mongoose.connect(MONGO_URI);
+    console.log('✅ Connected to MongoDB Atlas');
 
     // Import Category model
     const Category = require('../../models/Category');

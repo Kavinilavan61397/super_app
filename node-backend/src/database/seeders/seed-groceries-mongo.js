@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
 const Grocery = require('../../models/Grocery');
+require('dotenv').config();
 
-const MONGO_URI = 'mongodb://localhost:27017/superapp_db';
+const MONGO_URI = process.env.MONGODB_URI;
 
 const groceries = [
   // Fruits & Vegetables
@@ -35,8 +36,8 @@ const groceries = [
 
 async function seedGroceries() {
   try {
-    await mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
-    console.log('Connected to MongoDB');
+    await mongoose.connect(MONGO_URI);
+    console.log('✅ Connected to MongoDB Atlas');
 
     // Optionally clear existing groceries
     await Grocery.deleteMany({});

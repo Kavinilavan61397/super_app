@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
 const Category = require('../../models/Category');
+require('dotenv').config();
 
-const MONGO_URI = 'mongodb://localhost:27017/superapp_db';
+const MONGO_URI = process.env.MONGODB_URI;
 
 // 1. Define parent categories
 const parentCategories = [
@@ -35,7 +36,7 @@ const childCategories = [
 async function seed() {
   try {
     await mongoose.connect(MONGO_URI);
-    console.log('Connected to MongoDB');
+    console.log('✅ Connected to MongoDB Atlas');
 
     // Clear existing categories
     await Category.deleteMany({});

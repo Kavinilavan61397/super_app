@@ -176,4 +176,42 @@ exports.getActiveBrands = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
+};
+
+// Bulk delete brands
+exports.bulkDeleteBrands = async (req, res) => {
+  try {
+    const { ids } = req.body;
+    
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide an array of brand IDs to delete'
+      });
+    }
+
+    // Check if any brands have associated products
+    const Product = require('../models/Product');
+    const brandsWithProducts = await Product.find({ brand_id: { $in: ids } });
+    
+    if (brandsWithProducts.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot delete brands with associated products. Please delete or reassign products first.'
+      });
+    }
+
+    const result = await Brand.deleteMany({ _id: { $in: ids } });
+    
+    res.json({
+      success: true,
+      message: `${result.deletedCount} brands deleted successfully`
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error deleting brands',
+      error: error.message
+    });
+  }
 }; 

@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
 const Brand = require('../../models/Brand');
+require('dotenv').config();
 
-const MONGO_URI = 'mongodb://localhost:27017/superapp_db';
+const MONGO_URI = process.env.MONGODB_URI;
 
 const brandsData = [
   { name: 'LG', slug: 'lg', photo: 'brands/lg.png', status: true, created_at: new Date(), updated_at: new Date() },
@@ -52,8 +53,8 @@ const brandsData = [
 
 async function seed() {
   try {
-    await mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
-    console.log('Connected to MongoDB');
+    await mongoose.connect(MONGO_URI);
+    console.log('✅ Connected to MongoDB Atlas');
 
     // Optionally clear existing brands
     await Brand.deleteMany({});

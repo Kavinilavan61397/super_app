@@ -109,7 +109,7 @@ const brandService = {
   bulkDeleteBrands: async (ids) => {
     try {
       console.log('Bulk deleting brands with ids:', ids);
-      const response = await api.delete('/api/admin/delete_brands', { data: { ids } });
+      const response = await api.delete('/api/admin/bulk_delete_brands', { data: { ids } });
       console.log('Bulk delete brands response:', response);
       return response.data;
     } catch (error) {

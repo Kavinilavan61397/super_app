@@ -4,11 +4,30 @@ const path = require('path');
 const fs = require('fs');
 const slugify = require('slugify');
 
+// Helper function to transform brand data for frontend
+const transformBrandForFrontend = (brand) => ({
+  id: brand._id,
+  brand_name: brand.name,
+  name: brand.name,
+  photo: brand.logo,
+  logo: brand.logo,
+  description: brand.description,
+  status: brand.status,
+  meta_title: brand.meta_title,
+  meta_description: brand.meta_description,
+  createdAt: brand.createdAt,
+  updatedAt: brand.updatedAt
+});
+
 // Get all brands
 exports.getAllBrands = async (req, res) => {
   try {
     const brands = await Brand.find().sort({ createdAt: -1 });
-    res.json(brands);
+    
+    // Transform data to match frontend expectations
+    const transformedBrands = brands.map(transformBrandForFrontend);
+    
+    res.json(transformedBrands);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -21,7 +40,11 @@ exports.getBrandById = async (req, res) => {
     if (!brand) {
       return res.status(404).json({ message: 'Brand not found' });
     }
-    res.json(brand);
+    
+    // Transform the created brand to match frontend expectations
+    const transformedBrand = transformBrandForFrontend(brand);
+    
+    res.json(transformedBrand);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -30,7 +53,10 @@ exports.getBrandById = async (req, res) => {
 // Create brand
 exports.createBrand = async (req, res) => {
   try {
-    const { name, description, status, meta_title, meta_description } = req.body;
+    // Map frontend field names to backend model field names
+    const { brand_name, description, status, meta_title, meta_description } = req.body;
+    const name = brand_name; // Map brand_name to name
+    
     let imagePath = null;
 
     if (req.file) {
@@ -54,10 +80,14 @@ exports.createBrand = async (req, res) => {
     });
 
     await brand.save();
+    
+    // Transform the created brand to match frontend expectations
+    const transformedBrand = transformBrandForFrontend(brand);
+    
     res.status(201).json({
       success: true,
       message: 'Brand created successfully',
-      data: brand
+      data: transformedBrand
     });
   } catch (error) {
     res.status(500).json({
@@ -76,7 +106,10 @@ exports.updateBrand = async (req, res) => {
       return res.status(404).json({ message: 'Brand not found' });
     }
 
-    const { name, description, status, meta_title, meta_description } = req.body;
+    // Map frontend field names to backend model field names
+    const { brand_name, description, status, meta_title, meta_description } = req.body;
+    const name = brand_name; // Map brand_name to name
+    
     let imagePath = brand.logo;
 
     if (req.file) {
@@ -106,10 +139,14 @@ exports.updateBrand = async (req, res) => {
     brand.meta_description = meta_description || brand.meta_description;
 
     await brand.save();
+    
+    // Transform the updated brand to match frontend expectations
+    const transformedBrand = transformBrandForFrontend(brand);
+    
     res.json({
       success: true,
       message: 'Brand updated successfully',
-      data: brand
+      data: transformedBrand
     });
   } catch (error) {
     res.status(500).json({
@@ -125,7 +162,10 @@ exports.deleteBrand = async (req, res) => {
   try {
     const brand = await Brand.findById(req.params.id);
     if (!brand) {
-      return res.status(404).json({ message: 'Brand not found' });
+      return res.status(404).json({ 
+        success: false,
+        message: 'Brand not found' 
+      });
     }
 
     // Check if brand has associated products
@@ -134,6 +174,7 @@ exports.deleteBrand = async (req, res) => {
 
     if (productCount > 0) {
       return res.status(400).json({
+        success: false,
         message: 'Cannot delete brand with associated products. Please delete or reassign products first.'
       });
     }
@@ -162,7 +203,11 @@ exports.searchBrands = async (req, res) => {
         { description: { $regex: q, $options: 'i' } }
       ]
     });
-    res.json(brands);
+    
+    // Transform data to match frontend expectations
+    const transformedBrands = brands.map(transformBrandForFrontend);
+    
+    res.json(transformedBrands);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -172,7 +217,11 @@ exports.searchBrands = async (req, res) => {
 exports.getActiveBrands = async (req, res) => {
   try {
     const brands = await Brand.find({ status: true }).sort({ name: 1 });
-    res.json(brands);
+    
+    // Transform data to match frontend expectations
+    const transformedBrands = brands.map(transformBrandForFrontend);
+    
+    res.json(transformedBrands);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

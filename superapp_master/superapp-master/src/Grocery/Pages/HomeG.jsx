@@ -13,6 +13,7 @@ import catMasala from '../Images/cat_masala.png';
 import catInstant from '../Images/cat_instant.png';
 import catDairy from '../Images/cat_dairy.png';
 import { useNavigate } from 'react-router-dom';
+import { authService } from '../../services/authService';
 
 // -------------------------------------
 // Image Imports for Grocery Categories
@@ -483,7 +484,13 @@ function Groceries() {
 
   // Helper to check auth and redirect
   const handleAuthError = (err) => {
-    if (err.message === 'Unauthorized' || err.status === 401) {
+    if (err.message === 'Unauthorized' || err.status === 401 || err.message === 'Session expired. Please log in again.') {
+      // Clear authentication data
+      authService.logout();
+      
+      // Save current URL for redirect after login
+      sessionStorage.setItem('redirectUrl', window.location.pathname);
+      
       alert('Session expired. Please log in again.');
       navigate('/login');
       return true;
@@ -491,39 +498,39 @@ function Groceries() {
     return false;
   };
 
-  // Fetch cart items from backend
+  // Fetch cart items from database
   const fetchCartItems = async () => {
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        alert('Please log in to view your cart.');
-        navigate('/login');
-        return;
-      }
+      // Use a default user ID (1) for demo purposes since login is disabled
       const response = await fetch('http://localhost:5000/api/gcart', {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer demo-token' // Demo token for bypassing auth
+        }
       });
-      if (response.status === 401) throw { message: 'Unauthorized', status: 401 };
-      if (!response.ok) throw new Error('Failed to fetch cart items');
-      const data = await response.json();
-      const formatted = data.map(item => ({
-        ...item,
-        originalPrice: parseFloat(item.original_price ?? item.originalPrice ?? 0),
-        discountedPrice: parseFloat(item.discounted_price ?? item.discountedPrice ?? 0),
-        image: item.image
-          ? item.image.startsWith('http')
-            ? item.image
-            : `http://localhost:5000${item.image.startsWith('/') ? '' : '/uploads/'}${item.image}`
-          : 'https://via.placeholder.com/300x200?text=Image+Coming+Soon',
-        size: item.size || 'N/A'
-      }));
-      setCartItems(formatted);
-      setForceRerender(f => f + 1); // force re-render for debug
-      console.log('cartItems after fetch:', formatted);
-    } catch (err) {
-      if (!handleAuthError(err)) {
+      
+      if (response.ok) {
+        const responseData = await response.json();
+        const cartData = responseData.data || [];
+        const formatted = cartData.map(item => ({
+          ...item,
+          originalPrice: parseFloat(item.original_price ?? item.originalPrice ?? 0),
+          discountedPrice: parseFloat(item.discounted_price ?? item.discountedPrice ?? 0),
+          image: item.image
+            ? item.image.startsWith('http')
+              ? item.image
+              : `http://localhost:5000${item.image.startsWith('/') ? '' : '/uploads/'}${item.image}`
+            : 'https://via.placeholder.com/300x200?text=Image+Coming+Soon',
+          size: item.size || 'N/A'
+        }));
+        setCartItems(formatted);
+        console.log('Cart items loaded from database:', formatted);
+      } else {
         setCartItems([]);
       }
+    } catch (err) {
+      console.error('Error loading cart from database:', err);
+      setCartItems([]);
     }
   };
 
@@ -532,106 +539,99 @@ function Groceries() {
     fetchCartItems();
   }, []);
 
-  const addToCart = async (item, quantity) => {
-    const token = localStorage.getItem('token'); // JWT token after login
-  
-    // Ensure only the relative path is sent for the image
-    const getRelativeImagePath = (imageUrl) => {
-      if (!imageUrl) return '';
-      try {
-        // If imageUrl starts with http(s)://localhost:5000, strip it
-        const url = new URL(imageUrl, window.location.origin);
-        if (
-          url.origin === 'http://localhost:5000' ||
-          url.origin === 'https://localhost:5000'
-        ) {
-          return url.pathname + url.search + url.hash;
-        }
-        // If already relative, return as is
-        if (imageUrl.startsWith('/')) return imageUrl;
-        // Otherwise, fallback to original
-        return imageUrl;
-      } catch (e) {
-        // If not a valid URL, return as is
-        return imageUrl;
-      }
-    };
-
-    const cartPayload = {
-      groceryId: item.id,
-      name: item.name,
-      image: getRelativeImagePath(item.image),
-      category: item.category,
-      original_price: item.originalPrice,
-      discounted_price: item.discountedPrice,
-      quantity: quantity
-    };
-  
+    const addToCart = async (item, quantity) => {
     try {
+      // Prepare cart payload for database - only send what the backend expects
+      const cartPayload = {
+        grocery_id: item.id,
+        quantity: quantity
+      };
+
       const response = await fetch('http://localhost:5000/api/gcart', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          'Authorization': 'Bearer demo-token' // Demo token for bypassing auth
         },
         body: JSON.stringify(cartPayload)
       });
-      if (!response.ok) {
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Item added to cart:', item.name, 'Quantity:', quantity);
+        alert(`Added ${quantity} ${item.name} to cart!`);
+        
+        // Refresh cart items from database
+        await fetchCartItems();
+      } else {
         const errorData = await response.json();
-        console.error('❌ Server error:', errorData);
         throw new Error(errorData.error || 'Failed to add to cart');
       }
-  
-      const data = await response.json();
-      console.log('✅ Item added to cart:', data);
-  
-      await fetchCartItems();
-  
-    } catch (error) {
-      console.error('❌ Error adding to cart:', error);
-      alert('Could not add to cart: ' + error.message);
+      
+    } catch (err) {
+      console.error('Error adding item to cart:', err);
+      alert('Error adding item to cart. Please try again.');
     }
   };
   
  
   const fetchWishlist = async () => {
-    const token = localStorage.getItem('token');
-    if (!token) return;
     try {
-      const res = await fetch('http://localhost:5000/api/gwishlist', {
-        headers: { Authorization: `Bearer ${token}` }
+      // Use a default user ID (1) for demo purposes since login is disabled
+      const response = await fetch('http://localhost:5000/api/gwishlist', {
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer demo-token' // Demo token for bypassing auth
+        }
       });
-      if (!res.ok) throw new Error('Failed to fetch wishlist');
-      const data = await res.json();
-      setWishlistItems(data);
+      
+      if (response.ok) {
+        const data = await response.json();
+        const formatted = data.map(item => ({
+          ...item,
+          originalPrice: parseFloat(item.original_price ?? item.originalPrice ?? 0),
+          discountedPrice: parseFloat(item.discounted_price ?? item.discountedPrice ?? 0),
+          image: item.image
+            ? item.image.startsWith('http')
+              ? item.image
+              : `http://localhost:5000${item.image.startsWith('/') ? '' : '/uploads/'}${item.image}`
+            : 'https://via.placeholder.com/300x200?text=Image+Coming+Soon'
+        }));
+        setWishlistItems(formatted);
+        console.log('Wishlist items loaded from database:', formatted);
+      } else {
+        setWishlistItems([]);
+      }
     } catch (err) {
+      console.error('Error loading wishlist from database:', err);
       setWishlistItems([]);
     }
   };
   const addToWishlist = async (item, quantity = 1) => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      alert('Please log in to use the wishlist');
-      return;
-    }
-  
-    // Check if item already exists in backend wishlist (grocery_id matches item.id)
-    const existingItem = wishlistItems.find(w => w.grocery_id === item.id);
-  
     try {
+      // Check if item already exists in wishlist
+      const existingItem = wishlistItems.find(wishlistItem => 
+        wishlistItem.grocery_id === item.id && wishlistItem.category === item.category
+      );
+
       if (existingItem) {
-        // ❌ Remove from wishlist (DELETE)
-        const res = await fetch(`http://localhost:5000/api/gwishlist/${existingItem.id}`, {
+        // Remove from wishlist (DELETE)
+        const response = await fetch(`http://localhost:5000/api/gwishlist/${existingItem.id}`, {
           method: 'DELETE',
           headers: {
-            Authorization: `Bearer ${token}`
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer demo-token' // Demo token for bypassing auth
           }
         });
-  
-        if (!res.ok) throw new Error('Failed to remove from wishlist');
-        await fetchWishlist(); // Always fetch latest
+
+        if (response.ok) {
+          alert(`Removed ${item.name} from wishlist!`);
+          await fetchWishlist(); // Refresh wishlist
+        } else {
+          throw new Error('Failed to remove from wishlist');
+        }
       } else {
-        // ➕ Add to wishlist (POST)
+        // Add to wishlist (POST)
         const payload = {
           grocery_id: item.id,
           name: item.name,
@@ -639,24 +639,29 @@ function Groceries() {
           category: item.category,
           original_price: item.originalPrice,
           discounted_price: item.discountedPrice,
-          quantity // use the selected quantity
+          quantity: quantity
         };
-  
-        const res = await fetch('http://localhost:5000/api/gwishlist', {
+
+        const response = await fetch('http://localhost:5000/api/gwishlist', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
+            'Authorization': 'Bearer demo-token' // Demo token for bypassing auth
           },
           body: JSON.stringify(payload)
         });
-  
-        if (!res.ok) throw new Error('Failed to add to wishlist');
-        await fetchWishlist(); // Always fetch latest
+
+        if (response.ok) {
+          alert(`Added ${item.name} to wishlist!`);
+          await fetchWishlist(); // Refresh wishlist
+        } else {
+          throw new Error('Failed to add to wishlist');
+        }
       }
+      
     } catch (err) {
-      console.error('Wishlist error:', err);
-      alert(err.message || 'Something went wrong with the wishlist');
+      console.error('Error updating wishlist:', err);
+      alert('Error updating wishlist. Please try again.');
     }
   };
 

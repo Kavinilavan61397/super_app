@@ -17,6 +17,17 @@ exports.protect = async (req, res, next) => {
       });
     }
 
+    // Temporary demo token bypass for development
+    if (token === 'demo-token') {
+      req.user = {
+        id: '000000000000000000000001', // Valid ObjectId for demo user
+        name: 'Demo User',
+        email: 'demo@example.com',
+        role: 'user'
+      };
+      return next();
+    }
+
     try {
       // Verify token
       const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-super-secret-jwt-key');

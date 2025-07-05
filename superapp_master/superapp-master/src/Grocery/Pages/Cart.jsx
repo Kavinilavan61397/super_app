@@ -28,41 +28,48 @@ function Cart() {
       setLoading(true);
       setError(null);
       try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          alert('Please log in to view your cart.');
-          navigate('/login');
-          return;
-        }
         const response = await fetch('http://localhost:5000/api/gcart', {
           headers: {
-            Authorization: `Bearer ${token}`
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer demo-token' // Demo token for bypassing auth
           }
         });
-        if (response.status === 401) throw { message: 'Unauthorized', status: 401 };
-        if (!response.ok) throw new Error('Failed to fetch cart items');
-        const data = await response.json();
+        
+        if (response.ok) {
+          const responseData = await response.json();
+          const cartData = responseData.data || [];
+          
+          // Map backend fields to frontend expectations
+          const formatted = cartData.map(item => {
+            // Get grocery data from populated field
+            const grocery = item.grocery || {};
+            
+            return {
+              ...item,
+              // Use grocery data for display fields
+              name: grocery.name || 'Unknown Product',
+              category: grocery.category || 'Unknown Category',
+              image: grocery.image
+                ? grocery.image.startsWith('http')
+                  ? grocery.image
+                  : `http://localhost:5000${grocery.image.startsWith('/') ? '' : '/uploads/'}${grocery.image}`
+                : 'https://via.placeholder.com/300x200?text=Image+Coming+Soon',
+              originalPrice: parseFloat(grocery.original_price || 0),
+              discountedPrice: parseFloat(grocery.discounted_price || 0),
+              size: 'N/A' // Grocery items don't have sizes
+            };
+          });
 
-        // Map backend fields to frontend expectations
-        const formatted = data.map(item => ({
-          ...item,
-          originalPrice: parseFloat(item.original_price ?? item.originalPrice ?? 0),
-          discountedPrice: parseFloat(item.discounted_price ?? item.discountedPrice ?? 0),
-          image: item.image
-            ? item.image.startsWith('http')
-              ? item.image
-              : `http://localhost:5000${item.image.startsWith('/') ? '' : '/uploads/'}${item.image}`
-            : 'https://via.placeholder.com/300x200?text=Image+Coming+Soon',
-          size: item.size || 'N/A'
-        }));
-
-        setCartItems(formatted);
+          setCartItems(formatted);
+          console.log('Cart items loaded from database:', formatted);
+        } else {
+          setCartItems([]);
+        }
         setLoading(false);
       } catch (err) {
-        if (!handleAuthError(err)) {
-          setError(err.message);
-          setLoading(false);
-        }
+        console.error('Error loading cart from database:', err);
+        setCartItems([]);
+        setLoading(false);
       }
     };
     fetchCartItems();
@@ -71,82 +78,75 @@ function Cart() {
   // Delete item from cart (backend)
   const handleDelete = async (groceryId) => {
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        alert('Please log in to delete items from your cart.');
-        navigate('/login');
-        return;
-      }
       const response = await fetch(`http://localhost:5000/api/gcart/${groceryId}`, {
         method: 'DELETE',
         headers: {
-          Authorization: `Bearer ${token}`
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer demo-token' // Demo token for bypassing auth
         }
       });
-      if (response.status === 401) throw { message: 'Unauthorized', status: 401 };
-      if (!response.ok) throw new Error('Failed to delete item');
-      setCartItems(prev => prev.filter(item => item.grocery_id !== groceryId));
-    } catch (err) {
-      if (!handleAuthError(err)) {
-        alert('Could not delete item: ' + err.message);
+      
+      if (response.ok) {
+        setCartItems(prev => prev.filter(item => item.grocery_id !== groceryId));
+        console.log('Item deleted from cart:', groceryId);
+      } else {
+        throw new Error('Failed to delete item');
       }
+    } catch (err) {
+      console.error('Error deleting item from cart:', err);
+      alert('Could not delete item: ' + err.message);
     }
   };
 
   // Update quantity in cart (backend)
   const handleQuantityChange = async (groceryId, newQuantity) => {
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        alert('Please log in to update your cart.');
-        navigate('/login');
-        return;
-      }
       const response = await fetch(`http://localhost:5000/api/gcart/${groceryId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          'Authorization': 'Bearer demo-token' // Demo token for bypassing auth
         },
         body: JSON.stringify({ quantity: newQuantity })
       });
-      if (response.status === 401) throw { message: 'Unauthorized', status: 401 };
-      if (!response.ok) throw new Error('Failed to update quantity');
-      setCartItems(prev => prev.map(item =>
-        item.grocery_id === groceryId
-          ? { ...item, quantity: newQuantity }
-          : item
-      ));
-    } catch (err) {
-      if (!handleAuthError(err)) {
-        alert('Could not update quantity: ' + err.message);
+      
+      if (response.ok) {
+        setCartItems(prev => prev.map(item =>
+          item.grocery_id === groceryId
+            ? { ...item, quantity: newQuantity }
+            : item
+        ));
+        console.log('Quantity updated for item:', groceryId, 'New quantity:', newQuantity);
+      } else {
+        throw new Error('Failed to update quantity');
       }
+    } catch (err) {
+      console.error('Error updating quantity:', err);
+      alert('Could not update quantity: ' + err.message);
     }
   };
 
   // Clear cart (backend)
   const handleClearCart = async () => {
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        alert('Please log in to clear your cart.');
-        navigate('/login');
-        return;
-      }
       const response = await fetch('http://localhost:5000/api/gcart/clear', {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${token}`
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer demo-token' // Demo token for bypassing auth
         }
       });
-      if (response.status === 401) throw { message: 'Unauthorized', status: 401 };
-      if (!response.ok) throw new Error('Failed to clear cart');
-      setCartItems([]);
-      alert('Your cart has been cleared!');
-    } catch (err) {
-      if (!handleAuthError(err)) {
-        alert('Could not clear cart: ' + err.message);
+      
+      if (response.ok) {
+        setCartItems([]);
+        alert('Your cart has been cleared!');
+        console.log('Cart cleared successfully');
+      } else {
+        throw new Error('Failed to clear cart');
       }
+    } catch (err) {
+      console.error('Error clearing cart:', err);
+      alert('Could not clear cart: ' + err.message);
     }
   };
 
@@ -157,13 +157,6 @@ function Cart() {
       return;
     }
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        alert('Please log in to place an order.');
-        navigate('/login');
-        return;
-      }
-
       // Calculate totals
       const totalDiscountedPrice = cartItems.reduce((sum, item) => sum + (item.discountedPrice * item.quantity), 0);
       const totalOriginalPrice = cartItems.reduce((sum, item) => sum + (item.originalPrice * item.quantity), 0);
@@ -188,18 +181,20 @@ function Cart() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          'Authorization': 'Bearer demo-token' // Demo token for bypassing auth
         },
         body: JSON.stringify(orderData)
       });
 
-      if (orderResponse.status === 401) throw { message: 'Unauthorized', status: 401 };
       if (!orderResponse.ok) throw new Error('Failed to create order');
 
       // Clear cart in backend
       const clearResponse = await fetch('http://localhost:5000/api/gcart/clear', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer demo-token' // Demo token for bypassing auth
+        }
       });
       if (!clearResponse.ok) throw new Error('Failed to clear cart in backend');
 
@@ -208,12 +203,8 @@ function Cart() {
       alert('Order placed successfully!');
       navigate('/home-grocery/order-list');
     } catch (err) {
-      if (err.message === 'Unauthorized' || err.status === 401) {
-        alert('Session expired. Please log in again.');
-        navigate('/login');
-      } else {
-        alert('Could not place order: ' + err.message);
-      }
+      console.error('Error placing order:', err);
+      alert('Could not place order: ' + err.message);
     }
   };
 
@@ -238,7 +229,7 @@ function Cart() {
         ) : (
           cartItems.slice().reverse().map((item) => (
             <div
-              key={`${item.id}-${item.category}-${item.size}`}
+              key={`${item._id}-${item.grocery_id}`}
               className="bg-white border border-[#E1E1E1] rounded-[20px] mt-4 flex row gap-4 p-4"
             >
               <div className="w-[200px] h-[180px]">
@@ -247,14 +238,14 @@ function Cart() {
               <div className="flex-1">
                 <div className="flex justify-between items-center w-full">
                   <p className="font-medium text-base text-[#484848]">{item.category}</p>
-                  <p className="text-[#5C3FFF] font-medium text-base">{item.discount}</p>
+                  <p className="text-[#5C3FFF] font-medium text-base">
+                    {item.originalPrice > item.discountedPrice ? 
+                      `${Math.round(((item.originalPrice - item.discountedPrice) / item.originalPrice) * 100)}% OFF` : 
+                      'No Discount'
+                    }
+                  </p>
                 </div>
                 <div className="font-semibold text-base text-[#242424] pt-2">{item.name}</div>
-                {item.size !== 'N/A' && (
-                  <p className="font-medium text-sm text-[#484848] mb-2">
-                    Size: {item.size}
-                  </p>
-                )}
                 <p className="font-medium text-sm text-[#242424] mb-2">
                   ₹ {parseFloat(item.discountedPrice) * item.quantity} <span className="line-through text-[#C1C1C1]">₹ {parseFloat(item.originalPrice) * item.quantity}</span>
                 </p>

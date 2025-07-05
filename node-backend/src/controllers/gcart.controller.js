@@ -1,11 +1,12 @@
 const GCartItem = require('../models/gcart_items');
+const Grocery = require('../models/Grocery');
 
 // Get user's grocery cart
 exports.getUserGroceryCart = async (req, res) => {
   try {
     const userId = req.user.id;
     const cartItems = await GCartItem.find({ user_id: userId })
-      .populate('grocery_id')
+      .populate('grocery')
       .sort({ createdAt: -1 });
 
     res.json({
@@ -40,18 +41,27 @@ exports.addToGroceryCart = async (req, res) => {
       existingItem.quantity += quantity || 1;
       await existingItem.save();
     } else {
-      // Create new cart item
+      // Fetch price from Grocery model
+      const grocery = await Grocery.findById(grocery_id);
+      if (!grocery) {
+        return res.status(404).json({
+          success: false,
+          message: 'Grocery item not found'
+        });
+      }
+      // Create new cart item with price
       const cartItem = new GCartItem({
         user_id: userId,
         grocery_id,
-        quantity: quantity || 1
+        quantity: quantity || 1,
+        price: grocery.discounted_price || grocery.original_price || 0
       });
       await cartItem.save();
     }
 
     // Return updated cart
     const updatedCart = await GCartItem.find({ user_id: userId })
-      .populate('grocery_id')
+      .populate('grocery')
       .sort({ createdAt: -1 });
 
     res.json({
@@ -97,7 +107,7 @@ exports.updateGroceryCartItem = async (req, res) => {
 
     // Return updated cart
     const updatedCart = await GCartItem.find({ user_id: userId })
-      .populate('grocery_id')
+      .populate('grocery')
       .sort({ createdAt: -1 });
 
     res.json({
@@ -136,7 +146,7 @@ exports.removeFromGroceryCart = async (req, res) => {
 
     // Return updated cart
     const updatedCart = await GCartItem.find({ user_id: userId })
-      .populate('grocery_id')
+      .populate('grocery')
       .sort({ createdAt: -1 });
 
     res.json({

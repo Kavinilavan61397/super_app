@@ -6,10 +6,10 @@ const gCartItemSchema = new mongoose.Schema({
     ref: 'User',
     required: [true, 'User ID is required']
   },
-  product_id: {
+  grocery_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Product',
-    required: [true, 'Product ID is required']
+    ref: 'Grocery',
+    required: [true, 'Grocery ID is required']
   },
   quantity: {
     type: Number,
@@ -35,15 +35,15 @@ gCartItemSchema.virtual('user', {
   justOne: true
 });
 
-gCartItemSchema.virtual('product', {
-  ref: 'Product',
-  localField: 'product_id',
+gCartItemSchema.virtual('grocery', {
+  ref: 'Grocery',
+  localField: 'grocery_id',
   foreignField: '_id',
   justOne: true
 });
 
 gCartItemSchema.index({ user_id: 1 });
-gCartItemSchema.index({ product_id: 1 });
+gCartItemSchema.index({ grocery_id: 1 });
 
 const GCartItem = mongoose.model('GCartItem', gCartItemSchema);
 

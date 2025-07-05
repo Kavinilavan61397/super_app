@@ -665,7 +665,7 @@ function Tops() {
                   aria-label={`Filter by ${topStyle} top style`}
                 />
                 <label htmlFor={`topStyle-${topStyle}`} className="ml-2 text-sm text-gray-600">
-                  { swung }
+                  {topStyle}
                 </label>
               </div>
             ))}

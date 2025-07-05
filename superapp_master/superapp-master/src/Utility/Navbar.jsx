@@ -5,7 +5,7 @@ import Screen2 from '../Splash/Screen2';
 import Register from '../Auth/Register';
 import OTP from '../Auth/OTP';
 import SetPassword from '../Auth/SetPassword';
-import Login from '../Auth/Login';
+// import Login from '../Auth/Login';
 import HomeScreen from '../Pages/HomeScreen';
 import HomeC from '../Clothes/Pages/HomeC';
 import MenClothings from '../Clothes/Categories/MensWear/MenClothings';
@@ -15,18 +15,18 @@ import WomenUniforms from '../Clothes/Categories/Womenuniforms';
 import Fruitdetail from '../Clothes/Categories/Fruitdetail';
 import Homeappliances from '../Clothes/Categories/Homeappliances';
 import Lipstick from '../Clothes/Cosmetics/Lipstick';
-import WomensClothing from '../Clothes/Categories/WomensWear/womensclothing.jsx';
-import Kurti from '../Clothes/Categories/WomensWear/Kurti.jsx';
-import Maxidress from '../Clothes/Categories/WomensWear/Maxidress.jsx';
-import Tops from '../Clothes/Categories/WomensWear/Tops.jsx';
-import Leggin from '../Clothes/Categories/WomensWear/Leggin.jsx';  
-import Jean from '../Clothes/Categories/WomensWear/Jean.jsx'; 
-import Saree from '../Clothes/Categories/WomensWear/Saree.jsx';
-import Tshirt from '../Clothes/Categories/WomensWear/Tshirt.jsx';
-import Trackpantwomen from '../Clothes/Categories/WomensWear/Trackpantwomen.jsx';
-import Womenfootwear from '../Clothes/Categories/WomensWear/womenfootwear.jsx';
-import Womenseasonaldress from '../Clothes/Categories/WomensWear/Womenseasonaldress.jsx';
-import Palazzopant from '../Clothes/Categories/WomensWear/Palazzopant.jsx';
+import WomensClothing from '../Clothes/Categories/Womenswear/womensclothing';
+import Kurti from '../Clothes/Categories/Womenswear/Kurti';
+import Maxidress from '../Clothes/Categories/Womenswear/Maxidress';
+import Tops from '../Clothes/Categories/Womenswear/Tops';
+import Leggin from '../Clothes/Categories/Womenswear/Leggin';  
+import Jean from '../Clothes/Categories/Womenswear/Jean'; 
+import Saree from '../Clothes/Categories/Womenswear/Saree';
+import Tshirt from '../Clothes/Categories/Womenswear/Tshirt';
+import Trackpantwomen from '../Clothes/Categories/Womenswear/Trackpantwomen';
+import Womenfootwear from '../Clothes/Categories/Womenswear/womenfootwear';
+import Womenseasonaldress from '../Clothes/Categories/Womenswear/Womenseasonaldress';
+import Palazzopant from '../Clothes/Categories/Womenswear/Palazzopant';
 import Cosmetic from '../Clothes/Cosmetics/Cosmetic';    
 // import Login from '../Clothes/Cosmetics/login';
 import Conditioner from '../Clothes/Cosmetics/Conditioner';
@@ -121,7 +121,7 @@ import Accessories from '../Clothes/Categories/MensWear/Accessories';
 import SeasonalCollections from '../Clothes/Categories/MensWear/SeasonalCollections';
 import NewArrivals from '../Clothes/Categories/MensWear/NewArrivals';
 
-import HomeG from '../Grocery/Pages/HomeG.jsx';
+import HomeG from '../Grocery/Pages/HomeG';
 import AddressG from '../Grocery/Pages/Address';
 import PaymentG from '../Grocery/Pages/Payment';
 import OrderPlacedG from '../Grocery/Pages/OrderPlaced';
@@ -171,10 +171,10 @@ function Navbar() {
             {showPrompt && <LocationPrompt onAllow={handleAllow} onDeny={handleDeny} />}
             <BrowserRouter>
                 <Routes>
-                    <Route path='/' element={<Login />} />
+                    <Route path='/' element={<Register />} />
                     {/* <Route path='/step' element={<Screen2 />} />
                     <Route path='/register' element={<Register />} /> */}
-                    <Route path='/login' element={<Login />} />
+                    {/* <Route path='/login' element={<Login />} /> */}
                     <Route path='/register' element={<Register />} />
                     <Route path='/otp' element={<OTP />} />
                     <Route path='/set-password' element={<SetPassword />} />

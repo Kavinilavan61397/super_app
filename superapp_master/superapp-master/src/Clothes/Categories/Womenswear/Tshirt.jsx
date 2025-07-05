@@ -772,8 +772,10 @@ function WomensTShirts() {
             <div className="flex items-center space-x-2 mb-2">
               <p className="text-sm font-semibold text-gray-800">₹{quickView.discountedPrice.toFixed(2)}</p>
               <p className="text-xs text-gray-500 line-through">₹{quickView.originalPrice.toFixed(2)}</p>
-              {discountPercentage > 0 && (
-                <p className="text-xs text-green-600 font-semibold">{discountPercentage}% OFF</p>
+              {Math.round(((quickView.originalPrice - quickView.discountedPrice) / quickView.originalPrice) * 100) > 0 && (
+                <p className="text-xs text-green-600 font-semibold">
+                  {Math.round(((quickView.originalPrice - quickView.discountedPrice) / quickView.originalPrice) * 100)}% OFF
+                </p>
               )}
             </div>
             {quickView.sizes && quickView.sizes.length > 0 && (

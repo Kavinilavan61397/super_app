@@ -6,10 +6,10 @@ const gwhishlistSchema = new mongoose.Schema({
     ref: 'User',
     required: [true, 'User ID is required']
   },
-  product_id: {
+  grocery_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Product',
-    required: [true, 'Product ID is required']
+    ref: 'Grocery',
+    required: [true, 'Grocery ID is required']
   }
 }, {
   timestamps: true,
@@ -24,17 +24,17 @@ gwhishlistSchema.virtual('user', {
   justOne: true
 });
 
-gwhishlistSchema.virtual('product', {
-  ref: 'Product',
-  localField: 'product_id',
+gwhishlistSchema.virtual('grocery', {
+  ref: 'Grocery',
+  localField: 'grocery_id',
   foreignField: '_id',
   justOne: true
 });
 
 gwhishlistSchema.index({ user_id: 1 });
-gwhishlistSchema.index({ product_id: 1 });
+gwhishlistSchema.index({ grocery_id: 1 });
 
-gwhishlistSchema.index({ user_id: 1, product_id: 1 }, { unique: true });
+gwhishlistSchema.index({ user_id: 1, grocery_id: 1 }, { unique: true });
 
 const Gwhishlist = mongoose.model('Gwhishlist', gwhishlistSchema);
 

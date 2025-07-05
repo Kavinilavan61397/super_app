@@ -6,22 +6,23 @@ const staffSchema = new mongoose.Schema({
     ref: 'User',
     required: [true, 'User ID is required']
   },
-  name: {
+  department: {
     type: String,
-    required: [true, 'Staff name is required'],
+    required: [true, 'Department is required'],
     trim: true
   },
-  role: {
+  position: {
     type: String,
+    required: [true, 'Position is required'],
     trim: true
   },
-  phone: {
-    type: String,
-    trim: true
+  hire_date: {
+    type: Date,
+    default: null
   },
-  email: {
-    type: String,
-    trim: true
+  salary: {
+    type: Number,
+    default: null
   },
   status: {
     type: Boolean,

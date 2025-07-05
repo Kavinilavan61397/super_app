@@ -3,9 +3,8 @@ const Role = require('../models/Role');
 // Get all roles
 exports.getAllRoles = async (req, res) => {
   try {
-    const roles = await Role.findAll({
-      order: [['createdAt', 'DESC']]
-    });
+    const roles = await Role.find()
+      .sort({ createdAt: -1 });
 
     res.json({
       success: true,
@@ -24,7 +23,7 @@ exports.getAllRoles = async (req, res) => {
 // Get role by ID
 exports.getRoleById = async (req, res) => {
   try {
-    const role = await Role.findByPk(req.params.id);
+    const role = await Role.findById(req.params.id);
 
     if (!role) {
       return res.status(404).json({
@@ -53,7 +52,7 @@ exports.createRole = async (req, res) => {
     const { name, description, status } = req.body;
 
     // Check if role exists
-    const roleExists = await Role.findOne({ where: { name } });
+    const roleExists = await Role.findOne({ name });
     if (roleExists) {
       return res.status(400).json({
         success: false,
@@ -62,11 +61,13 @@ exports.createRole = async (req, res) => {
     }
 
     // Create role
-    const role = await Role.create({
+    const role = new Role({
       name,
       description,
       status: status === 'true' || status === true
     });
+
+    await role.save();
 
     res.status(201).json({
       success: true,
@@ -75,11 +76,11 @@ exports.createRole = async (req, res) => {
     });
   } catch (error) {
     console.error('Error creating role:', error);
-    if (error.name === 'SequelizeValidationError') {
+    if (error.name === 'ValidationError') {
       return res.status(400).json({
         success: false,
         message: 'Validation error',
-        errors: error.errors.map(e => e.message)
+        errors: Object.values(error.errors).map(e => e.message)
       });
     }
     res.status(500).json({
@@ -96,7 +97,7 @@ exports.updateRole = async (req, res) => {
     const { name, description, status } = req.body;
     const roleId = req.params.id;
 
-    const role = await Role.findByPk(roleId);
+    const role = await Role.findById(roleId);
     if (!role) {
       return res.status(404).json({
         success: false,
@@ -106,7 +107,7 @@ exports.updateRole = async (req, res) => {
 
     // Check if name is being changed and if it already exists
     if (name && name !== role.name) {
-      const nameExists = await Role.findOne({ where: { name } });
+      const nameExists = await Role.findOne({ name });
       if (nameExists) {
         return res.status(400).json({
           success: false,
@@ -116,11 +117,11 @@ exports.updateRole = async (req, res) => {
     }
 
     // Update role
-    await role.update({
-      name: name || role.name,
-      description: description || role.description,
-      status: status === 'true' || status === true
-    });
+    role.name = name || role.name;
+    role.description = description || role.description;
+    role.status = status === 'true' || status === true;
+
+    await role.save();
 
     res.json({
       success: true,
@@ -129,11 +130,11 @@ exports.updateRole = async (req, res) => {
     });
   } catch (error) {
     console.error('Error updating role:', error);
-    if (error.name === 'SequelizeValidationError') {
+    if (error.name === 'ValidationError') {
       return res.status(400).json({
         success: false,
         message: 'Validation error',
-        errors: error.errors.map(e => e.message)
+        errors: Object.values(error.errors).map(e => e.message)
       });
     }
     res.status(500).json({
@@ -149,7 +150,7 @@ exports.deleteRole = async (req, res) => {
   try {
     const roleId = req.params.id;
 
-    const role = await Role.findByPk(roleId);
+    const role = await Role.findById(roleId);
     if (!role) {
       return res.status(404).json({
         success: false,
@@ -165,7 +166,7 @@ exports.deleteRole = async (req, res) => {
       });
     }
 
-    await role.destroy();
+    await Role.findByIdAndDelete(roleId);
 
     res.json({
       success: true,

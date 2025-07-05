@@ -19,17 +19,26 @@ import classNames from 'classnames';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import PolicyService from '../../../services/policyService';
-import LocationService from '../../../services/locationService';
+import AmenityService from '../../../services/amenityService';
 
 // Validation schema
 const validationSchema = yup.object().shape({
   name: yup.string().required('Hotel name is required').min(2, 'Hotel name must be at least 2 characters'),
-  address: yup.string().required('Address is required'),
-  city: yup.string().required('City is required'),
-  state: yup.string().required('State is required'),
-  country: yup.string().required('Country is required'),
+  address: yup.object().shape({
+    street: yup.string().required('Street address is required'),
+    city: yup.string().required('City is required'),
+    state: yup.string().required('State is required'),
+    country: yup.string().required('Country is required'),
+    postal_code: yup.string().optional(),
+  }),
+  phone: yup.string().optional(),
+  email: yup.string().email('Invalid email format').optional(),
+  website: yup.string().url('Invalid website URL').optional(),
   description: yup.string().optional(),
-  status: yup.boolean(),
+  star_rating: yup.number().min(1).max(5).optional(),
+  check_in_time: yup.string().optional(),
+  check_out_time: yup.string().optional(),
+  status: yup.string().oneOf(['active', 'inactive', 'maintenance']),
 });
 
 const HotelForm = () => {
@@ -39,21 +48,30 @@ const HotelForm = () => {
 
   const [formData, setFormData] = useState({
     name: '',
-    address: '',
-    city: '',
-    state: '',
-    country: '',
+    address: {
+      street: '',
+      city: '',
+      state: '',
+      country: '',
+      postal_code: '',
+    },
+    phone: '',
+    email: '',
+    website: '',
     description: '',
-    status: true,
+    star_rating: '',
+    check_in_time: '14:00',
+    check_out_time: '12:00',
+    status: 'active',
     policies: [],
-    locations: [],
+    amenities: [],
   });
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [policies, setPolicies] = useState([]);
-  const [locations, setLocations] = useState([]);
+  const [amenities, setAmenities] = useState([]);
 
   // Fetch hotel data for editing
   useEffect(() => {
@@ -65,13 +83,13 @@ const HotelForm = () => {
 
   const fetchDropdownData = async () => {
     try {
-      const [policiesRes, locationsRes] = await Promise.all([
+      const [policiesRes, amenitiesRes] = await Promise.all([
         PolicyService.getActivePolicies(),
-        LocationService.getActiveLocations()
+        AmenityService.getActiveAmenities()
       ]);
       
-      setPolicies(policiesRes.data.data || []);
-      setLocations(locationsRes.data.data || []);
+      setPolicies(Array.isArray(policiesRes.data?.data) ? policiesRes.data.data : []);
+      setAmenities(Array.isArray(amenitiesRes.data?.data) ? amenitiesRes.data.data : []);
     } catch (error) {
       console.error('Error fetching dropdown data:', error);
       toast.error('Failed to fetch dropdown data');
@@ -82,18 +100,29 @@ const HotelForm = () => {
     try {
       setLoading(true);
       const response = await HotelService.getHotelById(id);
-      const hotel = response.data.data; // Backend returns { success: true, data: hotel }
+      const hotel = response.data || response;
+      
       setFormData({
         name: hotel.name || '',
-        address: hotel.address || '',
-        city: hotel.city || '',
-        state: hotel.state || '',
-        country: hotel.country || '',
+        address: {
+          street: hotel.address?.street || '',
+          city: hotel.address?.city || '',
+          state: hotel.address?.state || '',
+          country: hotel.address?.country || '',
+          postal_code: hotel.address?.postal_code || '',
+        },
+        phone: hotel.phone || '',
+        email: hotel.email || '',
+        website: hotel.website || '',
         description: hotel.description || '',
-        status: hotel.status !== undefined ? hotel.status : true,
-        policies: hotel.policies?.map(p => p.id) || [],
-        locations: hotel.locations?.map(l => l.id) || [],
+        star_rating: hotel.star_rating || '',
+        check_in_time: hotel.check_in_time || '14:00',
+        check_out_time: hotel.check_out_time || '12:00',
+        status: hotel.status || 'active',
+        policies: hotel.policies?.map(p => p._id || p.id) || [],
+        amenities: hotel.amenities?.map(a => a._id || a.id) || [],
       });
+      
       if (hotel.main_image) {
         setImagePreview(`${API_CONFIG.BASE_URL}${hotel.main_image}`);
       }
@@ -108,10 +137,37 @@ const HotelForm = () => {
 
   // Handle form input changes
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    if (field === 'address') {
+      setFormData(prev => ({ 
+        ...prev, 
+        address: { ...prev.address, ...value } 
+      }));
+    } else {
+      setFormData(prev => ({ ...prev, [field]: value }));
+    }
     // Clear error when user starts typing
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  };
+
+  // Handle address field changes
+  const handleAddressChange = (field, value) => {
+    console.log('HotelForm: Address change:', field, value);
+    setFormData(prev => {
+      const newData = {
+        ...prev,
+        address: { ...prev.address, [field]: value }
+      };
+      console.log('HotelForm: Updated form data:', newData);
+      return newData;
+    });
+    // Clear error when user starts typing
+    if (errors.address?.[field]) {
+      setErrors(prev => ({
+        ...prev,
+        address: { ...prev.address, [field]: '' }
+      }));
     }
   };
 
@@ -157,7 +213,13 @@ const HotelForm = () => {
     } catch (validationErrors) {
       const newErrors = {};
       validationErrors.inner.forEach(error => {
-        newErrors[error.path] = error.message;
+        if (error.path.includes('.')) {
+          const [parent, child] = error.path.split('.');
+          if (!newErrors[parent]) newErrors[parent] = {};
+          newErrors[parent][child] = error.message;
+        } else {
+          newErrors[error.path] = error.message;
+        }
       });
       setErrors(newErrors);
       return false;
@@ -178,19 +240,36 @@ const HotelForm = () => {
       
       const formDataToSend = new FormData();
       formDataToSend.append('name', formData.name);
-      formDataToSend.append('address', formData.address);
-      formDataToSend.append('city', formData.city);
-      formDataToSend.append('state', formData.state);
-      formDataToSend.append('country', formData.country);
+      formDataToSend.append('address[street]', formData.address.street);
+      formDataToSend.append('address[city]', formData.address.city);
+      formDataToSend.append('address[state]', formData.address.state);
+      formDataToSend.append('address[country]', formData.address.country);
+      formDataToSend.append('address[postal_code]', formData.address.postal_code);
+      
+      // Debug logging
+      console.log('HotelForm: Form data being sent:');
+      console.log('Name:', formData.name);
+      console.log('Address:', formData.address);
+      console.log('Address street:', formData.address.street);
+      console.log('Address city:', formData.address.city);
+      console.log('Address state:', formData.address.state);
+      console.log('Address country:', formData.address.country);
+      console.log('Address postal_code:', formData.address.postal_code);
+      formDataToSend.append('phone', formData.phone);
+      formDataToSend.append('email', formData.email);
+      formDataToSend.append('website', formData.website);
       formDataToSend.append('description', formData.description);
+      formDataToSend.append('star_rating', formData.star_rating);
+      formDataToSend.append('check_in_time', formData.check_in_time);
+      formDataToSend.append('check_out_time', formData.check_out_time);
       formDataToSend.append('status', formData.status);
       
       // Append arrays
       formData.policies.forEach(policyId => {
         formDataToSend.append('policies[]', policyId);
       });
-      formData.locations.forEach(locationId => {
-        formDataToSend.append('locations[]', locationId);
+      formData.amenities.forEach(amenityId => {
+        formDataToSend.append('amenities[]', amenityId);
       });
       
       if (imageFile) {
@@ -208,7 +287,7 @@ const HotelForm = () => {
       navigate('/admin/hotel');
     } catch (error) {
       console.error('Error saving hotel:', error);
-      toast.error(error.message || 'Failed to save hotel');
+      toast.error(error.response?.data?.message || error.message || 'Failed to save hotel');
     } finally {
       setLoading(false);
     }
@@ -266,23 +345,129 @@ const HotelForm = () => {
                 )}
               </div>
 
-              {/* Address Field */}
+              {/* Phone Field */}
               <div>
-                <label htmlFor="hotel-address" className="block text-sm font-medium text-blue-gray-700 mb-1">Address *</label>
+                <label htmlFor="hotel-phone" className="block text-sm font-medium text-blue-gray-700 mb-1">Phone</label>
                 <Input
-                  id="hotel-address"
-                  type="text"
-                  placeholder="Enter hotel address"
-                  value={formData.address}
-                  onChange={(e) => handleInputChange('address', e.target.value)}
-                  error={!!errors.address}
+                  id="hotel-phone"
+                  type="tel"
+                  placeholder="Enter phone number"
+                  value={formData.phone}
+                  onChange={(e) => handleInputChange('phone', e.target.value)}
                   className="!border !border-gray-300 bg-white text-gray-900 shadow-lg shadow-gray-900/5 ring-4 ring-transparent placeholder:text-gray-500 focus:!border-gray-900 focus:!border-t-gray-900 focus:ring-gray-900/10"
                   labelProps={{ className: "hidden" }}
                   containerProps={{ className: "min-w-[100px]" }}
                 />
-                {errors.address && (
+              </div>
+
+              {/* Email Field */}
+              <div>
+                <label htmlFor="hotel-email" className="block text-sm font-medium text-blue-gray-700 mb-1">Email</label>
+                <Input
+                  id="hotel-email"
+                  type="email"
+                  placeholder="Enter email address"
+                  value={formData.email}
+                  onChange={(e) => handleInputChange('email', e.target.value)}
+                  error={!!errors.email}
+                  className="!border !border-gray-300 bg-white text-gray-900 shadow-lg shadow-gray-900/5 ring-4 ring-transparent placeholder:text-gray-500 focus:!border-gray-900 focus:!border-t-gray-900 focus:ring-gray-900/10"
+                  labelProps={{ className: "hidden" }}
+                  containerProps={{ className: "min-w-[100px]" }}
+                />
+                {errors.email && (
                   <Typography variant="small" color="red" className="mt-1">
-                    {errors.address}
+                    {errors.email}
+                  </Typography>
+                )}
+              </div>
+
+              {/* Website Field */}
+              <div>
+                <label htmlFor="hotel-website" className="block text-sm font-medium text-blue-gray-700 mb-1">Website</label>
+                <Input
+                  id="hotel-website"
+                  type="url"
+                  placeholder="Enter website URL"
+                  value={formData.website}
+                  onChange={(e) => handleInputChange('website', e.target.value)}
+                  error={!!errors.website}
+                  className="!border !border-gray-300 bg-white text-gray-900 shadow-lg shadow-gray-900/5 ring-4 ring-transparent placeholder:text-gray-500 focus:!border-gray-900 focus:!border-t-gray-900 focus:ring-gray-900/10"
+                  labelProps={{ className: "hidden" }}
+                  containerProps={{ className: "min-w-[100px]" }}
+                />
+                {errors.website && (
+                  <Typography variant="small" color="red" className="mt-1">
+                    {errors.website}
+                  </Typography>
+                )}
+              </div>
+
+              {/* Star Rating Field */}
+              <div>
+                <label htmlFor="hotel-star-rating" className="block text-sm font-medium text-blue-gray-700 mb-1">Star Rating</label>
+                <select
+                  id="hotel-star-rating"
+                  value={formData.star_rating}
+                  onChange={(e) => handleInputChange('star_rating', e.target.value)}
+                  className="border border-gray-300 px-3 py-2 w-full rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select star rating</option>
+                  <option value="1">1 Star</option>
+                  <option value="2">2 Stars</option>
+                  <option value="3">3 Stars</option>
+                  <option value="4">4 Stars</option>
+                  <option value="5">5 Stars</option>
+                </select>
+              </div>
+
+              {/* Check-in Time Field */}
+              <div>
+                <label htmlFor="hotel-check-in" className="block text-sm font-medium text-blue-gray-700 mb-1">Check-in Time</label>
+                <Input
+                  id="hotel-check-in"
+                  type="time"
+                  value={formData.check_in_time}
+                  onChange={(e) => handleInputChange('check_in_time', e.target.value)}
+                  className="!border !border-gray-300 bg-white text-gray-900 shadow-lg shadow-gray-900/5 ring-4 ring-transparent placeholder:text-gray-500 focus:!border-gray-900 focus:!border-t-gray-900 focus:ring-gray-900/10"
+                  labelProps={{ className: "hidden" }}
+                  containerProps={{ className: "min-w-[100px]" }}
+                />
+              </div>
+
+              {/* Check-out Time Field */}
+              <div>
+                <label htmlFor="hotel-check-out" className="block text-sm font-medium text-blue-gray-700 mb-1">Check-out Time</label>
+                <Input
+                  id="hotel-check-out"
+                  type="time"
+                  value={formData.check_out_time}
+                  onChange={(e) => handleInputChange('check_out_time', e.target.value)}
+                  className="!border !border-gray-300 bg-white text-gray-900 shadow-lg shadow-gray-900/5 ring-4 ring-transparent placeholder:text-gray-500 focus:!border-gray-900 focus:!border-t-gray-900 focus:ring-gray-900/10"
+                  labelProps={{ className: "hidden" }}
+                  containerProps={{ className: "min-w-[100px]" }}
+                />
+              </div>
+            </div>
+
+            {/* Address Fields */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Street Address Field */}
+              <div>
+                <label htmlFor="hotel-street" className="block text-sm font-medium text-blue-gray-700 mb-1">Street Address *</label>
+                <Input
+                  id="hotel-street"
+                  type="text"
+                  placeholder="Enter street address"
+                  value={formData.address.street}
+                  onChange={(e) => handleAddressChange('street', e.target.value)}
+                  error={!!errors.address?.street}
+                  className="!border !border-gray-300 bg-white text-gray-900 shadow-lg shadow-gray-900/5 ring-4 ring-transparent placeholder:text-gray-500 focus:!border-gray-900 focus:!border-t-gray-900 focus:ring-gray-900/10"
+                  labelProps={{ className: "hidden" }}
+                  containerProps={{ className: "min-w-[100px]" }}
+                />
+                {errors.address?.street && (
+                  <Typography variant="small" color="red" className="mt-1">
+                    {errors.address.street}
                   </Typography>
                 )}
               </div>
@@ -294,16 +479,16 @@ const HotelForm = () => {
                   id="hotel-city"
                   type="text"
                   placeholder="Enter city"
-                  value={formData.city}
-                  onChange={(e) => handleInputChange('city', e.target.value)}
-                  error={!!errors.city}
+                  value={formData.address.city}
+                  onChange={(e) => handleAddressChange('city', e.target.value)}
+                  error={!!errors.address?.city}
                   className="!border !border-gray-300 bg-white text-gray-900 shadow-lg shadow-gray-900/5 ring-4 ring-transparent placeholder:text-gray-500 focus:!border-gray-900 focus:!border-t-gray-900 focus:ring-gray-900/10"
                   labelProps={{ className: "hidden" }}
                   containerProps={{ className: "min-w-[100px]" }}
                 />
-                {errors.city && (
+                {errors.address?.city && (
                   <Typography variant="small" color="red" className="mt-1">
-                    {errors.city}
+                    {errors.address.city}
                   </Typography>
                 )}
               </div>
@@ -315,16 +500,16 @@ const HotelForm = () => {
                   id="hotel-state"
                   type="text"
                   placeholder="Enter state"
-                  value={formData.state}
-                  onChange={(e) => handleInputChange('state', e.target.value)}
-                  error={!!errors.state}
+                  value={formData.address.state}
+                  onChange={(e) => handleAddressChange('state', e.target.value)}
+                  error={!!errors.address?.state}
                   className="!border !border-gray-300 bg-white text-gray-900 shadow-lg shadow-gray-900/5 ring-4 ring-transparent placeholder:text-gray-500 focus:!border-gray-900 focus:!border-t-gray-900 focus:ring-gray-900/10"
                   labelProps={{ className: "hidden" }}
                   containerProps={{ className: "min-w-[100px]" }}
                 />
-                {errors.state && (
+                {errors.address?.state && (
                   <Typography variant="small" color="red" className="mt-1">
-                    {errors.state}
+                    {errors.address.state}
                   </Typography>
                 )}
               </div>
@@ -336,18 +521,33 @@ const HotelForm = () => {
                   id="hotel-country"
                   type="text"
                   placeholder="Enter country"
-                  value={formData.country}
-                  onChange={(e) => handleInputChange('country', e.target.value)}
-                  error={!!errors.country}
+                  value={formData.address.country}
+                  onChange={(e) => handleAddressChange('country', e.target.value)}
+                  error={!!errors.address?.country}
                   className="!border !border-gray-300 bg-white text-gray-900 shadow-lg shadow-gray-900/5 ring-4 ring-transparent placeholder:text-gray-500 focus:!border-gray-900 focus:!border-t-gray-900 focus:ring-gray-900/10"
                   labelProps={{ className: "hidden" }}
                   containerProps={{ className: "min-w-[100px]" }}
                 />
-                {errors.country && (
+                {errors.address?.country && (
                   <Typography variant="small" color="red" className="mt-1">
-                    {errors.country}
+                    {errors.address.country}
                   </Typography>
                 )}
+              </div>
+
+              {/* Postal Code Field */}
+              <div>
+                <label htmlFor="hotel-postal" className="block text-sm font-medium text-blue-gray-700 mb-1">Postal Code</label>
+                <Input
+                  id="hotel-postal"
+                  type="text"
+                  placeholder="Enter postal code"
+                  value={formData.address.postal_code}
+                  onChange={(e) => handleAddressChange('postal_code', e.target.value)}
+                  className="!border !border-gray-300 bg-white text-gray-900 shadow-lg shadow-gray-900/5 ring-4 ring-transparent placeholder:text-gray-500 focus:!border-gray-900 focus:!border-t-gray-900 focus:ring-gray-900/10"
+                  labelProps={{ className: "hidden" }}
+                  containerProps={{ className: "min-w-[100px]" }}
+                />
               </div>
             </div>
 
@@ -367,7 +567,7 @@ const HotelForm = () => {
 
             {/* Image Upload */}
             <div>
-              <label className="block text-sm font-medium text-blue-gray-700 mb-1">Hotel Image</label>
+              <label className="block text-sm font-medium text-blue-gray-700 mb-1">Hotel Image *</label>
               <div className="flex items-center gap-4">
                 <div className="relative">
                   <input
@@ -417,12 +617,12 @@ const HotelForm = () => {
                 className="border border-gray-300 px-3 py-2 w-full rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-32"
                 value={formData.policies}
                 onChange={e => {
-                  const selectedOptions = Array.from(e.target.selectedOptions, option => parseInt(option.value));
+                  const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
                   handleInputChange('policies', selectedOptions);
                 }}
               >
                 {policies.map(policy => (
-                  <option key={policy.id} value={policy.id}>
+                  <option key={policy._id || policy.id} value={policy._id || policy.id}>
                     {policy.title}
                   </option>
                 ))}
@@ -430,49 +630,39 @@ const HotelForm = () => {
               <p className="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple policies</p>
             </div>
 
-            {/* Locations Selection */}
+            {/* Amenities Selection */}
             <div>
-              <label className="block text-sm font-medium text-blue-gray-700 mb-1">Locations</label>
+              <label className="block text-sm font-medium text-blue-gray-700 mb-1">Amenities</label>
               <select 
                 multiple 
                 className="border border-gray-300 px-3 py-2 w-full rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-32"
-                value={formData.locations}
+                value={formData.amenities}
                 onChange={e => {
-                  const selectedOptions = Array.from(e.target.selectedOptions, option => parseInt(option.value));
-                  handleInputChange('locations', selectedOptions);
+                  const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
+                  handleInputChange('amenities', selectedOptions);
                 }}
               >
-                {locations.map(location => (
-                  <option key={location.id} value={location.id}>
-                    {location.name}
+                {amenities.map(amenity => (
+                  <option key={amenity._id || amenity.id} value={amenity._id || amenity.id}>
+                    {amenity.name}
                   </option>
                 ))}
               </select>
-              <p className="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple locations</p>
+              <p className="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple amenities</p>
             </div>
 
             {/* Status Field */}
-            <div className="flex items-center gap-4 mt-2">
-              <button
-                type="button"
-                aria-pressed={!!formData.status}
-                onClick={() => handleInputChange('status', !formData.status)}
-                className={classNames(
-                  'relative inline-flex h-6 w-12 items-center rounded-full transition-colors focus:outline-none',
-                  formData.status ? 'bg-blue-600' : 'bg-gray-300'
-                )}
-                style={{ minWidth: 48 }}
+            <div>
+              <label className="block text-sm font-medium text-blue-gray-700 mb-1">Status</label>
+              <select
+                value={formData.status}
+                onChange={(e) => handleInputChange('status', e.target.value)}
+                className="border border-gray-300 px-3 py-2 w-full rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <span
-                  className={classNames(
-                    'inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform',
-                    formData.status ? 'translate-x-6' : 'translate-x-1'
-                  )}
-                />
-              </button>
-              <Typography variant="small" color="gray" className="font-normal">
-                {formData.status ? 'Active: Hotel will be visible to users' : 'Inactive: Hotel will be hidden from users'}
-              </Typography>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="maintenance">Maintenance</option>
+              </select>
             </div>
 
             {/* Submit Button */}

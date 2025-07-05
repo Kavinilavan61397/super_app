@@ -9,19 +9,27 @@ const fs = require('fs');
 // List all hotels (with optional status filter)
 exports.getAllHotels = async (req, res) => {
   try {
+    console.log('GET /api/hotels - Request received');
     const status = req.query.status;
     let filter = {};
     if (status && status !== 'all') {
       filter.status = status;
     }
+    console.log('Filter:', filter);
+    
     const hotels = await Hotel.find(filter)
       .populate('rooms')
       .populate('policies')
       .populate('amenities')
       .populate('owner')
       .sort({ createdAt: -1 });
+    
+    console.log(`Found ${hotels.length} hotels`);
+    console.log('Hotels:', hotels.map(h => ({ id: h._id, name: h.name, status: h.status })));
+    
     res.json({ success: true, data: hotels });
   } catch (error) {
+    console.error('Error in getAllHotels:', error);
     res.status(500).json({ success: false, message: 'Error fetching hotels', error: error.message });
   }
 };
@@ -44,7 +52,39 @@ exports.getHotelById = async (req, res) => {
 // Create hotel
 exports.createHotel = async (req, res) => {
   try {
-    const { name, description, address, phone, email, website, rating, total_reviews, amenities, images, main_image, star_rating, check_in_time, check_out_time, policies, status, owner_id } = req.body;
+    console.log('POST /api/hotels - Request received');
+    console.log('Request body:', req.body);
+    
+    const { 
+      name, 
+      description, 
+      phone, 
+      email, 
+      website, 
+      rating, 
+      total_reviews, 
+      amenities, 
+      images, 
+      main_image, 
+      star_rating, 
+      check_in_time, 
+      check_out_time, 
+      policies, 
+      status, 
+      owner_id 
+    } = req.body;
+
+    // Construct address object from individual fields or nested object
+    const address = {
+      street: req.body['address[street]'] || req.body.address?.street || '',
+      city: req.body['address[city]'] || req.body.address?.city || '',
+      state: req.body['address[state]'] || req.body.address?.state || '',
+      country: req.body['address[country]'] || req.body.address?.country || '',
+      postal_code: req.body['address[postal_code]'] || req.body.address?.postal_code || ''
+    };
+    
+    console.log('Constructed address:', address);
+
     let mainImagePath = null;
     if (req.file) {
       const processedImage = await processImage(req.file, {
@@ -59,6 +99,7 @@ exports.createHotel = async (req, res) => {
     } else {
       return res.status(400).json({ success: false, message: 'Hotel image is required.' });
     }
+
     const hotel = new Hotel({
       name,
       description,
@@ -93,9 +134,42 @@ exports.createHotel = async (req, res) => {
 // Update hotel
 exports.updateHotel = async (req, res) => {
   try {
+    console.log('PUT /api/hotels/:id - Request received');
+    console.log('Request body:', req.body);
+    
     const hotel = await Hotel.findById(req.params.id);
     if (!hotel) return res.status(404).json({ success: false, message: 'Hotel not found' });
-    const { name, description, address, phone, email, website, rating, total_reviews, amenities, images, main_image, star_rating, check_in_time, check_out_time, policies, status, owner_id } = req.body;
+    
+    const { 
+      name, 
+      description, 
+      phone, 
+      email, 
+      website, 
+      rating, 
+      total_reviews, 
+      amenities, 
+      images, 
+      main_image, 
+      star_rating, 
+      check_in_time, 
+      check_out_time, 
+      policies, 
+      status, 
+      owner_id 
+    } = req.body;
+
+    // Construct address object from individual fields or nested object
+    const address = {
+      street: req.body['address[street]'] || req.body.address?.street || hotel.address?.street || '',
+      city: req.body['address[city]'] || req.body.address?.city || hotel.address?.city || '',
+      state: req.body['address[state]'] || req.body.address?.state || hotel.address?.state || '',
+      country: req.body['address[country]'] || req.body.address?.country || hotel.address?.country || '',
+      postal_code: req.body['address[postal_code]'] || req.body.address?.postal_code || hotel.address?.postal_code || ''
+    };
+    
+    console.log('Constructed address:', address);
+
     let mainImagePath = hotel.main_image;
     if (req.file) {
       if (hotel.main_image) {
@@ -114,9 +188,10 @@ exports.updateHotel = async (req, res) => {
     } else if (main_image) {
       mainImagePath = main_image;
     }
+
     hotel.name = name || hotel.name;
     hotel.description = description || hotel.description;
-    hotel.address = address || hotel.address;
+    hotel.address = address;
     hotel.phone = phone || hotel.phone;
     hotel.email = email || hotel.email;
     hotel.website = website || hotel.website;
@@ -131,6 +206,7 @@ exports.updateHotel = async (req, res) => {
     hotel.policies = policies || hotel.policies;
     hotel.status = status || hotel.status;
     hotel.owner_id = owner_id || hotel.owner_id;
+    
     await hotel.save();
     const updatedHotel = await Hotel.findById(hotel._id)
       .populate('rooms')

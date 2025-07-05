@@ -6,15 +6,11 @@ exports.getAllStaff = async (req, res) => {
   try {
     // Only show active staff by default, allow ?status=all to fetch all
     const statusFilter = req.query.status === 'all' ? {} : { status: true };
-    const staff = await Staff.findAll({
-      where: statusFilter,
-      include: [{
-        model: User,
-        as: 'user',
-        attributes: ['id', 'name', 'email', 'phone', 'role', 'status']
-      }],
-      order: [['createdAt', 'DESC']]
-    });
+    
+    const staff = await Staff.find(statusFilter)
+      .populate('user', 'id name email phone role status')
+      .sort({ createdAt: -1 });
+
     res.json({
       success: true,
       data: staff
@@ -32,13 +28,8 @@ exports.getAllStaff = async (req, res) => {
 // Get staff by ID
 exports.getStaffById = async (req, res) => {
   try {
-    const staff = await Staff.findByPk(req.params.id, {
-      include: [{
-        model: User,
-        as: 'user',
-        attributes: ['id', 'name', 'email', 'phone', 'role', 'status']
-      }]
-    });
+    const staff = await Staff.findById(req.params.id)
+      .populate('user', 'id name email phone role status');
 
     if (!staff) {
       return res.status(404).json({
@@ -67,7 +58,7 @@ exports.createStaff = async (req, res) => {
     const { user_id, department, position, hire_date, salary, status } = req.body;
 
     // Check if user exists
-    const user = await User.findByPk(user_id);
+    const user = await User.findById(user_id);
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -76,7 +67,7 @@ exports.createStaff = async (req, res) => {
     }
 
     // Check if staff already exists for this user
-    const staffExists = await Staff.findOne({ where: { user_id } });
+    const staffExists = await Staff.findOne({ user_id });
     if (staffExists) {
       return res.status(400).json({
         success: false,
@@ -85,7 +76,7 @@ exports.createStaff = async (req, res) => {
     }
 
     // Create staff
-    const staff = await Staff.create({
+    const staff = new Staff({
       user_id,
       department,
       position,
@@ -94,14 +85,11 @@ exports.createStaff = async (req, res) => {
       status: status === 'true' || status === true
     });
 
+    await staff.save();
+
     // Fetch staff with user details
-    const staffWithUser = await Staff.findByPk(staff.id, {
-      include: [{
-        model: User,
-        as: 'user',
-        attributes: ['id', 'name', 'email', 'phone', 'role', 'status']
-      }]
-    });
+    const staffWithUser = await Staff.findById(staff._id)
+      .populate('user', 'id name email phone role status');
 
     res.status(201).json({
       success: true,
@@ -110,11 +98,11 @@ exports.createStaff = async (req, res) => {
     });
   } catch (error) {
     console.error('Error creating staff:', error);
-    if (error.name === 'SequelizeValidationError') {
+    if (error.name === 'ValidationError') {
       return res.status(400).json({
         success: false,
         message: 'Validation error',
-        errors: error.errors.map(e => e.message)
+        errors: Object.values(error.errors).map(e => e.message)
       });
     }
     res.status(500).json({
@@ -131,7 +119,7 @@ exports.updateStaff = async (req, res) => {
     const { department, position, hire_date, salary, status } = req.body;
     const staffId = req.params.id;
 
-    const staff = await Staff.findByPk(staffId);
+    const staff = await Staff.findById(staffId);
     if (!staff) {
       return res.status(404).json({
         success: false,
@@ -140,22 +128,17 @@ exports.updateStaff = async (req, res) => {
     }
 
     // Update staff
-    await staff.update({
-      department: department || staff.department,
-      position: position || staff.position,
-      hire_date: hire_date || staff.hire_date,
-      salary: salary || staff.salary,
-      status: status === 'true' || status === true
-    });
+    staff.department = department || staff.department;
+    staff.position = position || staff.position;
+    staff.hire_date = hire_date || staff.hire_date;
+    staff.salary = salary || staff.salary;
+    staff.status = status === 'true' || status === true;
+
+    await staff.save();
 
     // Fetch updated staff with user details
-    const updatedStaff = await Staff.findByPk(staffId, {
-      include: [{
-        model: User,
-        as: 'user',
-        attributes: ['id', 'name', 'email', 'phone', 'role', 'status']
-      }]
-    });
+    const updatedStaff = await Staff.findById(staffId)
+      .populate('user', 'id name email phone role status');
 
     res.json({
       success: true,
@@ -164,11 +147,11 @@ exports.updateStaff = async (req, res) => {
     });
   } catch (error) {
     console.error('Error updating staff:', error);
-    if (error.name === 'SequelizeValidationError') {
+    if (error.name === 'ValidationError') {
       return res.status(400).json({
         success: false,
         message: 'Validation error',
-        errors: error.errors.map(e => e.message)
+        errors: Object.values(error.errors).map(e => e.message)
       });
     }
     res.status(500).json({
@@ -184,7 +167,7 @@ exports.deleteStaff = async (req, res) => {
   try {
     const staffId = req.params.id;
 
-    const staff = await Staff.findByPk(staffId);
+    const staff = await Staff.findById(staffId);
     if (!staff) {
       return res.status(404).json({
         success: false,
@@ -192,7 +175,7 @@ exports.deleteStaff = async (req, res) => {
       });
     }
 
-    await staff.destroy();
+    await Staff.findByIdAndDelete(staffId);
 
     res.json({
       success: true,

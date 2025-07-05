@@ -4,7 +4,7 @@ const policySchema = new mongoose.Schema({
   hotel_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Hotel',
-    required: [true, 'Hotel ID is required']
+    required: false
   },
   title: {
     type: String,

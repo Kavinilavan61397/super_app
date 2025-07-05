@@ -20,8 +20,13 @@ api.interceptors.request.use((config) => {
 
 const HotelService = {
   getAllHotels: async () => {
+    console.log('HotelService: Making API call to /api/hotels');
     const response = await api.get('/api/hotels');
-    return response.data.data || [];
+    console.log('HotelService: Raw response:', response);
+    console.log('HotelService: Response data:', response.data);
+    const result = response.data.data || response.data || [];
+    console.log('HotelService: Returning:', result);
+    return result;
   },
   getHotelById: async (id) => {
     const response = await api.get(`/api/hotels/${id}`);

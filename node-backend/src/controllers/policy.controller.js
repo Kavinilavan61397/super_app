@@ -3,37 +3,43 @@ const Policy = require('../models/Policy');
 // Get all policies
 const getAllPolicies = async (req, res) => {
   try {
-    const { page = 1, limit = 10, search = '', status } = req.query;
-    const offset = (page - 1) * limit;
+    const { page = 1, limit = 10, search = '', status, hotel_id } = req.query;
+    const skip = (page - 1) * limit;
 
-    let whereClause = {};
+    let query = {};
     
     if (search) {
-      whereClause = {
-        [Op.or]: [
-          { title: { [Op.like]: `%${search}%` } },
-          { description: { [Op.like]: `%${search}%` } }
+      query = {
+        $or: [
+          { title: { $regex: search, $options: 'i' } },
+          { description: { $regex: search, $options: 'i' } }
         ]
       };
     }
 
     if (status !== undefined && status !== 'all') {
-      whereClause.status = status === 'true';
+      query.status = status === 'true';
     }
 
-    const policies = await Policy.findAndCountAll({
-      where: whereClause,
-      limit: parseInt(limit),
-      offset: parseInt(offset),
-      order: [['createdAt', 'DESC']]
-    });
+    if (hotel_id) {
+      query.hotel_id = hotel_id;
+    }
+
+    const [policies, total] = await Promise.all([
+      Policy.find(query)
+        .populate('hotel', 'name')
+        .sort({ createdAt: -1 })
+        .skip(parseInt(skip))
+        .limit(parseInt(limit)),
+      Policy.countDocuments(query)
+    ]);
 
     res.json({
       success: true,
-      data: policies.rows,
-      total: policies.count,
+      data: policies,
+      total,
       currentPage: parseInt(page),
-      totalPages: Math.ceil(policies.count / limit)
+      totalPages: Math.ceil(total / limit)
     });
   } catch (error) {
     console.error('Error fetching policies:', error);
@@ -45,7 +51,7 @@ const getAllPolicies = async (req, res) => {
 const getPolicyById = async (req, res) => {
   try {
     const { id } = req.params;
-    const policy = await Policy.findByPk(id);
+    const policy = await Policy.findById(id).populate('hotel', 'name');
     
     if (!policy) {
       return res.status(404).json({ success: false, message: 'Policy not found' });
@@ -61,19 +67,24 @@ const getPolicyById = async (req, res) => {
 // Create new policy
 const createPolicy = async (req, res) => {
   try {
-    const { title, description } = req.body;
+    const { title, description, hotel_id } = req.body;
     
     if (!title) {
       return res.status(400).json({ success: false, message: 'Title is required' });
     }
 
-    const policy = await Policy.create({
+    const policy = new Policy({
       title,
       description: description || null,
+      hotel_id: hotel_id || null,
       status: true
     });
 
-    res.status(201).json({ success: true, data: policy });
+    await policy.save();
+
+    const populatedPolicy = await Policy.findById(policy._id).populate('hotel', 'name');
+
+    res.status(201).json({ success: true, data: populatedPolicy });
   } catch (error) {
     console.error('Error creating policy:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });
@@ -84,19 +95,24 @@ const createPolicy = async (req, res) => {
 const updatePolicy = async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, description } = req.body;
+    const { title, description, hotel_id } = req.body;
     
-    const policy = await Policy.findByPk(id);
+    const policy = await Policy.findById(id);
     if (!policy) {
       return res.status(404).json({ success: false, message: 'Policy not found' });
     }
 
-    await policy.update({
-      title: title || policy.title,
-      description: description !== undefined ? description : policy.description
-    });
+    policy.title = title || policy.title;
+    policy.description = description !== undefined ? description : policy.description;
+    if (hotel_id !== undefined) {
+      policy.hotel_id = hotel_id;
+    }
 
-    res.json({ success: true, data: policy });
+    await policy.save();
+
+    const updatedPolicy = await Policy.findById(id).populate('hotel', 'name');
+
+    res.json({ success: true, data: updatedPolicy });
   } catch (error) {
     console.error('Error updating policy:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });
@@ -108,14 +124,17 @@ const togglePolicyStatus = async (req, res) => {
   try {
     const { id } = req.params;
     
-    const policy = await Policy.findByPk(id);
+    const policy = await Policy.findById(id);
     if (!policy) {
       return res.status(404).json({ success: false, message: 'Policy not found' });
     }
 
-    await policy.update({ status: !policy.status });
+    policy.status = !policy.status;
+    await policy.save();
     
-    res.json({ success: true, data: policy });
+    const updatedPolicy = await Policy.findById(id).populate('hotel', 'name');
+    
+    res.json({ success: true, data: updatedPolicy });
   } catch (error) {
     console.error('Error toggling policy status:', error);
     res.status(500).json({ success: false, message: 'Internal server error' });
@@ -127,12 +146,12 @@ const deletePolicy = async (req, res) => {
   try {
     const { id } = req.params;
     
-    const policy = await Policy.findByPk(id);
+    const policy = await Policy.findById(id);
     if (!policy) {
       return res.status(404).json({ success: false, message: 'Policy not found' });
     }
 
-    await policy.destroy();
+    await Policy.findByIdAndDelete(id);
     
     res.json({ success: true, message: 'Policy deleted successfully' });
   } catch (error) {

@@ -62,11 +62,18 @@ const HotelTable = () => {
   };
 
   // Filter hotels
-  const filteredHotels = hotels.filter((hotel) => {
+  const filteredHotels = (Array.isArray(hotels) ? hotels : []).filter((hotel) => {
+    // Address string for search
+    let addressString = '';
+    if (typeof hotel.address === 'object' && hotel.address !== null) {
+      addressString = [hotel.address.street, hotel.address.city, hotel.address.state, hotel.address.country].filter(Boolean).join(', ');
+    } else if (typeof hotel.address === 'string') {
+      addressString = hotel.address;
+    }
     const matchesSearch = hotel.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          hotel.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          hotel.state?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         hotel.address?.toLowerCase().includes(searchTerm.toLowerCase());
+                         addressString.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || 
                          (statusFilter === 'active' && hotel.status) ||
                          (statusFilter === 'inactive' && !hotel.status);
@@ -204,7 +211,9 @@ const HotelTable = () => {
                     </td>
                     <td className="py-3 px-6 w-56">
                       <Typography variant="small" color="blue-gray" className="font-normal">
-                        {hotel.address || 'No address'}
+                        {typeof hotel.address === 'object' && hotel.address !== null
+                          ? [hotel.address.street, hotel.address.city, hotel.address.state, hotel.address.country].filter(Boolean).join(', ')
+                          : hotel.address || 'No address'}
                       </Typography>
                     </td>
                     <td className="py-3 px-6 w-40">

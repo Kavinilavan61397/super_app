@@ -61,8 +61,8 @@ const RestoCategoryTable = () => {
     }
   };
 
-  // Filter categories
-  const filteredCategories = categories.filter((category) => {
+  // Filter categories with safety check
+  const filteredCategories = (Array.isArray(categories) ? categories : []).filter((category) => {
     const matchesSearch = category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          category.description?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || 

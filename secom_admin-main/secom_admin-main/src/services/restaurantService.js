@@ -31,7 +31,8 @@ export const restaurantCategoryService = {
       console.log('Making API call to:', `${restaurantAPI.defaults.baseURL}/categories`);
       const response = await restaurantAPI.get('/categories');
       console.log('API response:', response.data);
-      return response.data;
+      // Return only the data array, not the wrapped object
+      return response.data.data || [];
     } catch (error) {
       console.error('API call failed:', error);
       console.error('Error response:', error.response?.data);
@@ -43,7 +44,8 @@ export const restaurantCategoryService = {
   getById: async (id) => {
     try {
       const response = await restaurantAPI.get(`/categories/${id}`);
-      return response.data;
+      // Return only the data object, not the wrapped object
+      return response.data.data || response.data;
     } catch (error) {
       throw error.response?.data || error.message;
     }
@@ -55,7 +57,8 @@ export const restaurantCategoryService = {
       const response = await restaurantAPI.post('/categories', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      return response.data;
+      // Return only the data object, not the wrapped object
+      return response.data.data || response.data;
     } catch (error) {
       throw error.response?.data || error.message;
     }
@@ -67,7 +70,8 @@ export const restaurantCategoryService = {
       const response = await restaurantAPI.put(`/categories/${id}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      return response.data;
+      // Return only the data object, not the wrapped object
+      return response.data.data || response.data;
     } catch (error) {
       throw error.response?.data || error.message;
     }
@@ -77,7 +81,8 @@ export const restaurantCategoryService = {
   delete: async (id) => {
     try {
       const response = await restaurantAPI.delete(`/categories/${id}`);
-      return response.data;
+      // Return only the data object, not the wrapped object
+      return response.data.data || response.data;
     } catch (error) {
       throw error.response?.data || error.message;
     }
@@ -90,7 +95,8 @@ export const restaurantService = {
   getAll: async (params = {}) => {
     try {
       const response = await restaurantAPI.get('/', { params });
-      return response.data;
+      // Return only the data array, not the wrapped object
+      return response.data.data || [];
     } catch (error) {
       throw error.response?.data || error.message;
     }
@@ -168,7 +174,8 @@ export const dishService = {
   getAll: async (params = {}) => {
     try {
       const response = await dishAPI.get('/', { params });
-      return response.data;
+      // Return only the data array, not the wrapped object
+      return response.data.data || [];
     } catch (error) {
       throw error.response?.data || error.message;
     }
@@ -178,7 +185,8 @@ export const dishService = {
   getById: async (id) => {
     try {
       const response = await dishAPI.get(`/${id}`);
-      return response.data;
+      // Return only the data object, not the wrapped object
+      return response.data.data || response.data;
     } catch (error) {
       throw error.response?.data || error.message;
     }
@@ -190,7 +198,8 @@ export const dishService = {
       const response = await dishAPI.post('/', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      return response.data;
+      // Return only the data object, not the wrapped object
+      return response.data.data || response.data;
     } catch (error) {
       throw error.response?.data || error.message;
     }
@@ -202,7 +211,8 @@ export const dishService = {
       const response = await dishAPI.put(`/${id}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      return response.data;
+      // Return only the data object, not the wrapped object
+      return response.data.data || response.data;
     } catch (error) {
       throw error.response?.data || error.message;
     }
@@ -212,7 +222,8 @@ export const dishService = {
   delete: async (id) => {
     try {
       const response = await dishAPI.delete(`/${id}`);
-      return response.data;
+      // Return only the data object, not the wrapped object
+      return response.data.data || response.data;
     } catch (error) {
       throw error.response?.data || error.message;
     }

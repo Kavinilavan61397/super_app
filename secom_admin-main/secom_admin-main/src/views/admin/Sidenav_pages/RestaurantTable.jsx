@@ -54,7 +54,7 @@ const RestaurantTable = () => {
   };
 
   // Filter and sort restaurants
-  const filteredRestaurants = restaurants
+  const filteredRestaurants = (Array.isArray(restaurants) ? restaurants : [])
     .filter((restaurant) => {
       if (statusFilter === 'active') return restaurant.status === true;
       if (statusFilter === 'inactive') return restaurant.status === false;

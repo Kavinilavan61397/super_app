@@ -55,7 +55,7 @@ const DishTable = () => {
   };
 
   // Filter and sort dishes
-  const filteredDishes = dishes
+  const filteredDishes = (Array.isArray(dishes) ? dishes : [])
     .filter((dish) => {
       if (statusFilter === 'active') return dish.status === true;
       if (statusFilter === 'inactive') return dish.status === false;

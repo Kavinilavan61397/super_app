@@ -15,7 +15,7 @@ function CategoryTable() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRows, setSelectedRows] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(2);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState(null);
   const [statusFilter, setStatusFilter] = useState('active'); // 'all', 'active', 'inactive'
@@ -88,6 +88,110 @@ function CategoryTable() {
       }
     });
     return flattened;
+  };
+
+  // Group categories by parent_id
+  const groupCategories = (categories) => {
+    const grouped = {};
+    categories.forEach(cat => {
+      const parent = cat.parent_id || 'root';
+      if (!grouped[parent]) grouped[parent] = [];
+      grouped[parent].push(cat);
+    });
+    return grouped;
+  };
+
+  // Sort categories alphabetically by name
+  const sortCategoriesByName = (categories) => {
+    return [...categories].sort((a, b) => a.name.localeCompare(b.name));
+  };
+
+  // Sort categories by createdAt (ascending)
+  const sortCategoriesByCreatedAt = (categories) => {
+    return [...categories].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+  };
+
+  const groupedCategories = groupCategories(filteredCategories);
+
+  // Get all main categories (parent_id: null), sorted by createdAt
+  const mainCategories = groupedCategories['root'] ? sortCategoriesByCreatedAt(groupedCategories['root']) : [];
+
+  // Pagination for main categories only
+  const totalPages = Math.ceil(mainCategories.length / itemsPerPage);
+  const paginatedMainCategories = mainCategories.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  // Recursive function to render categories in tree order, sorted by createdAt
+  const renderCategoryRows = (categories, level = 0) => {
+    if (!categories) return null;
+    return categories.map(category => (
+      <React.Fragment key={category.id}>
+        <tr className="hover:bg-gray-50">
+          <td className="px-6 py-4 whitespace-nowrap">
+            <input
+              type="checkbox"
+              checked={selectedRows.includes(category.id)}
+              onChange={() => handleRowSelect(category.id)}
+              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+          </td>
+          <td className="px-6 py-4 whitespace-nowrap">
+            <div className="flex items-center">
+              <div style={{ marginLeft: `${level * 20}px` }} className="flex items-center gap-2">
+                {getHierarchyIcon(level, !!groupedCategories[category.id])}
+                <span className="text-sm font-medium text-gray-900">{category.name}</span>
+              </div>
+            </div>
+          </td>
+          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            {category.parent_id ? categoryIdNameMap[category.parent_id] || '-' : '-'}
+          </td>
+          <td className="px-6 py-4 whitespace-nowrap">
+            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+              category.status 
+                ? 'bg-green-100 text-green-800' 
+                : 'bg-red-100 text-red-800'
+            }`}>
+              {category.status ? 'Active' : 'Inactive'}
+            </span>
+          </td>
+          <td className="px-6 py-4 whitespace-nowrap">
+            {category.image ? (
+              <img
+                src={`${API_CONFIG.BASE_URL}${category.image}`}
+                alt={category.name}
+                className="h-10 w-10 rounded-lg object-cover"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                }}
+              />
+            ) : (
+              <div className="h-10 w-10 bg-gray-200 rounded-lg flex items-center justify-center">
+                <span className="text-gray-400 text-xs">No img</span>
+              </div>
+            )}
+          </td>
+          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => navigate(`/admin/categories/edit/${category.id}`)}
+                className="text-blue-600 hover:text-blue-900"
+              >
+                <FaEdit />
+              </button>
+              <button
+                onClick={() => handleDelete(category.id)}
+                disabled={isDeleting}
+                className="text-red-600 hover:text-red-900 disabled:opacity-50"
+              >
+                {isDeleting ? <FaSpinner className="animate-spin" /> : <FaTrashAlt />}
+              </button>
+            </div>
+          </td>
+        </tr>
+        {/* Render children recursively, sorted by createdAt */}
+        {groupedCategories[category.id] && renderCategoryRows(sortCategoriesByCreatedAt(groupedCategories[category.id]), level + 1)}
+      </React.Fragment>
+    ));
   };
 
   // Get hierarchy icon based on level and children
@@ -173,8 +277,17 @@ function CategoryTable() {
     return filteredCategories.slice(startIndex, endIndex);
   };
 
-  // Calculate total pages
-  const totalPages = Math.ceil(filteredCategories.length / itemsPerPage);
+  // After fetching categories and before renderCategoryRows:
+  const categoryIdNameMap = {};
+  filteredCategories.forEach(cat => {
+    categoryIdNameMap[cat.id] = cat.name;
+  });
+
+  // Calculate the range for main categories
+  const startMain = (currentPage - 1) * itemsPerPage + 1;
+  const endMain = Math.min(currentPage * itemsPerPage, mainCategories.length);
+  const totalMain = mainCategories.length;
+
 
   // Handle page change
   const handlePageChange = (page) => {
@@ -308,71 +421,7 @@ function CategoryTable() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {getPaginatedData().map((category) => (
-                <tr key={category.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <input
-                      type="checkbox"
-                      checked={selectedRows.includes(category.id)}
-                      onChange={() => handleRowSelect(category.id)}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div style={{ marginLeft: `${category.level * 20}px` }} className="flex items-center gap-2">
-                        {getHierarchyIcon(category.level, category.hasChildren)}
-                        <span className="text-sm font-medium text-gray-900">{category.name}</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {category.parentName || '-'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      category.status 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {category.status ? 'Active' : 'Inactive'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {category.image ? (
-                      <img
-                        src={`${API_CONFIG.BASE_URL}${category.image}`}
-                        alt={category.name}
-                        className="h-10 w-10 rounded-lg object-cover"
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                        }}
-                      />
-                    ) : (
-                      <div className="h-10 w-10 bg-gray-200 rounded-lg flex items-center justify-center">
-                        <span className="text-gray-400 text-xs">No img</span>
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => navigate(`/admin/categories/edit/${category.id}`)}
-                        className="text-blue-600 hover:text-blue-900"
-                      >
-                        <FaEdit />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(category.id)}
-                        disabled={isDeleting}
-                        className="text-red-600 hover:text-red-900 disabled:opacity-50"
-                      >
-                        {isDeleting ? <FaSpinner className="animate-spin" /> : <FaTrashAlt />}
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {renderCategoryRows(paginatedMainCategories)}
             </tbody>
           </table>
 
@@ -421,15 +470,12 @@ function CategoryTable() {
             <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm text-gray-700">
-                  Showing{' '}
-                  <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span>
+                  Showing <span className="font-medium">{startMain}</span>
                   {' '}to{' '}
-                  <span className="font-medium">
-                    {Math.min(currentPage * itemsPerPage, filteredCategories.length)}
-                  </span>
+                  <span className="font-medium">{endMain}</span>
                   {' '}of{' '}
-                  <span className="font-medium">{filteredCategories.length}</span>
-                  {' '}results
+                  <span className="font-medium">{totalMain}</span>
+                  {' '}main categories
                 </p>
               </div>
               <div>

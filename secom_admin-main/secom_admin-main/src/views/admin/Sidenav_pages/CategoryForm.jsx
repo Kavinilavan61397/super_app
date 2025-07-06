@@ -28,7 +28,7 @@ function CategoryForm() {
       .max(100, 'Category name must not exceed 100 characters'),
     description: Yup.string()
       .max(500, 'Description must not exceed 500 characters'),
-    parent_id: Yup.number()
+    parent_id: Yup.string()
       .nullable()
       .transform((value) => (value === '' ? null : value)),
     status: Yup.boolean()
@@ -156,27 +156,7 @@ function CategoryForm() {
 
   // Get available parent categories (exclude current category and its descendants)
   const getAvailableParents = () => {
-    if (!isEditMode) {
-      return categories;
-    }
-    
-    // Filter out current category and its descendants
-    const filterDescendants = (categoryId, cats) => {
-      const descendants = [];
-      const findDescendants = (parentId) => {
-        cats.forEach(cat => {
-          if (cat.parent_id === parentId) {
-            descendants.push(cat.id);
-            findDescendants(cat.id);
-          }
-        });
-      };
-      findDescendants(categoryId);
-      return descendants;
-    };
-    
-    const descendants = filterDescendants(parseInt(id), categories);
-    return categories.filter(cat => cat.id !== parseInt(id) && !descendants.includes(cat.id));
+    return categories.filter(cat => !cat.parent_id);
   };
 
   // Handle form submission
@@ -294,12 +274,12 @@ function CategoryForm() {
                   <select
                     {...field}
                     value={field.value || ''}
-                    onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : null)}
+                    onChange={(e) => field.onChange(e.target.value ? e.target.value : null)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">No Parent (Main Category)</option>
                     {getAvailableParents().map((category) => (
-                      <option key={category.id} value={category.id}>
+                      <option key={category.id || category._id} value={category.id || category._id}>
                         {category.name}
                       </option>
                     ))}

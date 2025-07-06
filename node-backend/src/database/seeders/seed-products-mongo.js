@@ -6,7 +6,7 @@ const Category = require('../../models/Category');
 require('dotenv').config();
 
 const MONGO_URI = process.env.MONGODB_URI;
-
+console.log('Connecting to:', MONGO_URI);
 // 1. Define all brands (from your brandNameToId mapping)
 const brands = [
   { name: 'LG', slug: 'lg' },
@@ -783,7 +783,7 @@ const products = [
     price: 960.00,
     stock: 100,
     category_slug: 'mens-tops',
-    brand_slug: 'lg',
+    brand_slug: 'zara',
     status: true,
     photo: 'products/TShirt.png',
     created_at: new Date(),
@@ -798,7 +798,7 @@ const products = [
     price: 800.00,
     stock: 80,
     category_slug: 'mens-tops',
-    brand_slug: 'lg',
+    brand_slug: 'nike',
     status: true,
     photo: 'products/TShirt.png',
     created_at: new Date(),
@@ -813,7 +813,7 @@ const products = [
     price: 1040.00,
     stock: 60,
     category_slug: 'mens-tops',
-    brand_slug: 'lg',
+    brand_slug: 'levis',
     status: true,
     photo: 'products/TShirt.png',
     created_at: new Date(),
@@ -828,7 +828,7 @@ const products = [
     price: 720.00,
     stock: 90,
     category_slug: 'mens-tops',
-    brand_slug: 'lg',
+    brand_slug: 'hm',
     status: true,
     photo: 'products/TShirt.png',
     created_at: new Date(),
@@ -843,7 +843,7 @@ const products = [
     price: 1440.00,
     stock: 70,
     category_slug: 'mens-tops',
-    brand_slug: 'lg',
+    brand_slug: 'allen-solly',
     status: true,
     photo: 'products/TShirt.png',
     created_at: new Date(),
@@ -859,7 +859,7 @@ const products = [
     price: 1600.00,
     stock: 80,
     category_slug: 'mens-bottoms',
-    brand_slug: 'lg',
+    brand_slug: 'levis',
     status: true,
     photo: 'products/FormalTrouser.jpg',
     created_at: new Date(),
@@ -874,7 +874,7 @@ const products = [
     price: 1200.00,
     stock: 90,
     category_slug: 'mens-bottoms',
-    brand_slug: 'lg',
+    brand_slug: 'adidas',
     status: true,
     photo: 'products/FormalTrouser.jpg',
     created_at: new Date(),
@@ -889,7 +889,7 @@ const products = [
     price: 880.00,
     stock: 70,
     category_slug: 'mens-bottoms',
-    brand_slug: 'lg',
+    brand_slug: 'zara',
     status: true,
     photo: 'products/FormalTrouser.jpg',
     created_at: new Date(),
@@ -904,7 +904,7 @@ const products = [
     price: 1520.00,
     stock: 60,
     category_slug: 'mens-bottoms',
-    brand_slug: 'lg',
+    brand_slug: 'van-heusen',
     status: true,
     photo: 'products/FormalTrouser.jpg',
     created_at: new Date(),
@@ -919,7 +919,7 @@ const products = [
     price: 1760.00,
     stock: 50,
     category_slug: 'mens-bottoms',
-    brand_slug: 'lg',
+    brand_slug: 'peter-england',
     status: true,
     photo: 'products/FormalTrouser.jpg',
     created_at: new Date(),
@@ -935,7 +935,7 @@ const products = [
     price: 2000.00,
     stock: 100,
     category_slug: 'mens-footwear',
-    brand_slug: 'lg',
+    brand_slug: 'nike',
     status: true,
     photo: 'products/MensCasualSneakers.png',
     created_at: new Date(),
@@ -950,7 +950,7 @@ const products = [
     price: 3200.00,
     stock: 60,
     category_slug: 'mens-footwear',
-    brand_slug: 'lg',
+    brand_slug: 'bata',
     status: true,
     photo: 'products/MensCasualSneakers.png',
     created_at: new Date(),
@@ -965,7 +965,7 @@ const products = [
     price: 2400.00,
     stock: 75,
     category_slug: 'mens-footwear',
-    brand_slug: 'lg',
+    brand_slug: 'adidas',
     status: true,
     photo: 'products/MensCasualSneakers.png',
     created_at: new Date(),
@@ -981,7 +981,7 @@ const products = [
     price: 960.00,
     stock: 120,
     category_slug: 'mens-accessories',
-    brand_slug: 'lg',
+    brand_slug: 'levis',
     status: true,
     photo: 'products/AviatorSunglasses.jpg',
     created_at: new Date(),
@@ -996,7 +996,7 @@ const products = [
     price: 2400.00,
     stock: 80,
     category_slug: 'mens-accessories',
-    brand_slug: 'lg',
+    brand_slug: 'fossil',
     status: true,
     photo: 'products/AviatorSunglasses.jpg',
     created_at: new Date(),
@@ -1011,7 +1011,7 @@ const products = [
     price: 1200.00,
     stock: 90,
     category_slug: 'mens-accessories',
-    brand_slug: 'lg',
+    brand_slug: 'ray-ban',
     status: true,
     photo: 'products/AviatorSunglasses.jpg',
     created_at: new Date(),
@@ -1027,7 +1027,7 @@ const products = [
     price: 4000.00,
     stock: 45,
     category_slug: 'mens-outerwear',
-    brand_slug: 'lg',
+    brand_slug: 'zara',
     status: true,
     photo: 'products/ClassicDenimJacket.jpg',
     created_at: new Date(),
@@ -1042,7 +1042,7 @@ const products = [
     price: 2800.00,
     stock: 70,
     category_slug: 'mens-outerwear',
-    brand_slug: 'lg',
+    brand_slug: 'levis',
     status: true,
     photo: 'products/ClassicDenimJacket.jpg',
     created_at: new Date(),
@@ -1057,7 +1057,7 @@ const products = [
     price: 6400.00,
     stock: 25,
     category_slug: 'mens-outerwear',
-    brand_slug: 'lg',
+    brand_slug: 'jack-jones',
     status: true,
     photo: 'products/ClassicDenimJacket.jpg',
     created_at: new Date(),
@@ -1073,7 +1073,7 @@ const products = [
     price: 6400.00,
     stock: 30,
     category_slug: 'mens-suits-formals',
-    brand_slug: 'lg',
+    brand_slug: 'louis-philippe',
     status: true,
     photo: 'products/ThreePieceSuit.jpg',
     created_at: new Date(),
@@ -1088,7 +1088,7 @@ const products = [
     price: 1440.00,
     stock: 85,
     category_slug: 'mens-suits-formals',
-    brand_slug: 'lg',
+    brand_slug: 'arrow',
     status: true,
     photo: 'products/ThreePieceSuit.jpg',
     created_at: new Date(),
@@ -1103,7 +1103,7 @@ const products = [
     price: 9600.00,
     stock: 20,
     category_slug: 'mens-suits-formals',
-    brand_slug: 'lg',
+    brand_slug: 'van-heusen',
     status: true,
     photo: 'products/ThreePieceSuit.jpg',
     created_at: new Date(),
@@ -1119,7 +1119,7 @@ const products = [
     price: 599.00,
     stock: 200,
     category_slug: 'mens-underwear-loungewear',
-    brand_slug: 'lg',
+    brand_slug: 'jockey',
     status: true,
     photo: 'products/TerryRobe.jpg',
     created_at: new Date(),
@@ -1134,7 +1134,7 @@ const products = [
     price: 2000.00,
     stock: 50,
     category_slug: 'mens-underwear-loungewear',
-    brand_slug: 'lg',
+    brand_slug: 'zara',
     status: true,
     photo: 'products/TerryRobe.jpg',
     created_at: new Date(),
@@ -1150,7 +1150,7 @@ const products = [
     price: 2000.00,
     stock: 50,
     category_slug: 'mens-new-arrivals',
-    brand_slug: 'lg',
+    brand_slug: 'hm',
     status: true,
     photo: 'products/JerseyLoungePants.jpg',
     created_at: new Date(),
@@ -1165,7 +1165,7 @@ const products = [
     price: 880.00,
     stock: 75,
     category_slug: 'mens-new-arrivals',
-    brand_slug: 'lg',
+    brand_slug: 'nike',
     status: true,
     photo: 'products/JerseyLoungePants.jpg',
     created_at: new Date(),
@@ -1181,7 +1181,7 @@ const products = [
     price: 1440.00,
     stock: 40,
     category_slug: 'mens-seasonal-collections',
-    brand_slug: 'lg',
+    brand_slug: 'zara',
     status: true,
     photo: 'products/SummerCollectionTShirt.jpg',
     created_at: new Date(),
@@ -1196,7 +1196,7 @@ const products = [
     price: 800.00,
     stock: 60,
     category_slug: 'mens-seasonal-collections',
-    brand_slug: 'lg',
+    brand_slug: 'zara',
     status: true,
     photo: 'products/SummerCollectionTShirt.jpg',
     created_at: new Date(),
@@ -1346,11 +1346,10 @@ async function seed() {
     const Category = require('../../models/Category');
 
     // Clear existing data
-    await Brand.deleteMany({});
     await Product.deleteMany({});
     await ProductVariation.deleteMany({});
     // Do not clear categories here!
-    console.log('Cleared brands, products, and product variations');
+    console.log('Cleared products and product variations');
 
     // Get all categories and build slug->ObjectId map
     const categoryDocs = await Category.find({});
@@ -1369,10 +1368,17 @@ async function seed() {
       console.error('All missing category slugs:', Array.from(missingSlugs));
     }
 
-    // Insert brands and build a slug->ObjectId map
-    const brandDocs = await Brand.insertMany(brands.map(b => ({ ...b, status: true, meta_title: b.name, meta_description: b.name }))); 
+    // Remove brand deletion and insertion. Fetch brands from DB instead.
+    const brandDocs = await Brand.find({});
     const brandSlugToId = {};
     brandDocs.forEach(b => { brandSlugToId[b.slug] = b._id; });
+
+    // DEBUG: Log missing brand slugs before inserting products
+    products.forEach(p => {
+      if (!brandSlugToId[p.brand_slug]) {
+        console.error('Missing brand for slug:', p.brand_slug, 'in product:', p.name);
+      }
+    });
 
     // Insert products (update brand_id, category_id, sub_category_id to ObjectId)
     const productDocs = await Product.insertMany(products.map(p => {
@@ -1425,7 +1431,7 @@ async function seed() {
 
     await ProductVariation.insertMany(validVariations);
 
-    console.log('Brands, products, and product variations seeded successfully!');
+    console.log('Products and product variations seeded successfully!');
     process.exit(0);
   } catch (err) {
     console.error('Error seeding:', err);

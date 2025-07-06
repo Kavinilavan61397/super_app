@@ -1543,9 +1543,9 @@ function Products() {
                         className="w-12 h-12 object-cover rounded-full"
                       />
                     </td>
-                    <td className="px-6 py-4">{product.brand?.brand_name || ''}</td>
-                    <td className="px-6 py-4">{product.category?.name || ''}</td>
-                    <td className="px-6 py-4">{product.sub_category?.name || ''}</td>
+                    <td className="px-6 py-4">{product.brand?.brand_name || product.brand || ''}</td>
+                    <td className="px-6 py-4">{product.category?.name || product.category || ''}</td>
+                    <td className="px-6 py-4">{product.sub_category?.name || product.sub_category || ''}</td>
                     <td className="px-6 py-4">
                       <button
                         onClick={() =>

@@ -13,15 +13,20 @@ const ProductAttribute = require('../models/ProductAttribute');
 // Get all products
 exports.getAllProducts = async (req, res) => {
   try {
-    const products = await Product.find()
-      .populate({
-        path: 'category',
-        populate: { path: 'parent_id' }
-      })
-      .populate('brand')
-      .populate('sub_category_id')
-      .sort({ createdAt: -1 });
-    res.json(products);
+    const products = await Product.find().sort({ createdAt: -1 }).lean();
+    const categories = await Category.find({}, '_id name').lean();
+    const brands = await Brand.find({}, '_id name').lean();
+    const categoryMap = {};
+    categories.forEach(cat => { categoryMap[cat._id.toString()] = cat.name; });
+    const brandMap = {};
+    brands.forEach(brand => { brandMap[brand._id.toString()] = brand.name; });
+    const mappedProducts = products.map(prod => ({
+      ...prod,
+      category: prod.category_id ? categoryMap[prod.category_id.toString()] : null,
+      sub_category: prod.sub_category_id ? categoryMap[prod.sub_category_id.toString()] : null,
+      brand: prod.brand_id ? brandMap[prod.brand_id.toString()] : null,
+    }));
+    res.json(mappedProducts);
   } catch (error) {
     console.error('Error fetching products:', error);
     res.status(500).json({

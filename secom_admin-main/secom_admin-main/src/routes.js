@@ -10,7 +10,7 @@ import { AiOutlineShoppingCart, AiOutlineAppstore } from 'react-icons/ai';
 import BrandTable from "views/admin/Sidenav_pages/BrandTable";
 import CategoryTable from "views/admin/Sidenav_pages/CategoryTable";
 import SubCategory from "views/admin/Sidenav_pages/Sub_Category";
-import Products from "views/admin/Sidenav_pages/Products";
+import ProductForm from 'views/admin/Sidenav_pages/ProductForm';
 import ProductVariation from "views/admin/Sidenav_pages/ProductVariation";
 import Orders from "views/admin/Sidenav_pages/Orders";
 import Discount from "views/admin/Sidenav_pages/Discount";
@@ -59,6 +59,7 @@ import RestoCategoryForm from "views/admin/Sidenav_pages/RestoCategoryForm";
 import RestaurantTable from "views/admin/Sidenav_pages/RestaurantTable";
 import DishTable from "views/admin/Sidenav_pages/DishTable";
 import adminRoutes from './routes/admin.routes.js';
+import ProductTable from 'views/admin/Sidenav_pages/ProductTable';
 
 const routes = [
   ...authRoutes,
@@ -99,8 +100,8 @@ const routes = [
         name: "Product",
         layout: "/admin",
         icon: <AiOutlineAppstore className="h-6 w-6" />,
-        path: "product",
-        component: <Products />,
+        path: "products",
+        component: <ProductTable />,
       },
       {
         name: "Orders",

@@ -3,6 +3,7 @@ const { processImage } = require('../utils/imageProcessor');
 const path = require('path');
 const fs = require('fs');
 const slugify = require('slugify');
+const mongoose = require('mongoose');
 
 // Helper function to transform brand data for frontend
 const transformBrandForFrontend = (brand) => ({
@@ -36,6 +37,9 @@ exports.getAllBrands = async (req, res) => {
 // Get brand by ID
 exports.getBrandById = async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: 'Invalid brand ID' });
+    }
     const brand = await Brand.findById(req.params.id);
     if (!brand) {
       return res.status(404).json({ message: 'Brand not found' });

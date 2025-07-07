@@ -45,7 +45,7 @@ module.exports = {
   // Create category
   async create(req, res) {
     try {
-      const { name, description, status } = req.body;
+      const { name, slug, description, status } = req.body;
       
       // Handle image upload
       let imagePath = null;
@@ -56,6 +56,7 @@ module.exports = {
 
       const category = new RestaurantCategory({ 
         name, 
+        slug,
         description, 
         image: imagePath,
         status: status === 'true' || status === true
@@ -80,7 +81,7 @@ module.exports = {
   // Update category
   async update(req, res) {
     try {
-      const { name, description, status } = req.body;
+      const { name, slug, description, status } = req.body;
       const category = await RestaurantCategory.findById(req.params.id);
       
       if (!category) {
@@ -98,6 +99,7 @@ module.exports = {
       }
 
       category.name = name || category.name;
+      category.slug = slug || category.slug;
       category.description = description || category.description;
       category.image = imagePath;
       category.status = status === 'true' || status === true;

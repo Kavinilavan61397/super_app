@@ -22,7 +22,7 @@ const RestaurantForm = () => {
   const [formData, setFormData] = useState({
     name: '',
     address: '',
-    categoryId: '',
+    category_id: '',
     status: true,
   });
   const [categories, setCategories] = useState([]);
@@ -51,11 +51,14 @@ const RestaurantForm = () => {
       const fetchRestaurant = async () => {
         try {
           setLoading(true);
-          const restaurant = await restaurantService.getById(id);
+          const response = await restaurantService.getById(id);
+          const restaurant = response.data || response;
           setFormData({
             name: restaurant.name || '',
             address: restaurant.address || '',
-            categoryId: restaurant.categoryId || '',
+            category_id: (typeof restaurant.category_id === 'object' && restaurant.category_id !== null)
+              ? restaurant.category_id._id
+              : (restaurant.category_id || ''),
             status: restaurant.status !== undefined ? restaurant.status : true,
           });
           if (restaurant.image) {
@@ -74,8 +77,7 @@ const RestaurantForm = () => {
 
   // Handle input changes
   const handleInputChange = (field, value) => {
-    if (field === 'categoryId') {
-      console.log('CategoryId before:', formData.categoryId, 'after:', value);
+    if (field === 'category_id') {
       setFormData(prev => ({ ...prev, [field]: value ? String(value) : '' }));
     } else if (field === 'status') {
       console.log('Status before:', formData.status, 'after:', value);
@@ -118,7 +120,7 @@ const RestaurantForm = () => {
     const newErrors = {};
     if (!formData.name.trim()) newErrors.name = 'Name is required';
     if (!formData.address.trim()) newErrors.address = 'Address is required';
-    if (!formData.categoryId) newErrors.categoryId = 'Category is required';
+    if (!formData.category_id) newErrors.category_id = 'Category is required';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -135,8 +137,7 @@ const RestaurantForm = () => {
       const formDataToSend = new FormData();
       formDataToSend.append('name', formData.name);
       formDataToSend.append('address', formData.address);
-      // Convert categoryId to number for API
-      formDataToSend.append('categoryId', Number(formData.categoryId));
+      formDataToSend.append('category_id', formData.category_id);
       formDataToSend.append('status', formData.status);
       if (imageFile) {
         formDataToSend.append('image', imageFile);
@@ -198,15 +199,15 @@ const RestaurantForm = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
               <select
                 className="block w-full rounded border border-gray-300 px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={formData.categoryId}
-                onChange={e => handleInputChange('categoryId', e.target.value)}
+                value={formData.category_id}
+                onChange={e => handleInputChange('category_id', e.target.value)}
               >
                 <option value="">Select category</option>
                 {categories.filter(cat => cat.status).map(cat => (
-                  <option key={cat.id} value={String(cat.id)}>{cat.name}</option>
+                  <option key={cat._id} value={cat._id}>{cat.name}</option>
                 ))}
               </select>
-              {errors.categoryId && <p className="mt-1 text-sm text-red-600">{errors.categoryId}</p>}
+              {errors.category_id && <p className="mt-1 text-sm text-red-600">{errors.category_id}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Image</label>

@@ -76,6 +76,7 @@ exports.createDish = async (req, res) => {
 
     const {
       name,
+      slug,
       description,
       price,
       category,
@@ -108,6 +109,7 @@ exports.createDish = async (req, res) => {
 
     const dish = new Dish({
       name,
+      slug,
       description,
       price: parseFloat(price),
       category,
@@ -152,6 +154,7 @@ exports.updateDish = async (req, res) => {
 
     const {
       name,
+      slug,
       description,
       price,
       category,
@@ -182,6 +185,7 @@ exports.updateDish = async (req, res) => {
     }
 
     dish.name = name || dish.name;
+    dish.slug = slug || dish.slug;
     dish.description = description || dish.description;
     dish.price = price ? parseFloat(price) : dish.price;
     dish.category = category || dish.category;

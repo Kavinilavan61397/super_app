@@ -229,7 +229,7 @@ const DishTable = () => {
                               <PencilIcon className="h-4 w-4" />
                             </IconButton>
                           </Tooltip>
-                          {/* <Tooltip content="Delete Dish">
+                          <Tooltip content="Delete Dish">
                             <IconButton
                               variant="text"
                               color="red"
@@ -237,7 +237,7 @@ const DishTable = () => {
                             >
                               <TrashIcon className="h-4 w-4" />
                             </IconButton>
-                          </Tooltip> */}
+                          </Tooltip>
                         </div>
                       </td>
                     </tr>
@@ -248,7 +248,39 @@ const DishTable = () => {
           </div>
         </CardBody>
       </Card>
-      {/* Delete Confirmation Dialog (to be implemented) */}
+      {/* Delete Confirmation Dialog */}
+      {deleteDialog.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
+          <div className="bg-white rounded-xl shadow-lg w-full max-w-sm p-6 flex flex-col items-center">
+            <div className="flex items-center justify-center w-14 h-14 rounded-full bg-red-100 mb-4">
+              <TrashIcon className="h-8 w-8 text-red-500" />
+            </div>
+            <div className="text-lg font-semibold text-gray-800 mb-2 text-center w-full">Delete Dish</div>
+            <div className="text-center text-gray-600 mb-4">
+              Are you sure you want to delete <span className="font-bold text-gray-900">"{deleteDialog.dish?.name}"</span>?<br />
+              <span className="text-xs text-gray-400">This action cannot be undone.</span>
+            </div>
+            <div className="flex w-full justify-center gap-2 mt-2">
+              <Button
+                variant="text"
+                color="gray"
+                onClick={() => setDeleteDialog({ open: false, dish: null })}
+                className="rounded-md px-4 py-2 text-gray-700 border border-gray-300 hover:bg-gray-100"
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="text"
+                color="red"
+                onClick={handleDelete}
+                className="rounded-md px-4 py-2 flex items-center gap-2"
+              >
+                <TrashIcon className="h-4 w-4" /> Delete
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -20,9 +20,20 @@ import classNames from 'classnames';
 // Validation schema
 const validationSchema = yup.object().shape({
   name: yup.string().required('Name is required').min(2, 'Name must be at least 2 characters'),
+  slug: yup.string().required('Slug is required').matches(/^[-a-z0-9]+$/, 'Slug must be URL-friendly (lowercase, hyphens, no spaces)'),
   description: yup.string().optional(),
   status: yup.boolean(),
 });
+
+// Slug generator function
+const generateSlug = (text) =>
+  text
+    .toLowerCase()
+    .trim()
+    .replace(/ /g, '-')
+    .replace(/[^a-z0-9-]+/g, '')
+    .replace(/--+/g, '-')
+    .replace(/^-+|-+$/g, '');
 
 const RestoCategoryForm = () => {
   const { id } = useParams();
@@ -31,6 +42,7 @@ const RestoCategoryForm = () => {
 
   const [formData, setFormData] = useState({
     name: '',
+    slug: '',
     description: '',
     status: true,
   });
@@ -52,6 +64,7 @@ const RestoCategoryForm = () => {
       const category = await restaurantCategoryService.getById(id);
       setFormData({
         name: category.name || '',
+        slug: category.slug || generateSlug(category.name || ''),
         description: category.description || '',
         status: category.status !== undefined ? category.status : true,
       });
@@ -69,7 +82,17 @@ const RestoCategoryForm = () => {
 
   // Handle form input changes
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    if (field === 'name') {
+      setFormData(prev => ({
+        ...prev,
+        name: value,
+        slug: prev.slug ? prev.slug : generateSlug(value),
+      }));
+    } else if (field === 'slug') {
+      setFormData(prev => ({ ...prev, slug: generateSlug(value) }));
+    } else {
+      setFormData(prev => ({ ...prev, [field]: value }));
+    }
     // Clear error when user starts typing
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
@@ -139,6 +162,7 @@ const RestoCategoryForm = () => {
       
       const formDataToSend = new FormData();
       formDataToSend.append('name', formData.name);
+      formDataToSend.append('slug', formData.slug); // Add slug
       formDataToSend.append('description', formData.description);
       formDataToSend.append('status', formData.status);
       
@@ -209,6 +233,27 @@ const RestoCategoryForm = () => {
               {errors.name && (
                 <Typography variant="small" color="red" className="mt-1">
                   {errors.name}
+                </Typography>
+              )}
+            </div>
+
+            {/* Slug Field */}
+            <div>
+              <label htmlFor="category-slug" className="block text-sm font-medium text-blue-gray-700 mb-1">Slug *</label>
+              <Input
+                id="category-slug"
+                type="text"
+                placeholder="Auto-generated from name, or edit manually"
+                value={formData.slug}
+                onChange={(e) => handleInputChange('slug', e.target.value)}
+                error={!!errors.slug}
+                className="!border !border-gray-300 bg-white text-gray-900 shadow-lg shadow-gray-900/5 ring-4 ring-transparent placeholder:text-gray-500 focus:!border-gray-900 focus:!border-t-gray-900 focus:ring-gray-900/10"
+                labelProps={{ className: "hidden" }}
+                containerProps={{ className: "min-w-[100px]" }}
+              />
+              {errors.slug && (
+                <Typography variant="small" color="red" className="mt-1">
+                  {errors.slug}
                 </Typography>
               )}
             </div>

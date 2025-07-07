@@ -12,6 +12,15 @@ import { dishService, restaurantService } from '../../../services/restaurantServ
 import API_CONFIG from '../../../config/api.config';
 import { toast } from 'react-toastify';
 
+const generateSlug = (text) =>
+  text
+    .toLowerCase()
+    .trim()
+    .replace(/ /g, '-')
+    .replace(/[^a-z0-9-]+/g, '')
+    .replace(/--+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
 const DishForm = () => {
   const { id } = useParams();
   const isEditMode = Boolean(id);
@@ -19,9 +28,10 @@ const DishForm = () => {
 
   const [formData, setFormData] = useState({
     name: '',
+    slug: '',
     description: '',
     price: '',
-    restaurantId: '',
+    restaurant_id: '',
     status: true,
   });
   const [restaurants, setRestaurants] = useState([]);
@@ -52,9 +62,10 @@ const DishForm = () => {
           const dish = await dishService.getById(id);
           setFormData({
             name: dish.name || '',
+            slug: dish.slug || generateSlug(dish.name || ''),
             description: dish.description || '',
             price: dish.price ? String(dish.price) : '',
-            restaurantId: dish.restaurantId ? String(dish.restaurantId) : '',
+            restaurant_id: dish.restaurant_id ? String(dish.restaurant_id) : '',
             status: dish.status !== undefined ? dish.status : true,
           });
           if (dish.image) {
@@ -73,7 +84,15 @@ const DishForm = () => {
 
   // Handle input changes
   const handleInputChange = (field, value) => {
-    if (field === 'restaurantId') {
+    if (field === 'name') {
+      setFormData(prev => ({
+        ...prev,
+        name: value,
+        slug: prev.slug ? prev.slug : generateSlug(value),
+      }));
+    } else if (field === 'slug') {
+      setFormData(prev => ({ ...prev, slug: generateSlug(value) }));
+    } else if (field === 'restaurant_id') {
       setFormData(prev => ({ ...prev, [field]: value ? String(value) : '' }));
     } else if (field === 'status') {
       setFormData(prev => ({ ...prev, [field]: !!value }));
@@ -114,9 +133,10 @@ const DishForm = () => {
   const validateForm = () => {
     const newErrors = {};
     if (!formData.name.trim()) newErrors.name = 'Name is required';
+    if (!formData.slug.trim()) newErrors.slug = 'Slug is required';
     if (!formData.description.trim()) newErrors.description = 'Description is required';
     if (!formData.price || parseFloat(formData.price) <= 0) newErrors.price = 'Valid price is required';
-    if (!formData.restaurantId) newErrors.restaurantId = 'Restaurant is required';
+    if (!formData.restaurant_id) newErrors.restaurant_id = 'Restaurant is required';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -132,9 +152,10 @@ const DishForm = () => {
       setLoading(true);
       const formDataToSend = new FormData();
       formDataToSend.append('name', formData.name);
+      formDataToSend.append('slug', formData.slug);
       formDataToSend.append('description', formData.description);
       formDataToSend.append('price', parseFloat(formData.price));
-      formDataToSend.append('restaurantId', Number(formData.restaurantId));
+      formDataToSend.append('restaurant_id', formData.restaurant_id);
       formDataToSend.append('status', formData.status);
       if (imageFile) {
         formDataToSend.append('image', imageFile);
@@ -187,6 +208,17 @@ const DishForm = () => {
               {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
             </div>
             <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Slug *</label>
+              <Input
+                type="text"
+                value={formData.slug}
+                onChange={e => handleInputChange('slug', e.target.value)}
+                error={!!errors.slug}
+                placeholder="Auto-generated from name, or edit manually"
+              />
+              {errors.slug && <p className="mt-1 text-sm text-red-600">{errors.slug}</p>}
+            </div>
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Description *</label>
               <Textarea
                 value={formData.description}
@@ -214,15 +246,15 @@ const DishForm = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">Restaurant *</label>
               <select
                 className="block w-full rounded border border-gray-300 px-3 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={formData.restaurantId}
-                onChange={e => handleInputChange('restaurantId', e.target.value)}
+                value={formData.restaurant_id}
+                onChange={e => handleInputChange('restaurant_id', e.target.value)}
               >
                 <option value="">Select restaurant</option>
                 {restaurants.filter(rest => rest.status).map(restaurant => (
-                  <option key={restaurant.id} value={String(restaurant.id)}>{restaurant.name}</option>
+                  <option key={restaurant._id} value={restaurant._id}>{restaurant.name}</option>
                 ))}
               </select>
-              {errors.restaurantId && <p className="mt-1 text-sm text-red-600">{errors.restaurantId}</p>}
+              {errors.restaurant_id && <p className="mt-1 text-sm text-red-600">{errors.restaurant_id}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Image</label>

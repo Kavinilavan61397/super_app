@@ -179,7 +179,7 @@ const ProductCard = ({ item, onQuickView, addToCart, addToWishlist, cartItems, w
           className="w-full h-[150px] object-cover sm:h-[200px]"
           loading="lazy"
         />
-        <div className="absolute top-2 right-2 flex space-x-2 group-hover:opacity-100 opacity-0 transition-opacity duration-200 sm:opacity-100">
+<div className="absolute top-2 right-2 flex space-x-2 sm:opacity-100">
           <button
             className={`p-2 rounded-full text-white transition-colors duration-200 ${isInWishlist ? 'bg-red-500' : 'bg-gray-700 hover:bg-red-600'}`}
             onClick={() => addToWishlist(item, 1)}

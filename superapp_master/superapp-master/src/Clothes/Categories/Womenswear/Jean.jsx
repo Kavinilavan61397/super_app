@@ -152,24 +152,25 @@ const ProductCard = ({ item, onQuickView, addToCart, addToWishlist, cartItems, w
           className="w-full h-[150px] object-cover sm:h-[200px]"
           loading="lazy"
         />
-        <div className="absolute top-2 right-2 flex space-x-2 group-hover:opacity-100 opacity-0 transition-opacity duration-200 sm:opacity-100">
-          <button
-            className={`p-2 rounded-full text-white transition-colors duration-200 ${isInWishlist ? 'bg-red-500' : 'bg-gray-700 hover:bg-red-600'}`}
-            onClick={() => addToWishlist(item, 1, selectedSize)}
-            title={isInWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'}
-            aria-label={isInWishlist ? `Remove ${name} from wishlist` : `Add ${name} to wishlist`}
-          >
-            <FaHeart className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => onQuickView(item)}
-            className="p-2 rounded-full bg-gray-700 text-white hover:bg-blue-600 transition-colors duration-200"
-            title="Quick View"
-            aria-label={`Quick view for ${name}`}
-          >
-            <FaEye className="w-4 h-4" />
-          </button>
-        </div>
+        <div className="absolute top-2 right-2 flex space-x-2 sm:opacity-100">
+         <button
+           className={`p-2 rounded-full text-white ${isInWishlist ? 'bg-red-500' : 'bg-gray-700 hover:bg-red-600'}`}
+           onClick={() => addToWishlist(item, 1, selectedSize)}
+           title={isInWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'}
+           aria-label={isInWishlist ? `Remove ${name} from wishlist` : `Add ${name} to wishlist`}
+         >
+           <FaHeart className="w-4 h-4" />
+         </button>
+         <button
+           onClick={() => onQuickView(item)}
+           className="p-2 rounded-full bg-gray-700 text-white hover:bg-blue-600 transition-colors duration-200"
+           title="Quick View"
+           aria-label={`Quick view for ${name}`}
+         >
+           <FaEye className="w-4 h-4" />
+         </button>
+       </div>
+                
         <span className="absolute top-2 left-2 bg-black text-white text-[10px] font-semibold px-2 py-1">NEW</span>
         <span className="absolute bottom-2 left-2 bg-black text-white text-[10px] font-semibold px-2 py-1">TRENDING</span>
       </div>

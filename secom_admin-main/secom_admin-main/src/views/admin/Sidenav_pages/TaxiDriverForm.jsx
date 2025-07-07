@@ -20,13 +20,8 @@ const TaxiDriverForm = () => {
   const validationSchema = Yup.object().shape({
     name: Yup.string().required('Name is required'),
     phone: Yup.string().required('Phone is required'),
-    license_no: Yup.string().required('License number is required'),
-    status: Yup.mixed()
-      .required('Status is required')
-      .test('is-valid-status', 'Status must be 0, 1, or 2', function(value) {
-        const numValue = parseInt(value, 10);
-        return !isNaN(numValue) && numValue >= 0 && numValue <= 2;
-      }),
+    license_number: Yup.string().required('License number is required'),
+    status: Yup.string().oneOf(['active', 'inactive', 'offline']).required('Status is required'),
   });
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm({
@@ -44,7 +39,7 @@ const TaxiDriverForm = () => {
             reset({
               name: data.name,
               phone: data.phone,
-              license_no: data.license_no,
+              license_number: data.license_number,
               status: data.status,
             });
           } else {
@@ -64,14 +59,20 @@ const TaxiDriverForm = () => {
     setLoading(true);
     setError(null);
     try {
-      // Convert status to number if it's a string
+      // Get user_id from localStorage
+      const userData = JSON.parse(localStorage.getItem('userData'));
+      const user_id = userData?._id || userData?.id;
+      if (!user_id) {
+        setError('User ID not found. Please log in again.');
+        toast.error('User ID not found. Please log in again.');
+        setLoading(false);
+        return;
+      }
       const dataToSubmit = {
         ...formData,
-        status: parseInt(formData.status, 10)
+        user_id,
       };
-
       console.log('Submitting taxi driver data:', dataToSubmit);
-
       if (isEdit) {
         console.log('Updating taxi driver with ID:', id);
         const response = await taxiService.updateTaxiDriver(id, dataToSubmit);
@@ -125,20 +126,20 @@ const TaxiDriverForm = () => {
         <div>
           <label className="block font-medium">License Number</label>
           <input 
-            {...register('license_no')} 
+            {...register('license_number')} 
             className="input input-bordered w-full" 
             placeholder="Enter license number"
           />
-          {errors.license_no && <p className="text-red-500 text-sm">{errors.license_no.message}</p>}
+          {errors.license_number && <p className="text-red-500 text-sm">{errors.license_number.message}</p>}
         </div>
 
         <div>
           <label className="block font-medium">Status</label>
           <select {...register('status')} className="input input-bordered w-full">
             <option value="">Select Status</option>
-            <option value={0}>Inactive</option>
-            <option value={1}>Active</option>
-            <option value={2}>Suspended</option>
+            <option value="inactive">Inactive</option>
+            <option value="active">Active</option>
+            <option value="offline">Offline</option>
           </select>
           {errors.status && <p className="text-red-500 text-sm">{errors.status.message}</p>}
         </div>

@@ -47,18 +47,18 @@ const TaxiVehicleTable = () => {
 
   const getStatusText = (status) => {
     switch (status) {
-      case 0: return 'Inactive';
-      case 1: return 'Active';
-      case 2: return 'Maintenance';
+      case 'inactive': return 'Inactive';
+      case 'active': return 'Active';
+      case 'maintenance': return 'Maintenance';
       default: return 'Unknown';
     }
   };
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 0: return 'bg-gray-100 text-gray-800';
-      case 1: return 'bg-green-100 text-green-800';
-      case 2: return 'bg-yellow-100 text-yellow-800';
+      case 'inactive': return 'bg-gray-100 text-gray-800';
+      case 'active': return 'bg-green-100 text-green-800';
+      case 'maintenance': return 'bg-yellow-100 text-yellow-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -102,18 +102,18 @@ const TaxiVehicleTable = () => {
               taxiVehicles.map((vehicle) => (
                 <tr key={vehicle.id} className="border-b hover:bg-gray-50">
                   <td className="px-4 py-2 border">
-                    {vehicle.driver ? vehicle.driver.name : 'N/A'}
+                    {vehicle.driver_id?.name || 'N/A'}
                   </td>
                   <td className="px-4 py-2 border">{vehicle.make}</td>
                   <td className="px-4 py-2 border">{vehicle.model}</td>
-                  <td className="px-4 py-2 border">{vehicle.plate_number}</td>
+                  <td className="px-4 py-2 border">{vehicle.vehicle_number}</td>
                   <td className="px-4 py-2 border">{vehicle.color}</td>
                   <td className="px-4 py-2 border">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(vehicle.status)}`}>
                       {getStatusText(vehicle.status)}
                     </span>
                   </td>
-                  <td className="px-4 py-2 border">{formatDate(vehicle.created_at)}</td>
+                  <td className="px-4 py-2 border">{formatDate(vehicle.createdAt || vehicle.created_at)}</td>
                   <td className="px-4 py-2 border space-x-2">
                     <Link 
                       to={`/admin/taxi-vehicles/edit/${vehicle.id}`} 

@@ -34,7 +34,7 @@ const TaxiTable = () => {
       try {
         const response = await taxiService.deleteTaxiRide(id);
         if (response.success) {
-          setTaxiRides(taxiRides.filter(ride => ride.id !== id));
+          setTaxiRides(taxiRides.filter(ride => ride._id !== id));
           toast.success('Taxi ride deleted successfully');
         } else {
           toast.error(response.message || 'Failed to delete taxi ride');
@@ -47,22 +47,22 @@ const TaxiTable = () => {
 
   const getStatusText = (status) => {
     switch (status) {
-      case 0: return 'Requested';
-      case 1: return 'Accepted';
-      case 2: return 'Started';
-      case 3: return 'Completed';
-      case 4: return 'Cancelled';
-      default: return 'Unknown';
+      case 'pending': return 'Requested';
+      case 'accepted': return 'Accepted';
+      case 'started': return 'Started';
+      case 'completed': return 'Completed';
+      case 'cancelled': return 'Cancelled';
+      default: return status || 'Unknown';
     }
   };
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 0: return 'bg-yellow-100 text-yellow-800';
-      case 1: return 'bg-blue-100 text-blue-800';
-      case 2: return 'bg-green-100 text-green-800';
-      case 3: return 'bg-gray-100 text-gray-800';
-      case 4: return 'bg-red-100 text-red-800';
+      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      case 'accepted': return 'bg-blue-100 text-blue-800';
+      case 'started': return 'bg-green-100 text-green-800';
+      case 'completed': return 'bg-gray-100 text-gray-800';
+      case 'cancelled': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -75,6 +75,9 @@ const TaxiTable = () => {
   if (loading) return <div className="flex justify-center items-center h-full">Loading...</div>;
   if (error) return <div className="text-red-500 text-center">{error}</div>;
   console.log('taxiRides===========>', JSON.stringify(taxiRides))
+  if (taxiRides.length > 0) {
+    console.log('DEBUG TaxiTable status:', taxiRides[0].status, 'requested_at:', taxiRides[0].createdAt);
+  }
   return (
     <div className="p-4">
       <div className="flex justify-between items-center mb-4">
@@ -106,35 +109,39 @@ const TaxiTable = () => {
               </tr>
             ) : (
               taxiRides.map((ride) => (
-                <tr key={ride.id} className="border-b hover:bg-gray-50">
+                <tr key={ride._id} className="border-b hover:bg-gray-50">
                   {/* <td className="px-4 py-2 border">{ride.id}</td> */}
                   {/* <td className="px-4 py-2 border">
                     {ride.user ? `${ride.user.first_name} ${ride.user.last_name}` : 'N/A'}
                   </td> */}
                   <td className="px-4 py-2 border">
-                    {ride.driver ? ride.driver.name : 'N/A'}
+                    {ride.driver_id?.name || ride.driver?.name || 'N/A'}
                   </td>
                   <td className="px-4 py-2 border">
-                    {ride.vehicle ? `${ride.vehicle.make} ${ride.vehicle.model}` : 'N/A'}
+                    {ride.vehicle_id ? `${ride.vehicle_id.make || ''} ${ride.vehicle_id.model || ''}`.trim() : (ride.vehicle ? `${ride.vehicle.make || ''} ${ride.vehicle.model || ''}`.trim() : 'N/A')}
                   </td>
-                  <td className="px-4 py-2 border">{ride.pickup_location}</td>
-                  <td className="px-4 py-2 border">{ride.dropoff_location}</td>
+                  <td className="px-4 py-2 border">
+                    {ride.pickup_location?.address || 'N/A'}
+                  </td>
+                  <td className="px-4 py-2 border">
+                    {ride.dropoff_location?.address || 'N/A'}
+                  </td>
                   <td className="px-4 py-2 border">${ride.fare}</td>
                   <td className="px-4 py-2 border">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(ride.status)}`}>
-                      {getStatusText(ride.status)}
+                      {ride.status ? getStatusText(ride.status) : 'N/A'}
                     </span>
                   </td>
-                  <td className="px-4 py-2 border">{formatDate(ride.requested_at)}</td>
+                  <td className="px-4 py-2 border">{ride.createdAt ? formatDate(ride.createdAt) : 'N/A'}</td>
                   <td className="px-4 py-2 border space-x-2">
                     <Link 
-                      to={`/admin/taxi-rides/edit/${ride.id}`} 
+                      to={`/admin/taxi-rides/edit/${ride._id}`} 
                       className="text-blue-600 hover:underline"
                     >
                       Edit
                     </Link>
                     <button 
-                      onClick={() => handleDelete(ride.id)}
+                      onClick={() => handleDelete(ride._id)}
                       className="text-red-600 hover:underline"
                     >
                       Delete

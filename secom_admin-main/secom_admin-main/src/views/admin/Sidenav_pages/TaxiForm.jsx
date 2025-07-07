@@ -18,19 +18,18 @@ const TaxiForm = () => {
 
   // Validation schema
   const validationSchema = Yup.object().shape({
-    user_id: Yup.number().required('User is required'),
-    driver_id: Yup.number().required('Driver is required'),
-    vehicle_id: Yup.number().required('Vehicle is required'),
-    pickup_location: Yup.string().required('Pickup location is required'),
-    dropoff_location: Yup.string().required('Dropoff location is required'),
+    user_id: Yup.string().required('User is required'),
+    driver_id: Yup.string().required('Driver is required'),
+    vehicle_id: Yup.string().required('Vehicle is required'),
+    pickup_address: Yup.string().required('Pickup address is required'),
+    dropoff_address: Yup.string().required('Dropoff address is required'),
     fare: Yup.number()
       .required('Fare is required')
       .typeError('Fare must be a number')
       .min(0, 'Fare must be greater than or equal to 0'),
-    status: Yup.number()
-      .required('Status is required')
-      .min(0, 'Status must be 0 or greater')
-      .max(4, 'Status must be 4 or less'),
+    status: Yup.string()
+      .oneOf(['pending', 'accepted', 'started', 'completed', 'cancelled'])
+      .required('Status is required'),
     requested_at: Yup.date().required('Requested at is required'),
     started_at: Yup.date().nullable(),
     completed_at: Yup.date().nullable(),
@@ -69,8 +68,8 @@ const TaxiForm = () => {
               user_id: data.user_id,
               driver_id: data.driver_id,
               vehicle_id: data.vehicle_id,
-              pickup_location: data.pickup_location,
-              dropoff_location: data.dropoff_location,
+              pickup_address: data.pickup_location.address,
+              dropoff_address: data.dropoff_location.address,
               fare: data.fare,
               status: data.status,
               requested_at: data.requested_at ? new Date(data.requested_at).toISOString().slice(0, 16) : '',
@@ -96,9 +95,24 @@ const TaxiForm = () => {
     setLoading(true);
     setError(null);
     try {
-      // Convert empty strings to null for optional dates
+      // Always use logged-in user's ID for user_id
+      const userData = JSON.parse(localStorage.getItem('userData'));
+      const user_id = userData?._id || userData?.id;
+      if (!user_id) {
+        setError('User ID not found. Please log in again.');
+        toast.error('User ID not found. Please log in again.');
+        setLoading(false);
+        return;
+      }
       const data = {
         ...formData,
+        user_id,
+        pickup_location: {
+          address: formData.pickup_address
+        },
+        dropoff_location: {
+          address: formData.dropoff_address
+        },
         started_at: formData.started_at || null,
         completed_at: formData.completed_at || null,
       };
@@ -171,11 +185,11 @@ const TaxiForm = () => {
             <label className="block font-medium">Status</label>
             <select {...register('status')} className="input input-bordered w-full">
               <option value="">Select Status</option>
-              <option value={0}>Requested</option>
-              <option value={1}>Accepted</option>
-              <option value={2}>Started</option>
-              <option value={3}>Completed</option>
-              <option value={4}>Cancelled</option>
+              <option value="pending">Requested</option>
+              <option value="accepted">Accepted</option>
+              <option value="started">Started</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
             </select>
             {errors.status && <p className="text-red-500 text-sm">{errors.status.message}</p>}
           </div>
@@ -183,14 +197,14 @@ const TaxiForm = () => {
 
         <div>
           <label className="block font-medium">Pickup Location</label>
-          <input {...register('pickup_location')} className="input input-bordered w-full" />
-          {errors.pickup_location && <p className="text-red-500 text-sm">{errors.pickup_location.message}</p>}
+          <input {...register('pickup_address')} placeholder="Pickup Address" className="input input-bordered w-full" />
+          {errors.pickup_address && <p className="text-red-500 text-sm">{errors.pickup_address.message}</p>}
         </div>
 
         <div>
           <label className="block font-medium">Dropoff Location</label>
-          <input {...register('dropoff_location')} className="input input-bordered w-full" />
-          {errors.dropoff_location && <p className="text-red-500 text-sm">{errors.dropoff_location.message}</p>}
+          <input {...register('dropoff_address')} placeholder="Dropoff Address" className="input input-bordered w-full" />
+          {errors.dropoff_address && <p className="text-red-500 text-sm">{errors.dropoff_address.message}</p>}
         </div>
 
         <div>

@@ -16,22 +16,12 @@ const TaxiVehicleForm = () => {
 
   // Validation schema
   const validationSchema = Yup.object().shape({
-    driver_id: Yup.mixed()
-      .required('Driver is required')
-      .test('is-valid-id', 'Driver ID must be a valid number', function(value) {
-        const numValue = parseInt(value, 10);
-        return !isNaN(numValue) && numValue > 0;
-      }),
+    driver_id: Yup.string().required('Driver is required'),
     make: Yup.string().required('Make is required'),
     model: Yup.string().required('Model is required'),
-    plate_number: Yup.string().required('Plate number is required'),
+    vehicle_number: Yup.string().required('Vehicle number is required'),
     color: Yup.string().required('Color is required'),
-    status: Yup.mixed()
-      .required('Status is required')
-      .test('is-valid-status', 'Status must be 0, 1, or 2', function(value) {
-        const numValue = parseInt(value, 10);
-        return !isNaN(numValue) && numValue >= 0 && numValue <= 2;
-      }),
+    status: Yup.string().oneOf(['inactive', 'active', 'maintenance']).required('Status is required'),
   });
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm({
@@ -59,10 +49,10 @@ const TaxiVehicleForm = () => {
           if (response.success) {
             const data = response.data;
             reset({
-              driver_id: data.driver_id,
+              driver_id: data.driver_id?._id || data.driver_id,
               make: data.make,
               model: data.model,
-              plate_number: data.plate_number,
+              vehicle_number: data.vehicle_number,
               color: data.color,
               status: data.status,
             });
@@ -83,15 +73,10 @@ const TaxiVehicleForm = () => {
     setLoading(true);
     setError(null);
     try {
-      // Convert status and driver_id to numbers if they're strings
       const dataToSubmit = {
         ...formData,
-        driver_id: parseInt(formData.driver_id, 10),
-        status: parseInt(formData.status, 10)
       };
-
       console.log('Submitting taxi vehicle data:', dataToSubmit);
-
       if (isEdit) {
         console.log('Updating taxi vehicle with ID:', id);
         const response = await taxiService.updateTaxiVehicle(id, dataToSubmit);
@@ -127,8 +112,8 @@ const TaxiVehicleForm = () => {
           <select {...register('driver_id')} className="input input-bordered w-full">
             <option value="">Select Driver</option>
             {drivers.map(driver => (
-              <option key={driver.id} value={driver.id}>
-                {driver.name} - {driver.license_no}
+              <option key={driver._id || driver.id} value={driver._id || driver.id}>
+                {driver.name} - {driver.license_number}
               </option>
             ))}
           </select>
@@ -159,13 +144,13 @@ const TaxiVehicleForm = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block font-medium">Plate Number</label>
+            <label className="block font-medium">Vehicle Number</label>
             <input 
-              {...register('plate_number')} 
+              {...register('vehicle_number')} 
               className="input input-bordered w-full" 
               placeholder="e.g., ABC123"
             />
-            {errors.plate_number && <p className="text-red-500 text-sm">{errors.plate_number.message}</p>}
+            {errors.vehicle_number && <p className="text-red-500 text-sm">{errors.vehicle_number.message}</p>}
           </div>
 
           <div>
@@ -183,9 +168,9 @@ const TaxiVehicleForm = () => {
           <label className="block font-medium">Status</label>
           <select {...register('status')} className="input input-bordered w-full">
             <option value="">Select Status</option>
-            <option value={0}>Inactive</option>
-            <option value={1}>Active</option>
-            <option value={2}>Maintenance</option>
+            <option value="inactive">Inactive</option>
+            <option value="active">Active</option>
+            <option value="maintenance">Maintenance</option>
           </select>
           {errors.status && <p className="text-red-500 text-sm">{errors.status.message}</p>}
         </div>

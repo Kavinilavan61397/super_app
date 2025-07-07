@@ -1,11 +1,11 @@
-const { ProductAttribute } = require('../models');
+const ProductAttribute = require('../models/ProductAttribute');
 const { processImage } = require('../utils/imageProcessor');
 const path = require('path');
 const fs = require('fs');
 
 exports.create = async (req, res) => {
   try {
-    const { product_id, attribute_name, attribute_value } = req.body;
+    const { product_id, name, value } = req.body;
     let imagePath = null;
 
     // Image is required for create
@@ -21,12 +21,13 @@ exports.create = async (req, res) => {
       return res.status(400).json({ message: 'Attribute image is required.' });
     }
 
-    const attribute = await ProductAttribute.create({
+    const attribute = new ProductAttribute({
       product_id,
-      attribute_name,
-      attribute_value,
+      name,
+      value,
       image: imagePath
     });
+    await attribute.save();
     res.status(201).json(attribute);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -36,7 +37,7 @@ exports.create = async (req, res) => {
 exports.getByProduct = async (req, res) => {
   try {
     const { product_id } = req.params;
-    const attributes = await ProductAttribute.findAll({ where: { product_id } });
+    const attributes = await ProductAttribute.find({ product_id });
     res.json(attributes);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -46,10 +47,10 @@ exports.getByProduct = async (req, res) => {
 exports.update = async (req, res) => {
   try {
     const { id } = req.params;
-    const attribute = await ProductAttribute.findByPk(id);
+    const attribute = await ProductAttribute.findById(id);
     if (!attribute) return res.status(404).json({ message: 'Attribute not found' });
 
-    const { product_id, attribute_name, attribute_value } = req.body;
+    const { product_id, name, value } = req.body;
     let imagePath = attribute.image;
 
     // If new image uploaded, process and replace old
@@ -70,12 +71,11 @@ exports.update = async (req, res) => {
       imagePath = `/uploads/hotel_attributes/${processedImage.filename}`;
     }
 
-    await attribute.update({
-      product_id: product_id || attribute.product_id,
-      attribute_name: attribute_name || attribute.attribute_name,
-      attribute_value: attribute_value || attribute.attribute_value,
-      image: imagePath
-    });
+    attribute.product_id = product_id || attribute.product_id;
+    attribute.name = name || attribute.name;
+    attribute.value = value || attribute.value;
+    attribute.image = imagePath;
+    await attribute.save();
     res.json({ message: 'Updated', attribute });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -85,7 +85,7 @@ exports.update = async (req, res) => {
 exports.delete = async (req, res) => {
   try {
     const { id } = req.params;
-    await ProductAttribute.destroy({ where: { id } });
+    await ProductAttribute.findByIdAndDelete(id);
     res.json({ message: 'Deleted' });
   } catch (err) {
     res.status(500).json({ error: err.message });

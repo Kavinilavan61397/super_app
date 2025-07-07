@@ -63,16 +63,33 @@ exports.createHotel = async (req, res) => {
       website, 
       rating, 
       total_reviews, 
-      amenities, 
       images, 
       main_image, 
       star_rating, 
       check_in_time, 
       check_out_time, 
-      policies, 
       status, 
       owner_id 
     } = req.body;
+
+    // Handle amenities array from FormData
+    let amenities = [];
+    if (req.body['amenities[]']) {
+      amenities = Array.isArray(req.body['amenities[]']) ? req.body['amenities[]'] : [req.body['amenities[]']];
+    } else if (req.body.amenities) {
+      amenities = Array.isArray(req.body.amenities) ? req.body.amenities : [req.body.amenities];
+    }
+
+    // Handle policies array from FormData
+    let policies = [];
+    if (req.body['policies[]']) {
+      policies = Array.isArray(req.body['policies[]']) ? req.body['policies[]'] : [req.body['policies[]']];
+    } else if (req.body.policies) {
+      policies = Array.isArray(req.body.policies) ? req.body.policies : [req.body.policies];
+    }
+
+    console.log('Parsed amenities:', amenities);
+    console.log('Parsed policies:', policies);
 
     // Construct address object from individual fields or nested object
     const address = {
@@ -148,16 +165,33 @@ exports.updateHotel = async (req, res) => {
       website, 
       rating, 
       total_reviews, 
-      amenities, 
       images, 
       main_image, 
       star_rating, 
       check_in_time, 
       check_out_time, 
-      policies, 
       status, 
       owner_id 
     } = req.body;
+
+    // Handle amenities array from FormData
+    let amenities = hotel.amenities || [];
+    if (req.body['amenities[]']) {
+      amenities = Array.isArray(req.body['amenities[]']) ? req.body['amenities[]'] : [req.body['amenities[]']];
+    } else if (req.body.amenities) {
+      amenities = Array.isArray(req.body.amenities) ? req.body.amenities : [req.body.amenities];
+    }
+
+    // Handle policies array from FormData
+    let policies = hotel.policies || [];
+    if (req.body['policies[]']) {
+      policies = Array.isArray(req.body['policies[]']) ? req.body['policies[]'] : [req.body['policies[]']];
+    } else if (req.body.policies) {
+      policies = Array.isArray(req.body.policies) ? req.body.policies : [req.body.policies];
+    }
+
+    console.log('Parsed amenities:', amenities);
+    console.log('Parsed policies:', policies);
 
     // Construct address object from individual fields or nested object
     const address = {
@@ -197,13 +231,13 @@ exports.updateHotel = async (req, res) => {
     hotel.website = website || hotel.website;
     hotel.rating = rating || hotel.rating;
     hotel.total_reviews = total_reviews || hotel.total_reviews;
-    hotel.amenities = amenities || hotel.amenities;
+    hotel.amenities = amenities;
     hotel.images = images || hotel.images;
     hotel.main_image = mainImagePath;
     hotel.star_rating = star_rating || hotel.star_rating;
     hotel.check_in_time = check_in_time || hotel.check_in_time;
     hotel.check_out_time = check_out_time || hotel.check_out_time;
-    hotel.policies = policies || hotel.policies;
+    hotel.policies = policies;
     hotel.status = status || hotel.status;
     hotel.owner_id = owner_id || hotel.owner_id;
     

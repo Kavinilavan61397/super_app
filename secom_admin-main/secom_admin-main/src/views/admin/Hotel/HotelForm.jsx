@@ -83,13 +83,26 @@ const HotelForm = () => {
 
   const fetchDropdownData = async () => {
     try {
+      console.log('Calling PolicyService.getActivePolicies');
       const [policiesRes, amenitiesRes] = await Promise.all([
         PolicyService.getActivePolicies(),
         AmenityService.getActiveAmenities()
       ]);
-      
-      setPolicies(Array.isArray(policiesRes.data?.data) ? policiesRes.data.data : []);
-      setAmenities(Array.isArray(amenitiesRes.data?.data) ? amenitiesRes.data.data : []);
+      console.log('Raw policiesRes:', policiesRes);
+      console.log('Raw amenitiesRes:', amenitiesRes);
+
+      setPolicies(
+        Array.isArray(policiesRes)
+          ? policiesRes
+          : []
+      );
+      setAmenities(
+        Array.isArray(amenitiesRes.data?.data)
+          ? amenitiesRes.data.data
+          : Array.isArray(amenitiesRes.data)
+          ? amenitiesRes.data
+          : []
+      );
     } catch (error) {
       console.error('Error fetching dropdown data:', error);
       toast.error('Failed to fetch dropdown data');
@@ -292,6 +305,10 @@ const HotelForm = () => {
       setLoading(false);
     }
   };
+
+  // Debug: Log policies and amenities before rendering
+  console.log('Policies for dropdown:', policies);
+  console.log('Amenities for dropdown:', amenities);
 
   if (loading && isEditMode) {
     return (

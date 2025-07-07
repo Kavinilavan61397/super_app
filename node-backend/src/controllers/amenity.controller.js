@@ -2,7 +2,17 @@ const Amenity = require('../models/Amenity');
 
 exports.getAllAmenities = async (req, res) => {
   try {
-    const amenities = await Amenity.find({}).sort({ createdAt: -1 });
+    const { status } = req.query;
+    let filter = {};
+    
+    // Handle status filtering
+    if (status === 'active') {
+      filter.status = true;
+    } else if (status === 'inactive') {
+      filter.status = false;
+    }
+    
+    const amenities = await Amenity.find(filter).sort({ createdAt: -1 });
     res.json({ success: true, data: amenities });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Error fetching amenities', error: error.message });

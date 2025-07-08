@@ -175,7 +175,12 @@ function Permissions() {
         try {
             setLoading(true);
             
-            if (openEditModal && selectedPermission) {
+            if (openEditModal) {
+                if (!selectedPermission || !selectedPermission._id) {
+                    toast.error('No permission selected for update. Please try again.');
+                    setLoading(false);
+                    return;
+                }
                 // Update permission
                 await permissionService.updatePermission(selectedPermission._id, data);
                 toast.success('Permission updated successfully!');
@@ -303,7 +308,7 @@ function Permissions() {
 
     return (
         <div className="min-h-screen pt-6">
-            <Navbar brandText={"Permissions"} />
+            {/* Removed duplicate Navbar. Layout handles Navbar rendering. */}
             <TokenExpiration />
             <ToastContainer />
             
@@ -531,9 +536,25 @@ function Permissions() {
             )}
 
             {/* Table */}
+            {loading && (
+                <div className="fixed inset-0 bg-white bg-opacity-60 flex items-center justify-center z-50">
+                    <FaSpinner className="animate-spin text-4xl text-purple-600" />
+                </div>
+            )}
             <div className="mt-8 bg-white shadow-lg rounded-lg p-6">
-                <table className="w-full table-auto">
-                    <thead>
+                {selectedRows.length > 0 && (
+                    <div className="flex justify-end mb-2">
+                        <button
+                            onClick={handleBulkDelete}
+                            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg shadow transition"
+                            aria-label="Delete Selected Permissions"
+                        >
+                            <FaTrashAlt className="inline mr-2" /> Delete Selected
+                        </button>
+                    </div>
+                )}
+                <table className="w-full table-auto shadow-lg rounded-2xl overflow-hidden">
+                    <thead className="sticky top-0 bg-white z-10">
                         <tr className="text-gray-600">
                             <th className="px-6 py-4 text-left">
                                 <div className="flex justify-between items-center">
@@ -547,12 +568,14 @@ function Permissions() {
                                                 setSelectedRows(getPaginatedData().map((row) => row._id));
                                             }
                                         }}
+                                        aria-label="Select all permissions"
                                     />
                                     {selectedRows.length > 0 && (
                                         <button
                                             onClick={handleBulkDelete}
                                             className={`text-gray-600 hover:text-red-600 text-xl flex items-center ${isDeleting ? 'opacity-50 cursor-not-allowed' : ''}`}
                                             disabled={isDeleting}
+                                            aria-label="Delete selected permissions"
                                         >
                                             {isDeleting ? (
                                                 <FaSpinner className="animate-spin" />
@@ -581,91 +604,76 @@ function Permissions() {
                             </tr>
                         ) : (
                             getPaginatedData().map((permission) => (
-                                <tr key={permission._id} className="border-t">
+                                <tr key={permission._id} className="border-t hover:bg-purple-50 transition group">
                                     <td className="px-6 py-4">
                                         <input
                                             type="checkbox"
                                             checked={selectedRows.includes(permission._id)}
                                             onChange={() => handleRowSelection(permission._id)}
+                                            aria-label={`Select permission ${permission.name}`}
                                         />
                                     </td>
-                                    <td className="px-6 py-4 font-mono text-sm">{permission.name}</td>
-                                    <td className="px-6 py-4">{permission.description}</td>
+                                    <td className="px-6 py-4 font-mono text-sm truncate max-w-xs" title={permission.name}>{permission.name}</td>
+                                    <td className="px-6 py-4 truncate max-w-xs" title={permission.description}>{permission.description}</td>
                                     <td className="px-6 py-4">
-                                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                            {permission.resource}
-                                        </span>
+                                        <span className="px-2 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 shadow-sm">{permission.resource}</span>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                            permission.action === 'create' ? 'bg-green-100 text-green-800' :
-                                            permission.action === 'read' ? 'bg-blue-100 text-blue-800' :
-                                            permission.action === 'update' ? 'bg-yellow-100 text-yellow-800' :
-                                            permission.action === 'delete' ? 'bg-red-100 text-red-800' :
-                                            'bg-purple-100 text-purple-800'
+                                        <span className={`px-2 py-1 rounded-full text-xs font-semibold shadow-sm ${
+                                            permission.action === 'create' ? 'bg-green-100 text-green-700' :
+                                            permission.action === 'read' ? 'bg-blue-100 text-blue-700' :
+                                            permission.action === 'update' ? 'bg-yellow-100 text-yellow-700' :
+                                            permission.action === 'delete' ? 'bg-red-100 text-red-700' :
+                                            'bg-purple-100 text-purple-700'
                                         }`}>
                                             {permission.action}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                            permission.category === 'all' ? 'bg-gray-100 text-gray-800' :
-                                            permission.category === 'electronics' ? 'bg-blue-100 text-blue-800' :
-                                            permission.category === 'clothing' ? 'bg-pink-100 text-pink-800' :
-                                            permission.category === 'groceries' ? 'bg-green-100 text-green-800' :
-                                            permission.category === 'restaurants' ? 'bg-orange-100 text-orange-800' :
-                                            permission.category === 'hotels' ? 'bg-purple-100 text-purple-800' :
-                                            'bg-yellow-100 text-yellow-800'
+                                        <span className={`px-2 py-1 rounded-full text-xs font-semibold shadow-sm ${
+                                            permission.category === 'all' ? 'bg-gray-100 text-gray-700' :
+                                            permission.category === 'electronics' ? 'bg-blue-100 text-blue-700' :
+                                            permission.category === 'clothing' ? 'bg-pink-100 text-pink-700' :
+                                            permission.category === 'groceries' ? 'bg-green-100 text-green-700' :
+                                            permission.category === 'restaurants' ? 'bg-orange-100 text-orange-700' :
+                                            permission.category === 'hotels' ? 'bg-purple-100 text-purple-700' :
+                                            'bg-yellow-100 text-yellow-700'
                                         }`}>
                                             {permission.category}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                            permission.module === 'admin' ? 'bg-red-100 text-red-800' :
-                                            permission.module === 'ecommerce' ? 'bg-blue-100 text-blue-800' :
-                                            permission.module === 'grocery' ? 'bg-green-100 text-green-800' :
-                                            permission.module === 'restaurant' ? 'bg-orange-100 text-orange-800' :
-                                            permission.module === 'hotel' ? 'bg-purple-100 text-purple-800' :
-                                            'bg-yellow-100 text-yellow-800'
+                                        <span className={`px-2 py-1 rounded-full text-xs font-semibold shadow-sm ${
+                                            permission.module === 'admin' ? 'bg-red-100 text-red-700' :
+                                            permission.module === 'ecommerce' ? 'bg-blue-100 text-blue-700' :
+                                            permission.module === 'grocery' ? 'bg-green-100 text-green-700' :
+                                            permission.module === 'restaurant' ? 'bg-orange-100 text-orange-700' :
+                                            permission.module === 'hotel' ? 'bg-purple-100 text-purple-700' :
+                                            'bg-yellow-100 text-yellow-700'
                                         }`}>
                                             {permission.module}
                                         </span>
                                     </td>
                                     <td className="text-right">
-                                        <div className="relative inline-block group">
+                                        <div className="flex space-x-2 justify-end">
                                             <button
-                                                onClick={() => setOpenDropdown(openDropdown === permission._id ? null : permission._id)}
-                                                className="text-gray-600 hover:text-gray-900"
+                                                onClick={() => handleEditPermission(permission)}
+                                                className="p-2 rounded-full hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                                aria-label={`Edit permission ${permission.name}`}
+                                                tabIndex={0}
+                                                title="Edit"
                                             >
-                                                <FaEllipsisV />
+                                                <FaEdit className="text-blue-600" />
                                             </button>
-                                            {openDropdown === permission._id && (
-                                                <div
-                                                    className="absolute right-10 flex space-x-2 bg-white border border-gray-200 rounded shadow-lg z-10"
-                                                    style={{ marginTop: "-30px" }}
-                                                    ref={dropdownRef}
-                                                >
-                                                    <button
-                                                        onClick={() => {
-                                                            handleEditPermission(permission);
-                                                            setOpenDropdown(null);
-                                                        }}
-                                                        className="flex items-center px-4 py-2 text-navy-700 hover:bg-gray-200 cursor-pointer"
-                                                    >
-                                                        <FaEdit className="mr-2 text-black" /> Edit
-                                                    </button>
-                                                    <button
-                                                        onClick={() => {
-                                                            handleDeletePermission(permission);
-                                                            setOpenDropdown(null);
-                                                        }}
-                                                        className="flex items-center px-4 py-2 text-red-600 hover:bg-gray-200 cursor-pointer"
-                                                    >
-                                                        <FaTrashAlt className="mr-2" /> Delete
-                                                    </button>
-                                                </div>
-                                            )}
+                                            <button
+                                                onClick={() => handleDeletePermission(permission)}
+                                                className="p-2 rounded-full hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-400"
+                                                aria-label={`Delete permission ${permission.name}`}
+                                                tabIndex={0}
+                                                title="Delete"
+                                            >
+                                                <FaTrashAlt className="text-red-600" />
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -678,11 +686,12 @@ function Permissions() {
             {/* Pagination */}
             {totalPages > 1 && (
                 <div className="mt-6 flex justify-center">
-                    <nav className="flex space-x-2">
+                    <nav className="flex space-x-2 bg-white rounded-lg shadow px-4 py-2">
                         <button
                             onClick={() => handlePageChange(currentPage - 1)}
                             disabled={currentPage === 1}
                             className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            aria-label="Previous page"
                         >
                             Previous
                         </button>
@@ -693,9 +702,10 @@ function Permissions() {
                                 onClick={() => handlePageChange(page)}
                                 className={`px-3 py-2 text-sm font-medium rounded-md ${
                                     currentPage === page
-                                        ? 'bg-[#4318ff] text-white'
+                                        ? 'bg-purple-600 text-white shadow'
                                         : 'text-gray-500 bg-white border border-gray-300 hover:bg-gray-50'
                                 }`}
+                                aria-label={`Go to page ${page}`}
                             >
                                 {page}
                             </button>
@@ -705,6 +715,7 @@ function Permissions() {
                             onClick={() => handlePageChange(currentPage + 1)}
                             disabled={currentPage === totalPages}
                             className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            aria-label="Next page"
                         >
                             Next
                         </button>

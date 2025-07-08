@@ -29,21 +29,25 @@ const Sidebar = ({ isCollapsed, open, onClose, onSidenavToggle, routes }) => {
           ${open ? "translate-x-0" : "-translate-x-full"}
           xl:translate-x-0`}
       >
+        {/* Sidebar Toggle - always visible, vertically centered with icons */}
+        <div className="flex items-center justify-between p-4">
+          <span className={`transition-opacity duration-200 ${isCollapsed ? 'opacity-0 delay-0' : 'opacity-100 delay-200'}`}>Admin Panel</span>
+          <span
+            className="flex cursor-pointer text-xl text-gray-600 dark:text-white"
+            onClick={onSidenavToggle}
+            aria-label="Toggle sidebar"
+            tabIndex={0}
+          >
+            <FiMenu className="h-5 w-5" />
+          </span>
+        </div>
+        {/* Mobile Close Button */}
         <span
           className="absolute top-4 right-4 block cursor-pointer xl:hidden"
           onClick={onClose}
         >
           <HiX />
         </span>
-        <div className="p-4 font-bold text-xl flex items-center justify-between">
-          <span className={`transition-opacity duration-200 ${isCollapsed ? 'opacity-0 delay-0' : 'opacity-100 delay-200'}`}>Admin Panel</span>
-          <span
-            className="flex cursor-pointer text-xl text-gray-600 dark:text-white"
-            onClick={onSidenavToggle}
-          >
-            <FiMenu className="h-5 w-5" />
-          </span>
-        </div>
         <nav className="flex-grow overflow-y-auto overflow-x-hidden pr-2">
           {sidebarRoutes.map((item, index) => (
             <div key={index}>

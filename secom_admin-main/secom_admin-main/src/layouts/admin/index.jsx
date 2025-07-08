@@ -6,6 +6,7 @@ import Footer from "components/footer/Footer";
 import routes from "routes.js";
 import adminRoutes from "routes/admin.routes.js";
 import { getUserRole, filterRoutesByRole } from "utils/roleAccess";
+import { FiMenu } from "react-icons/fi";
 
 export default function Admin(props) {
   const { ...rest } = props;
@@ -97,6 +98,7 @@ export default function Admin(props) {
 
   return (
     <div className="flex h-full w-full bg-gray-50">
+      {/* Removed sidebar toggle from layout. Only sidebar header should have it. */}
       <Sidebar 
         isCollapsed={isCollapsed} 
         open={open} 

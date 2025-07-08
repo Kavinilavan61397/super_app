@@ -106,8 +106,7 @@ const Navbar = (props) => {
             >
               Admin
               <span className="mx-1 text-sm text-navy-700 hover:text-navy-700 dark:text-white">
-                {" "}
-                /{" "}
+                {" "}/ {" "}
               </span>
             </a>
             <Link
@@ -117,14 +116,7 @@ const Navbar = (props) => {
               {brandText}
             </Link>
           </div>
-          <p className="shrink text-[33px] capitalize text-navy-700 dark:text-white">
-            <Link
-              to="#"
-              className="font-bold capitalize hover:text-navy-700 dark:hover:text-white"
-            >
-              {brandText}
-            </Link>
-          </p>
+          {/* Removed duplicate large page title */}
         </div>
       </div>
 
@@ -139,13 +131,16 @@ const Navbar = (props) => {
             class="block h-full w-full rounded-full bg-lightPrimary text-sm font-medium text-navy-700 outline-none placeholder:!text-gray-400 dark:bg-navy-900 dark:text-white dark:placeholder:!text-white sm:w-fit"
           />
         </div> */}
-        <button
-          ref={buttonRef}
-          onClick={toggleModal}
-          className="px-6 py-2 bg-[#4318ff] text-white rounded-lg hover:bg-[#4318ff]"
-        >
-          Track Order
-        </button>
+        {/* Only show Track Order button on dashboard or orders page */}
+        {['Dashboard', 'Orders', 'Order Management', 'Main Dashboard'].includes(brandText) && (
+          <button
+            ref={buttonRef}
+            onClick={toggleModal}
+            className="px-6 py-2 bg-[#4318ff] text-white rounded-lg hover:bg-[#4318ff]"
+          >
+            Track Order
+          </button>
+        )}
 
         {isModalOpen && (
           <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 margin-top-60">

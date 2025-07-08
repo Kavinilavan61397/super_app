@@ -1,5 +1,6 @@
 const Permission = require('../models/Permission');
 const Role = require('../models/Role');
+const mongoose = require('mongoose');
 
 // Get all permissions
 exports.getAllPermissions = async (req, res) => {
@@ -104,6 +105,13 @@ exports.createPermission = async (req, res) => {
 exports.updatePermission = async (req, res) => {
   try {
     const { id } = req.params;
+    // Defensive check for valid ObjectId
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid permission ID',
+      });
+    }
     const { name, description, resource, action, category, module } = req.body;
 
     const permission = await Permission.findByIdAndUpdate(

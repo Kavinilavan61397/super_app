@@ -20,6 +20,7 @@ const taxiVehicleRoutes = require('./routes/taxiVehicle.routes');
 const gwishlistRoutes = require('./routes/gwishlist.routes');
 const userRoutes = require('./routes/user.routes');
 const roleRoutes = require('./routes/role.routes');
+const permissionRoutes = require('./routes/permission.routes');
 const staffRoutes = require('./routes/staff.routes');
 const productAttributeRoutes = require('./routes/productAttribute.routes');
 const restaurantRoutes = require('./routes/restaurant.routes');
@@ -74,6 +75,7 @@ app.use('/api/taxi-drivers', taxiDriverRoutes);
 app.use('/api/taxi-vehicles', taxiVehicleRoutes);
 app.use('/api/users', userRoutes);      // ✅ User management
 app.use('/api/roles', roleRoutes);      // ✅ Role management
+app.use('/api/permissions', permissionRoutes); // ✅ Permission management
 app.use('/api/staff', staffRoutes);     // ✅ Staff management
 app.use('/api/grocery-orders', groceryOrderRoutes);
 app.use('/api/product-attributes', productAttributeRoutes);
@@ -111,6 +113,7 @@ app.get('/', (req, res) => {
       gorders: '/api/gorders',
       users: '/api/users',
       roles: '/api/roles',
+      permissions: '/api/permissions',
       staff: '/api/staff',
       amenities: '/api/amenities',
       policies: '/api/policies',

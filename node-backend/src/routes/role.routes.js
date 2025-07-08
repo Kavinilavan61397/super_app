@@ -6,7 +6,9 @@ const {
   getRoleById, 
   createRole, 
   updateRole, 
-  deleteRole 
+  deleteRole,
+  assignRoleToUser,
+  getRoleStats
 } = require('../controllers/role.controller');
 
 // All routes require authentication and admin access
@@ -27,5 +29,11 @@ router.put('/:id', updateRole);
 
 // Delete role
 router.delete('/:id', deleteRole);
+
+// Assign role to user
+router.post('/assign', assignRoleToUser);
+
+// Get role statistics
+router.get('/stats', getRoleStats);
 
 module.exports = router; 

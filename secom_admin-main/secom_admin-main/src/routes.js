@@ -38,6 +38,7 @@ import Stocks from "views/admin/Sidenav_pages/Stocks";
 import Units from "views/admin/Sidenav_pages/Units";
 import Staff from "views/admin/Sidenav_pages/Staff";
 import Role from "views/admin/Sidenav_pages/Role";
+import Permissions from "views/admin/Sidenav_pages/Permissions";
 import RolePermission from "views/admin/Sidenav_pages/RolePermission";
 import Toppings from "views/admin/Sidenav_pages/Toppings";
 import HotelAttributes from "views/admin/Sidenav_pages/HotelAttributes";
@@ -278,13 +279,13 @@ const routes = [
         path: "staff",
         component: <Staff />,
       },
-      // {
-      //   name: "Permissions",
-      //   layout: "/admin",
-      //   path: "rolepermission",
-      //   icon: <MdLock className="h-6 w-6" />,
-      //   component: <RolePermission />,
-      // },
+      {
+        name: "Permissions",
+        layout: "/admin",
+        path: "permissions",
+        icon: <MdLock className="h-6 w-6" />,
+        component: <Permissions />,
+      },
     ]
   },
   {

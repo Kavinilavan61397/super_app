@@ -17,7 +17,8 @@ const seeders = [
   'seed-hotels-mongo.js',
   'seed-orders-mongo.js',
   'seed-groceries-mongo.js',
-  'seed-restaurant-categories-mongo.js'
+  'seed-restaurant-categories-mongo.js',
+  '20250127000001-seed-permissions.js'
 ];
 
 const runSeeder = (seederFile) => {
@@ -70,6 +71,7 @@ const runAllSeeders = async () => {
     console.log('   - Orders: ✅');
     console.log('   - Groceries: ✅');
     console.log('   - Restaurant Categories: ✅');
+    console.log('   - Permissions & Roles: ✅');
     
     console.log('\n✨ Your database is now fully populated and ready for testing!');
     

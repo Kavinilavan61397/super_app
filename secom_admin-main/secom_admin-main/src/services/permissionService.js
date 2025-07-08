@@ -23,94 +23,94 @@ api.interceptors.request.use(
   }
 );
 
-export const roleService = {
-  // Get all roles
-  getAllRoles: async (params = {}) => {
+export const permissionService = {
+  // Get all permissions
+  getAllPermissions: async (params = {}) => {
     try {
-      const response = await api.get('/api/roles', { params });
+      const response = await api.get('/api/permissions', { params });
       return response.data;
     } catch (error) {
       throw error.response?.data || { 
         success: false, 
-        message: 'Failed to fetch roles' 
+        message: 'Failed to fetch permissions' 
       };
     }
   },
 
-  // Get role by ID
-  getRoleById: async (id) => {
+  // Get permissions by module
+  getPermissionsByModule: async (module) => {
     try {
-      const response = await api.get(`/api/roles/${id}`);
+      const response = await api.get(`/api/permissions/module/${module}`);
       return response.data;
     } catch (error) {
       throw error.response?.data || { 
         success: false, 
-        message: 'Failed to fetch role' 
+        message: 'Failed to fetch permissions by module' 
       };
     }
   },
 
-  // Create new role
-  createRole: async (roleData) => {
+  // Get permissions by category
+  getPermissionsByCategory: async (category) => {
     try {
-      const response = await api.post('/api/roles', roleData);
+      const response = await api.get(`/api/permissions/category/${category}`);
       return response.data;
     } catch (error) {
       throw error.response?.data || { 
         success: false, 
-        message: 'Failed to create role' 
+        message: 'Failed to fetch permissions by category' 
       };
     }
   },
 
-  // Update role
-  updateRole: async (id, roleData) => {
+  // Create new permission
+  createPermission: async (permissionData) => {
     try {
-      const response = await api.put(`/api/roles/${id}`, roleData);
+      const response = await api.post('/api/permissions', permissionData);
       return response.data;
     } catch (error) {
       throw error.response?.data || { 
         success: false, 
-        message: 'Failed to update role' 
+        message: 'Failed to create permission' 
       };
     }
   },
 
-  // Delete role
-  deleteRole: async (id) => {
+  // Update permission
+  updatePermission: async (id, permissionData) => {
     try {
-      const response = await api.delete(`/api/roles/${id}`);
+      const response = await api.put(`/api/permissions/${id}`, permissionData);
       return response.data;
     } catch (error) {
       throw error.response?.data || { 
         success: false, 
-        message: 'Failed to delete role' 
+        message: 'Failed to update permission' 
       };
     }
   },
 
-  // Assign role to user
-  assignRoleToUser: async (userId, roleId) => {
+  // Delete permission
+  deletePermission: async (id) => {
     try {
-      const response = await api.post('/api/roles/assign', { userId, roleId });
+      const response = await api.delete(`/api/permissions/${id}`);
       return response.data;
     } catch (error) {
       throw error.response?.data || { 
         success: false, 
-        message: 'Failed to assign role to user' 
+        message: 'Failed to delete permission' 
       };
     }
   },
 
-  // Get role statistics
-  getRoleStats: async () => {
+  // Get permission statistics
+  getPermissionStats: async () => {
     try {
-      const response = await api.get('/api/roles/stats');
+      const response = await api.get('/api/permissions/stats');
       return response.data;
     } catch (error) {
       throw error.response?.data || { 
         success: false, 
-        message: 'Failed to fetch role statistics' 
+        message: 'Failed to fetch permission statistics' 
       };
     }
   }

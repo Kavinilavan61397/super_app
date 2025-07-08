@@ -29,6 +29,12 @@ const userSchema = new mongoose.Schema({
     enum: ['user', 'admin', 'ecommerce_admin', 'grocery_admin', 'taxi_admin', 'hotel_admin', 'restaurant_admin'],
     default: 'user'
   },
+  // New permission-based role system
+  role_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Role',
+    default: null
+  },
   status: {
     type: Boolean,
     default: true
@@ -58,6 +64,14 @@ userSchema.virtual('staff', {
   justOne: true
 });
 
+// Virtual for role relationship
+userSchema.virtual('roleDetails', {
+  ref: 'Role',
+  localField: 'role_id',
+  foreignField: '_id',
+  justOne: true
+});
+
 // Hash password before saving
 userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
@@ -77,6 +91,7 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
 
 // Index for better query performance
 userSchema.index({ role: 1 });
+userSchema.index({ role_id: 1 });
 userSchema.index({ status: 1 });
 
 const User = mongoose.model('User', userSchema);

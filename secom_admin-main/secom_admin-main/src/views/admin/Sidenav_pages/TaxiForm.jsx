@@ -2,20 +2,36 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
 import taxiService from '../../../services/taxiService';
+import { userService } from '../../../services/userService';
 import * as Yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { toast } from 'react-toastify';
+
+// Move these to the top of the file, outside the component
+const defaultUsers = [
+  { _id: 'default-user-1', name: 'John Doe' },
+  { _id: 'default-user-2', name: 'Jane Smith' }
+];
+const defaultDrivers = [
+  { _id: 'default-driver-1', name: 'Driver John' },
+  { _id: 'default-driver-2', name: 'Driver Jane' }
+];
+const defaultVehicles = [
+  { _id: 'default-vehicle-1', make: 'Toyota', model: 'Camry', plate_number: 'ABC123' },
+  { _id: 'default-vehicle-2', make: 'Honda', model: 'Civic', plate_number: 'XYZ789' }
+];
 
 const TaxiForm = () => {
   const { id } = useParams();
   const isEdit = Boolean(id);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [dropdownLoading, setDropdownLoading] = useState(true);
   const [error, setError] = useState(null);
   const [drivers, setDrivers] = useState([]);
   const [vehicles, setVehicles] = useState([]);
   const [users, setUsers] = useState([]);
-
+  
   // Validation schema
   const validationSchema = Yup.object().shape({
     user_id: Yup.string().required('User is required'),
@@ -30,7 +46,6 @@ const TaxiForm = () => {
     status: Yup.string()
       .oneOf(['pending', 'accepted', 'started', 'completed', 'cancelled'])
       .required('Status is required'),
-    requested_at: Yup.date().required('Requested at is required'),
     started_at: Yup.date().nullable(),
     completed_at: Yup.date().nullable(),
   });
@@ -39,42 +54,124 @@ const TaxiForm = () => {
     resolver: yupResolver(validationSchema)
   });
 
+  // Fix: Always extract correct array for users, drivers, vehicles
+  useEffect(() => {
+    const fetchData = async () => {
+      setDropdownLoading(true);
+      try {
+        const [driversRes, vehiclesRes, usersRes] = await Promise.all([
+          taxiService.getAllTaxiDrivers(),
+          taxiService.getAllTaxiVehicles(),
+          userService.getAllUsers()
+        ]);
+
+        // Debug logging
+        console.log('Drivers response:', driversRes);
+        console.log('Vehicles response:', vehiclesRes);
+        console.log('Users response:', usersRes);
+
+        // Always extract correct array
+        setDrivers(Array.isArray(driversRes.data) ? driversRes.data : driversRes.data?.drivers || driversRes.data?.data || []);
+        setVehicles(Array.isArray(vehiclesRes.data) ? vehiclesRes.data : vehiclesRes.data?.vehicles || vehiclesRes.data?.data || []);
+        setUsers(Array.isArray(usersRes.data?.users) ? usersRes.data.users : usersRes.data?.data || usersRes.data || []);
+      } catch (error) {
+        console.error('Error fetching dropdown data:', error);
+        setDrivers(defaultDrivers);
+        setVehicles(defaultVehicles);
+        setUsers(defaultUsers);
+        toast.error('Failed to load dropdown data. Using default options.');
+      } finally {
+        setDropdownLoading(false);
+      }
+    };
+    fetchData();
+  }, []); // Only run once on mount
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         // Fetch drivers, vehicles, and users for dropdowns
-        const [driversRes, vehiclesRes] = await Promise.all([
-          taxiService.getAllTaxiDrivers(),
-          taxiService.getAllTaxiVehicles()
-        ]);
+        try {
+          const [driversRes, vehiclesRes, usersRes] = await Promise.all([
+            taxiService.getAllTaxiDrivers(),
+            taxiService.getAllTaxiVehicles(),
+            userService.getAllUsers()
+          ]);
 
-        if (driversRes.success) setDrivers(driversRes.data);
-        if (vehiclesRes.success) setVehicles(vehiclesRes.data);
+          // Debug logging
+          console.log('Drivers response:', driversRes);
+          console.log('Vehicles response:', vehiclesRes);
+          console.log('Users response:', usersRes);
 
-        // For now, we'll use a mock users array since we don't have a users service
-        // In a real app, you'd fetch users from the API
-        setUsers([
-          { id: 1, first_name: 'John', last_name: 'Doe' },
-          { id: 2, first_name: 'Jane', last_name: 'Smith' },
-          { id: 3, first_name: 'Bob', last_name: 'Johnson' }
-        ]);
+          if (driversRes.success) setDrivers(driversRes.data || []);
+          else {
+            console.error('Failed to fetch drivers:', driversRes);
+            setDrivers(defaultDrivers);
+          }
+          
+          if (vehiclesRes.success) setVehicles(vehiclesRes.data || []);
+          else {
+            console.error('Failed to fetch vehicles:', vehiclesRes);
+            setVehicles(defaultVehicles);
+          }
+          
+          if (usersRes.success) setUsers(usersRes.data?.users || usersRes.data || []);
+          else {
+            console.error('Failed to fetch users:', usersRes);
+            setUsers(defaultUsers);
+          }
+        } catch (error) {
+          console.error('Error fetching dropdown data:', error);
+          setDrivers(defaultDrivers);
+          setVehicles(defaultVehicles);
+          setUsers(defaultUsers);
+          
+          // Show error message to user
+          toast.error('Failed to load dropdown data. Using default options.');
+        } finally {
+          setDropdownLoading(false);
+        }
 
         if (isEdit) {
           setLoading(true);
           const res = await taxiService.getTaxiRideById(id);
           if (res.success) {
             const data = res.data;
+            
+            // Debug logging for date fields
+            console.log('Taxi ride data received:', {
+              id: data._id,
+              createdAt: data.createdAt,
+              started_at: data.started_at,
+              completed_at: data.completed_at,
+              started_at_type: typeof data.started_at,
+              completed_at_type: typeof data.completed_at
+            });
+            
+            // Helper function to safely format date
+            const formatDateForInput = (dateValue) => {
+              if (!dateValue) return '';
+              try {
+                const date = new Date(dateValue);
+                if (isNaN(date.getTime())) return '';
+                return date.toISOString().slice(0, 16);
+              } catch (error) {
+                console.error('Error formatting date:', error, 'Value:', dateValue);
+                return '';
+              }
+            };
+            
             reset({
-              user_id: data.user_id,
-              driver_id: data.driver_id,
-              vehicle_id: data.vehicle_id,
-              pickup_address: data.pickup_location.address,
-              dropoff_address: data.dropoff_location.address,
+              user_id: data.user_id?._id || data.user_id,
+              driver_id: data.driver_id?._id || data.driver_id,
+              vehicle_id: data.vehicle_id?._id || data.vehicle_id,
+              pickup_address: data.pickup_location?.address || '',
+              dropoff_address: data.dropoff_location?.address || '',
               fare: data.fare,
               status: data.status,
-              requested_at: data.requested_at ? new Date(data.requested_at).toISOString().slice(0, 16) : '',
-              started_at: data.started_at ? new Date(data.started_at).toISOString().slice(0, 16) : '',
-              completed_at: data.completed_at ? new Date(data.completed_at).toISOString().slice(0, 16) : '',
+              requested_at: formatDateForInput(data.createdAt),
+              started_at: formatDateForInput(data.started_at),
+              completed_at: formatDateForInput(data.completed_at),
             });
           } else {
             setError('Failed to load taxi ride');
@@ -91,32 +188,42 @@ const TaxiForm = () => {
     fetchData();
   }, [id, isEdit, reset]);
 
+  // Add debug logging and user-friendly error messages for failed submissions
   const onSubmit = async (formData) => {
     setLoading(true);
     setError(null);
     try {
       // Always use logged-in user's ID for user_id
       const userData = JSON.parse(localStorage.getItem('userData'));
-      const user_id = userData?._id || userData?.id;
+      const user_id = formData.user_id || userData?._id || userData?.id;
       if (!user_id) {
         setError('User ID not found. Please log in again.');
         toast.error('User ID not found. Please log in again.');
         setLoading(false);
         return;
       }
+      if (!formData.driver_id || !formData.vehicle_id) {
+        setError('Driver and Vehicle are required.');
+        toast.error('Driver and Vehicle are required.');
+        setLoading(false);
+        return;
+      }
       const data = {
-        ...formData,
         user_id,
+        driver_id: formData.driver_id,
+        vehicle_id: formData.vehicle_id,
         pickup_location: {
           address: formData.pickup_address
         },
         dropoff_location: {
           address: formData.dropoff_address
         },
+        fare: formData.fare,
+        status: formData.status,
         started_at: formData.started_at || null,
         completed_at: formData.completed_at || null,
       };
-
+      console.log('Submitting taxi ride data:', data);
       if (isEdit) {
         await taxiService.updateTaxiRide(id, data);
         toast.success('Taxi ride updated successfully');
@@ -129,12 +236,16 @@ const TaxiForm = () => {
       const errorMessage = err.response?.data?.message || 'Failed to save taxi ride';
       setError(errorMessage);
       toast.error(errorMessage);
+      console.error('Taxi ride submission error:', err);
     } finally {
       setLoading(false);
     }
   };
 
   if (loading && isEdit) return <div className="flex justify-center items-center h-full">Loading...</div>;
+
+  // Add debug log for validation errors
+  console.log('Form validation errors:', errors);
 
   return (
     <div className="p-4 max-w-2xl mx-auto">
@@ -144,11 +255,11 @@ const TaxiForm = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block font-medium">User</label>
-            <select {...register('user_id')} className="input input-bordered w-full">
-              <option value="">Select User</option>
-              {users.map(user => (
-                <option key={user.id} value={user.id}>
-                  {user.first_name} {user.last_name}
+            <select {...register('user_id')} className="input input-bordered w-full" disabled={dropdownLoading}>
+              <option value="">{dropdownLoading ? 'Loading users...' : 'Select User'}</option>
+              {Array.isArray(users) && users.map(user => (
+                <option key={user._id} value={user._id}>
+                  {user.name || `${user.first_name || ''} ${user.last_name || ''}`.trim()}
                 </option>
               ))}
             </select>
@@ -157,10 +268,10 @@ const TaxiForm = () => {
 
           <div>
             <label className="block font-medium">Driver</label>
-            <select {...register('driver_id')} className="input input-bordered w-full">
-              <option value="">Select Driver</option>
-              {drivers.map(driver => (
-                <option key={driver.id} value={driver.id}>
+            <select {...register('driver_id')} className="input input-bordered w-full" disabled={dropdownLoading}>
+              <option value="">{dropdownLoading ? 'Loading drivers...' : 'Select Driver'}</option>
+              {Array.isArray(drivers) && drivers.map(driver => (
+                <option key={driver._id} value={driver._id}>
                   {driver.name}
                 </option>
               ))}
@@ -170,10 +281,10 @@ const TaxiForm = () => {
 
           <div>
             <label className="block font-medium">Vehicle</label>
-            <select {...register('vehicle_id')} className="input input-bordered w-full">
-              <option value="">Select Vehicle</option>
-              {vehicles.map(vehicle => (
-                <option key={vehicle.id} value={vehicle.id}>
+            <select {...register('vehicle_id')} className="input input-bordered w-full" disabled={dropdownLoading}>
+              <option value="">{dropdownLoading ? 'Loading vehicles...' : 'Select Vehicle'}</option>
+              {Array.isArray(vehicles) && vehicles.map(vehicle => (
+                <option key={vehicle._id} value={vehicle._id}>
                   {vehicle.make} {vehicle.model} - {vehicle.plate_number}
                 </option>
               ))}
@@ -224,9 +335,11 @@ const TaxiForm = () => {
             <input 
               type="datetime-local" 
               {...register('requested_at')} 
-              className="input input-bordered w-full" 
+              className="input input-bordered w-full bg-gray-100" 
+              readOnly
+              disabled
             />
-            {errors.requested_at && <p className="text-red-500 text-sm">{errors.requested_at.message}</p>}
+            <p className="text-gray-500 text-xs mt-1">This is automatically set when the ride is created</p>
           </div>
 
           <div>
@@ -253,15 +366,16 @@ const TaxiForm = () => {
         <div className="flex space-x-4">
           <button 
             type="submit" 
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" 
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            onClick={() => console.log('Add Taxi Ride button clicked!')}
             disabled={loading}
           >
             {loading ? 'Saving...' : isEdit ? 'Update Taxi Ride' : 'Add Taxi Ride'}
           </button>
           <button 
             type="button" 
+            className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400"
             onClick={() => navigate('/admin/taxi-rides')}
-            className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
           >
             Cancel
           </button>

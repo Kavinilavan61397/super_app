@@ -18,7 +18,8 @@ const seeders = [
   'seed-orders-mongo.js',
   'seed-groceries-mongo.js',
   'seed-restaurant-categories-mongo.js',
-  '20250127000001-seed-permissions.js'
+  '20250127000001-seed-permissions.js',
+  '20250613000001-seed-taxi-data.js' // <-- Added taxi data seeder
 ];
 
 const runSeeder = (seederFile) => {

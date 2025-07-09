@@ -30,17 +30,20 @@ const TaxiTable = () => {
   }, []);
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this taxi ride?')) {
+    if (window.confirm('Are you sure you want to cancel this taxi ride? This will mark it as cancelled but preserve the record.')) {
       try {
         const response = await taxiService.deleteTaxiRide(id);
         if (response.success) {
-          setTaxiRides(taxiRides.filter(ride => ride._id !== id));
-          toast.success('Taxi ride deleted successfully');
+          // Update the ride status in the list instead of removing it
+          setTaxiRides(taxiRides.map(ride => 
+            ride._id === id ? { ...ride, status: 'cancelled' } : ride
+          ));
+          toast.success('Taxi ride cancelled successfully');
         } else {
-          toast.error(response.message || 'Failed to delete taxi ride');
+          toast.error(response.message || 'Failed to cancel taxi ride');
         }
       } catch (err) {
-        toast.error(err.response?.data?.message || 'Failed to delete taxi ride');
+        toast.error(err.response?.data?.message || 'Failed to cancel taxi ride');
       }
     }
   };
@@ -142,9 +145,10 @@ const TaxiTable = () => {
                     </Link>
                     <button 
                       onClick={() => handleDelete(ride._id)}
-                      className="text-red-600 hover:underline"
+                      className={`${ride.status === 'cancelled' ? 'text-gray-400 cursor-not-allowed' : 'text-red-600 hover:underline'}`}
+                      disabled={ride.status === 'cancelled'}
                     >
-                      Delete
+                      {ride.status === 'cancelled' ? 'Cancelled' : 'Cancel'}
                     </button>
                   </td>
                 </tr>

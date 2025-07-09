@@ -65,6 +65,12 @@ const taxiRideSchema = new mongoose.Schema({
   },
   scheduled_time: {
     type: Date
+  },
+  started_at: {
+    type: Date
+  },
+  completed_at: {
+    type: Date
   }
 }, {
   timestamps: true,

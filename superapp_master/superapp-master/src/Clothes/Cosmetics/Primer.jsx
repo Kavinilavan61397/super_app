@@ -1,11 +1,10 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate, Routes, Route, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaFilter, FaHeart, FaEye, FaChevronDown } from 'react-icons/fa';
 import Footer from '../../Utility/Footer';
 
-// Product Data
+
 const primerProducts = [
   {
     id: 1,
@@ -17,7 +16,11 @@ const primerProducts = [
     isBestSeller: true,
     brand: 'Lakmé',
     category: 'Matte Primer',
-    variant: 'Oily Skin',
+    variants: [
+      { name: 'Oily Skin', inStock: true },
+      { name: 'Combination Skin', inStock: true },
+      { name: 'Normal Skin', inStock: false },
+    ],
     inStock: true,
     image: 'https://via.placeholder.com/150/FFDAB9/FFFFFF?text=Mattifying+Primer',
     deliveryInfo: {
@@ -41,7 +44,11 @@ const primerProducts = [
     isBestSeller: true,
     brand: 'Lotus Herbals',
     category: 'Hydrating Primer',
-    variant: 'Dry Skin',
+    variants: [
+      { name: 'Dry Skin', inStock: true },
+      { name: 'Normal Skin', inStock: true },
+      { name: 'Sensitive Skin', inStock: true },
+    ],
     inStock: true,
     image: 'https://via.placeholder.com/150/98FB98/FFFFFF?text=Herbal+Glow+Primer',
     deliveryInfo: {
@@ -61,7 +68,11 @@ const primerProducts = [
     isBestSeller: false,
     brand: 'Colorbar',
     category: 'Smoothing Primer',
-    variant: 'Combination Skin',
+    variants: [
+      { name: 'Combination Skin', inStock: true },
+      { name: 'Oily Skin', inStock: true },
+      { name: 'Dry Skin', inStock: false },
+    ],
     inStock: true,
     image: 'https://via.placeholder.com/150/ADFF2F/FFFFFF?text=Velvet+Touch+Primer',
     deliveryInfo: {
@@ -81,7 +92,11 @@ const primerProducts = [
     isBestSeller: true,
     brand: 'Lakmé',
     category: 'Long-Wear Primer',
-    variant: 'Normal Skin',
+    variants: [
+      { name: 'Normal Skin', inStock: true },
+      { name: 'Oily Skin', inStock: true },
+      { name: 'Combination Skin', inStock: true },
+    ],
     inStock: true,
     image: 'https://via.placeholder.com/150/ADD8E6/FFFFFF?text=9+to+5+Primer',
     deliveryInfo: {
@@ -101,7 +116,11 @@ const primerProducts = [
     isBestSeller: false,
     brand: 'Lotus Herbals',
     category: 'Hydrating Primer',
-    variant: 'Dry Skin',
+    variants: [
+      { name: 'Dry Skin', inStock: true },
+      { name: 'Sensitive Skin', inStock: true },
+      { name: 'Normal Skin', inStock: false },
+    ],
     inStock: true,
     image: 'https://via.placeholder.com/150/90EE90/FFFFFF?text=White+Lily+Primer',
     deliveryInfo: {
@@ -121,7 +140,11 @@ const primerProducts = [
     isBestSeller: true,
     brand: 'Colorbar',
     category: 'Smoothing Primer',
-    variant: 'Oily Skin',
+    variants: [
+      { name: 'Oily Skin', inStock: true },
+      { name: 'Combination Skin', inStock: true },
+      { name: 'Normal Skin', inStock: true },
+    ],
     inStock: true,
     image: 'https://via.placeholder.com/150/87CEEB/FFFFFF?text=Flawless+Base+Primer',
     deliveryInfo: {
@@ -141,7 +164,11 @@ const primerProducts = [
     isBestSeller: false,
     brand: 'Lakmé',
     category: 'Illuminating Primer',
-    variant: 'Normal Skin',
+    variants: [
+      { name: 'Normal Skin', inStock: true },
+      { name: 'Dry Skin', inStock: true },
+      { name: 'Sensitive Skin', inStock: false },
+    ],
     inStock: true,
     image: 'https://via.placeholder.com/150/E6E6FA/FFFFFF?text=Illuminating+Primer',
     deliveryInfo: {
@@ -161,7 +188,11 @@ const primerProducts = [
     isBestSeller: false,
     brand: 'Lotus Herbals',
     category: 'Protective Primer',
-    variant: 'Combination Skin',
+    variants: [
+      { name: 'Combination Skin', inStock: true },
+      { name: 'Oily Skin', inStock: true },
+      { name: 'Normal Skin', inStock: true },
+    ],
     inStock: true,
     image: 'https://via.placeholder.com/150/20B2AA/FFFFFF?text=Pure+Defense+Primer',
     deliveryInfo: {
@@ -181,7 +212,11 @@ const primerProducts = [
     isBestSeller: true,
     brand: 'Colorbar',
     category: 'Illuminating Primer',
-    variant: 'Dry Skin',
+    variants: [
+      { name: 'Dry Skin', inStock: true },
+      { name: 'Normal Skin', inStock: true },
+      { name: 'Sensitive Skin', inStock: false },
+    ],
     inStock: true,
     image: 'https://via.placeholder.com/150/F4A460/FFFFFF?text=Perfect+Radiance+Primer',
     deliveryInfo: {
@@ -201,8 +236,12 @@ const primerProducts = [
     isBestSeller: true,
     brand: 'Lakmé',
     category: 'Matte Primer',
-    variant: 'Oily Skin',
-    inStock: false,
+    variants: [
+      { name: 'Oily Skin', inStock: false },
+      { name: 'Combination Skin', inStock: true },
+      { name: 'Normal Skin', inStock: true },
+    ],
+    inStock: true,
     image: 'https://via.placeholder.com/150/FFDEAD/FFFFFF?text=Matte+Perfection+Primer',
     deliveryInfo: {
       returns: '30-day Returns',
@@ -228,7 +267,11 @@ const PrimerHeader = ({ setSelectedCategory, selectedCategory }) => {
   ];
 
   const primerVariants = [
-    'Oily Skin', 'Dry Skin', 'Combination Skin', 'Normal Skin',
+    'Oily Skin',
+    'Dry Skin',
+    'Combination Skin',
+    'Normal Skin',
+    'Sensitive Skin',
   ];
 
   const togglePrimerSubmenu = () => {
@@ -250,15 +293,6 @@ const PrimerHeader = ({ setSelectedCategory, selectedCategory }) => {
       <div className="container mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
         <div className="flex items-center justify-between w-full sm:w-auto">
           <h1 className="text-xl font-bold">Primer Collection</h1>
-          {/* <button
-            className="sm:hidden p-2"
-            onClick={toggleMobileMenu}
-            aria-label="Toggle mobile menu"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7" />
-            </svg>
-          </button> */}
         </div>
         <nav className={`flex flex-col sm:flex-row items-center gap-2 sm:gap-4 ${isMobileMenuOpen ? 'block' : 'hidden sm:flex'}`}>
           <ul className="flex flex-col sm:flex-row flex-wrap justify-center gap-2 sm:gap-4 w-full">
@@ -327,11 +361,12 @@ const PrimerHeader = ({ setSelectedCategory, selectedCategory }) => {
 };
 
 const PrimerCard = ({ item, onQuickView, addToCart, addToWishlist, cartItems, wishlistItems }) => {
-  const { name, originalPrice, discountedPrice, image, brand, variant, inStock, isBestSeller } = item;
+  const { name, originalPrice, discountedPrice, image, brand, variants, inStock, isBestSeller } = item;
   const navigate = useNavigate();
-  const [selectedVariant, setSelectedVariant] = useState(variant);
+  const [selectedVariant, setSelectedVariant] = useState(variants[0]?.name || '');
 
   const discountPercentage = Math.round(((originalPrice - discountedPrice) / originalPrice) * 100);
+  const selectedVariantStock = variants.find((v) => v.name === selectedVariant)?.inStock || false;
   const isInCart = cartItems.some((cartItem) => cartItem.id === item.id && cartItem.variant === selectedVariant);
   const isInWishlist = wishlistItems.some((wishlistItem) => wishlistItem.id === item.id && wishlistItem.variant === selectedVariant);
 
@@ -343,9 +378,9 @@ const PrimerCard = ({ item, onQuickView, addToCart, addToWishlist, cartItems, wi
           alt={`Image of ${name}`}
           className="w-full h-[200px] object-contain cursor-pointer"
           loading="lazy"
-          onClick={() => navigate(`/primers/product/${item.id}`)}
+          // onClick={() => navigate(`/primers/product/${item.id}`)}
         />
-        <div className="absolute top-4 right-4 flex space-x-2 group-hover:opacity-100 opacity-0 transition-opacity duration-300">
+        <div className="absolute top-2 right-2 flex space-x-2 sm:opacity-100">
           <button
             className={`p-2 rounded-full text-white transition-colors duration-200 ${isInWishlist ? 'bg-red-500' : 'bg-gray-700 hover:bg-red-500'}`}
             onClick={() => addToWishlist(item, 1, selectedVariant)}
@@ -376,7 +411,7 @@ const PrimerCard = ({ item, onQuickView, addToCart, addToWishlist, cartItems, wi
           {name}
         </h3>
         <p className="text-sm text-gray-600 mb-1">Brand: {brand}</p>
-        <p className="text-sm text-gray-600 mb-2">Variant: {variant}</p>
+        <p className="text-sm text-gray-600 mb-2">Variant: {selectedVariant}</p>
 
         <div className="flex items-baseline space-x-2 mb-3 mt-auto">
           <p className="text-xl font-bold text-envy-900">₹{discountedPrice.toFixed(2)}</p>
@@ -392,19 +427,23 @@ const PrimerCard = ({ item, onQuickView, addToCart, addToWishlist, cartItems, wi
             onChange={(e) => setSelectedVariant(e.target.value)}
             aria-label={`Select variant for ${name}`}
           >
-            <option value={variant}>{variant}</option>
+            {variants.map((variant) => (
+              <option key={variant.name} value={variant.name} disabled={!variant.inStock}>
+                {variant.name} {variant.inStock ? '' : '(Out of Stock)'}
+              </option>
+            ))}
           </select>
         </div>
 
         <button
           className={`w-full text-white text-sm font-semibold py-2 rounded-md transition-colors duration-200 ${
-            isInCart || !inStock ? 'bg-gray-400 cursor-not-allowed' : 'bg-black hover:bg-gray-800'
+            isInCart || !selectedVariantStock ? 'bg-gray-400 cursor-not-allowed' : 'bg-black hover:bg-gray-800'
           }`}
           onClick={() => addToCart(item, 1, selectedVariant)}
-          disabled={isInCart || !inStock}
-          aria-label={isInCart ? `${name} already in cart` : !inStock ? `${name} out of stock` : `Add ${name} to cart`}
+          disabled={isInCart || !selectedVariantStock}
+          aria-label={isInCart ? `${name} already in cart` : !selectedVariantStock ? `${name} out of stock` : `Add ${name} to cart`}
         >
-          {isInCart ? 'ADDED TO CART' : !inStock ? 'OUT OF STOCK' : 'ADD TO CART'}
+          {isInCart ? 'ADDED TO CART' : !selectedVariantStock ? 'OUT OF STOCK' : 'ADD TO CART'}
         </button>
       </div>
     </div>
@@ -415,7 +454,7 @@ const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const product = primerProducts.find((p) => p.id === parseInt(id));
-  const [selectedVariant, setSelectedVariant] = useState(product ? product.variant : '');
+  const [selectedVariant, setSelectedVariant] = useState(product?.variants[0]?.name || '');
   const [quantity, setQuantity] = useState(1);
 
   const addToCart = (product, quantity, variant) => {
@@ -445,6 +484,8 @@ const ProductDetail = () => {
     return <div className="pt-20 sm:pt-24 px-4 text-center">Product not found</div>;
   }
 
+  const selectedVariantStock = product.variants.find((v) => v.name === selectedVariant)?.inStock || false;
+
   return (
     <div className="pt-20 sm:pt-24 px-4">
       <button
@@ -468,7 +509,7 @@ const ProductDetail = () => {
           <div className="flex-1">
             <h1 className="text-2xl font-bold text-black">{product.name}</h1>
             <p className="text-sm text-gray-500 mt-1">Brand: {product.brand}</p>
-            <p className="text-sm text-gray-500 mt-1">Variant: {product.variant}</p>
+            <p className="text-sm text-gray-500 mt-1">Variant: {selectedVariant}</p>
             <div className="flex items-center mt-2">
               <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24 .588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3 .921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784 .57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81 .588-1.81h3.461a1 1 0 00 .951-.69l1.07-3.292z"></path>
@@ -494,7 +535,11 @@ const ProductDetail = () => {
                 onChange={(e) => setSelectedVariant(e.target.value)}
                 aria-label={`Select variant for ${product.name}`}
               >
-                <option value={product.variant}>{product.variant}</option>
+                {product.variants.map((variant) => (
+                  <option key={variant.name} value={variant.name} disabled={!variant.inStock}>
+                    {variant.name} {variant.inStock ? '' : '(Out of Stock)'}
+                  </option>
+                ))}
               </select>
             </div>
             <div className="mt-4">
@@ -534,13 +579,13 @@ const ProductDetail = () => {
             )}
             <button
               className={`mt-4 w-full text-white text-sm font-medium px-6 py-2 rounded-md ${
-                product.inStock ? 'bg-black hover:bg-gray-800' : 'bg-gray-400 cursor-not-allowed'
+                selectedVariantStock ? 'bg-black hover:bg-gray-800' : 'bg-gray-400 cursor-not-allowed'
               }`}
-              onClick={() => product.inStock && addToCart(product, quantity, selectedVariant)}
-              disabled={!product.inStock}
-              aria-label={product.inStock ? `Add ${product.name} to cart` : `${product.name} out of stock`}
+              onClick={() => selectedVariantStock && addToCart(product, quantity, selectedVariant)}
+              disabled={!selectedVariantStock}
+              aria-label={selectedVariantStock ? `Add ${product.name} to cart` : `${product.name} out of stock`}
             >
-              {product.inStock ? 'Add to Cart' : 'Out of Stock'}
+              {selectedVariantStock ? 'Add to Cart' : 'Out of Stock'}
             </button>
           </div>
         </div>
@@ -591,7 +636,11 @@ function Primers() {
     'Protective Primer',
   ];
   const primerVariants = [
-    'Oily Skin', 'Dry Skin', 'Combination Skin', 'Normal Skin',
+    'Oily Skin',
+    'Dry Skin',
+    'Combination Skin',
+    'Normal Skin',
+    'Sensitive Skin',
   ];
   const sortOptions = [
     { label: 'Sort By', value: 'default' },
@@ -677,7 +726,7 @@ function Primers() {
   const handleQuickView = (product) => {
     setQuickView(product);
     setQuickViewQuantity(1);
-    setQuickViewVariant(product.variant);
+    setQuickViewVariant(product.variants[0]?.name || '');
   };
 
   const handleFilterChange = (key, value) => {
@@ -741,7 +790,7 @@ function Primers() {
         const matchesOffers = filterState.offers ? product.isBestSeller : true;
         const matchesAvailability = filterState.inStock ? product.inStock : true;
         const matchesVariant = filterState.variants.length
-          ? filterState.variants.includes(product.variant)
+          ? product.variants.some((v) => filterState.variants.includes(v.name))
           : true;
         const matchesCategoryFilter = filterState.categories.length
           ? filterState.categories.includes(product.category)
@@ -752,7 +801,7 @@ function Primers() {
             : primerCategories.includes(selectedCategory)
             ? product.category === selectedCategory
             : primerVariants.includes(selectedCategory)
-            ? product.variant === selectedCategory
+            ? product.variants.some((v) => v.name === selectedCategory)
             : false;
         return matchesDiscount && matchesBrands && matchesPrice && matchesOffers && matchesAvailability && matchesVariant && matchesCategoryFilter && matchesCategory;
       })
@@ -1040,25 +1089,6 @@ function Primers() {
                             </motion.div>
                           </div>
                         </div>
-
-                        <div className="p-6 border-t border-gray-200 flex items-center gap-2">
-                          {/* <button
-                            type="button"
-                            className="w-full px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-semibold hover:bg-blue-700 transition-colors"
-                            onClick={applyFilters}
-                            aria-label="Apply filters"
-                          >
-                            Apply Filters
-                          </button>
-                          <button
-                            type="button"
-                            className="w-full px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-md text-sm font-semibold hover:bg-gray-100 transition-colors"
-                            onClick={clearFilters}
-                            aria-label="Clear all filters"
-                          >
-                            Clear All
-                          </button> */}
-                        </div>
                       </motion.aside>
                     </div>
                   )}
@@ -1121,7 +1151,7 @@ function Primers() {
             />
             <p className="text-xs text-gray-700 mb-1">{quickView.description}</p>
             <p className="text-xs text-gray-500 mb-1">Brand: {quickView.brand}</p>
-            <p className="text-xs text-gray-500 mb-2">Variant: {quickView.variant}</p>
+            <p className="text-xs text-gray-500 mb-1">Variant: {quickViewVariant}</p>
 
             <div className="flex items-center space-x-2 mb-2">
               <p className="text-sm font-semibold text-gray-800">₹{quickView.discountedPrice.toFixed(2)}</p>
@@ -1130,7 +1160,7 @@ function Primers() {
                 {Math.round(((quickView.originalPrice - quickView.discountedPrice) / quickView.originalPrice) * 100)}% OFF
               </p>
             </div>
-            <div className="mb-3">
+            <div className="mb-2">
               <p className="text-xs font-semibold text-gray-700 mb-1">Variant:</p>
               <select
                 id="quick-view-select"
@@ -1139,7 +1169,11 @@ function Primers() {
                 onChange={(e) => setQuickViewVariant(e.target.value)}
                 aria-label={`Select variant for ${quickView?.name || 'product'}`}
               >
-                <option value={quickView.variant}>{quickView.variant}</option>
+                {quickView.variants.map((variant) => (
+                  <option key={variant.name} value={variant.name} disabled={!variant.inStock}>
+                    {variant.name} {variant.inStock ? '' : '(Out of Stock)'}
+                  </option>
+                ))}
               </select>
             </div>
             <div className="flex items-center mb-3">
@@ -1159,14 +1193,21 @@ function Primers() {
             </div>
             <button
               type="button"
-              className="w-full bg-blue-600 text-white rounded py-1 text-xs hover:bg-blue-700 transition-colors"
+              className={`w-full text-white rounded py-1 text-xs transition-colors ${
+                quickView.variants.find((v) => v.name === quickViewVariant)?.inStock
+                  ? 'bg-blue-600 hover:bg-blue-700'
+                  : 'bg-gray-400 cursor-not-allowed'
+              }`}
               onClick={() => {
-                addToCart(quickView, quickViewQuantity, quickViewVariant);
-                setQuickView(null);
+                if (quickView.variants.find((v) => v.name === quickViewVariant)?.inStock) {
+                  addToCart(quickView, quickViewQuantity, quickViewVariant);
+                  setQuickView(null);
+                }
               }}
+              disabled={!quickView.variants.find((v) => v.name === quickViewVariant)?.inStock}
               aria-label={`Add ${quickView?.name || 'product'} to cart`}
             >
-              Add to Cart
+              {quickView.variants.find((v) => v.name === quickViewVariant)?.inStock ? 'Add to Cart' : 'Out of Stock'}
             </button>
           </motion.div>
         </motion.div>

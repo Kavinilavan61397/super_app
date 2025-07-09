@@ -205,7 +205,7 @@ const CompactPowderHeader = ({ setSelectedCategory, selectedCategory }) => {
       <div className="container mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
         <div className="flex items-center justify-between w-full sm:w-auto">
           <h1 className="text-xl font-bold">Compact Powder Collection</h1>
-          <button
+          {/* <button
             className="sm:hidden text-white"
             onClick={toggleMobileMenu}
             aria-label="Toggle mobile menu"
@@ -213,7 +213,7 @@ const CompactPowderHeader = ({ setSelectedCategory, selectedCategory }) => {
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7" />
             </svg>
-          </button>
+          </button> */}
         </div>
         <nav className={`flex flex-col sm:flex-row items-center gap-2 sm:gap-4 ${isMobileMenuOpen ? 'block' : 'hidden sm:flex'}`}>
           <ul className="flex flex-col sm:flex-row flex-wrap justify-center gap-2 sm:gap-4 w-full">
@@ -299,26 +299,26 @@ const CompactPowderCard = ({ item, onQuickView, addToCart, addToWishlist, cartIt
           alt={`Image of ${name}`}
           className="w-full h-[200px] object-contain cursor-pointer"
           loading="lazy"
-          onClick={() => navigate(`/compact-powders/product/${item.id}`)}
+          // onClick={() => navigate(`/compact-powders/product/${item.id}`)}
         />
-        <div className="absolute top-4 right-4 flex space-x-2 group-hover:opacity-100 opacity-0 transition-opacity duration-300">
-          <button
-            className={`p-2 rounded-full text-white transition-colors duration-200 ${isInWishlist ? 'bg-red-500' : 'bg-gray-700 hover:bg-red-500'}`}
-            onClick={() => addToWishlist(item, 1, selectedShade)}
-            title={isInWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'}
-            aria-label={isInWishlist ? `Remove ${name} from wishlist` : `Add ${name} to wishlist`}
-          >
-            <FaHeart className="w-5 h-5" />
-          </button>
-          <button
-            onClick={() => onQuickView(item)}
-            className="p-2 rounded-full bg-gray-700 text-white hover:bg-blue-500 transition-colors duration-200"
-            title="Quick View"
-            aria-label={`Quick view for ${name}`}
-          >
-            <FaEye className="w-5 h-5" />
-          </button>
-        </div>
+       <div className="absolute top-2 right-2 flex space-x-2 sm:opacity-100">
+  <button
+    className={`p-2 rounded-full text-white ${isInWishlist ? 'bg-pink-500' : 'bg-gray-600 hover:bg-pink-400'}`}
+    onClick={() => addToWishlist(item, 1, selectedShade)}
+    title={isInWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'}
+    aria-label={isInWishlist ? `Remove ${name} from cosmetics wishlist` : `Add ${name} to cosmetics wishlist`}
+  >
+    <FaHeart className="w-4 h-4" />
+  </button>
+  <button
+    onClick={() => onQuickView(item)}
+    className="p-2 rounded-full bg-gray-600 text-white hover:bg-yellow-500 transition-colors duration-200"
+    title="Quick View"
+    aria-label={`Quick view for ${name} cosmetic`}
+  >
+    <FaEye className="w-4 h-4" />
+  </button>
+</div>
         {isBestSeller && (
           <span className="absolute bottom-4 left-4 bg-black text-white text-xs font-semibold px-2 py-1">BEST SELLER</span>
         )}

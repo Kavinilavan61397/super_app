@@ -15,7 +15,7 @@ import eyeshadowimage from '../Images/eyeshadow.jpg';
 import mascaraimage from '../Images/mascara.jpg';
 import compactpowderimage from '../Images/compactpowder.jpg';
 import kajalimage from '../Images/kajal.webp';
-import perfumeimage from '../Images/perfume.webp';
+// import perfumeimage from '../Images/perfume.webp';
 import primerimage from '../Images/primer.png';
 import sunscreenimage from '../Images/sunscreen.jpg';
 import highlighterimage from '../Images/highlighter.jpg';
@@ -29,7 +29,7 @@ const cosmeticsSubCategories = [
   { id: 4, name: 'CONDITIONER', image: ConditionerImage, route: '/cosmetics/conditioner' },
   { id: 5, name: 'SHAMPOO', image: shampooImage, route: '/cosmetics/shampoo' },
   { id: 6, name: 'SUNSCREEN', image:sunscreenimage, route: '/cosmetics/sunscreen' },
-  { id: 7, name: 'PERFUME', image: perfumeimage, route: '/cosmetics/luxury' },
+  // { id: 7, name: 'PERFUME', image: perfumeimage, route: '/cosmetics/luxury' },
     { id: 8, name: 'EYESHADOW', image: eyeshadowimage, route: '/cosmetics/eyeshadow' },
     { id: 9, name: 'MASCARA', image: mascaraimage, route: '/cosmetics/mascara' },
  { id: 10, name: 'COMPACTPOWDER', image: compactpowderimage, route: '/cosmetics/compactpowder' },

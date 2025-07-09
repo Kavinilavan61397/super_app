@@ -5,7 +5,14 @@ import { FaFilter, FaHeart, FaEye, FaChevronDown } from 'react-icons/fa';
 import Footer from '../../Utility/Footer';
 import lipsticklakmeImage from '../Images/lipsticklakme.jpg';
 
-// Product Data
+
+const lipstickColors = [
+  'Pinks', 'Nudes', 'Reds', 'Browns', 'Corals', 'Maroon', 'Plums',
+  'Berries', 'Mauves', 'Peaches', 'Oranges', 'Wines', 'Fuchsias', 'Rose', 'Cherry',
+  'Violets', 'Bronzes', 'Rubies', 'Tangerines', 'Blushes', 
+];
+
+
 const cosmeticsProducts = [
   {
     id: 1,
@@ -17,7 +24,7 @@ const cosmeticsProducts = [
     isBestSeller: true,
     brand: 'Lakmé',
     category: 'Lipstick',
-    color: 'Reds',
+    colors: ['Reds', 'Pinks', 'Nudes', 'Corals', 'Violets'],
     inStock: true,
     image: lipsticklakmeImage,
     deliveryInfo: {
@@ -41,7 +48,7 @@ const cosmeticsProducts = [
     isBestSeller: true,
     brand: "L'Oréal",
     category: 'Lipstick',
-    color: 'Berries',
+    colors: ['Berries', 'Mauves', 'Wines', 'Rose', 'Rubies'],
     inStock: true,
     image: 'https://via.placeholder.com/150/9C27B0/FFFFFF?text=Satin+Lipstick',
     deliveryInfo: {
@@ -61,7 +68,7 @@ const cosmeticsProducts = [
     isBestSeller: false,
     brand: 'Maybelline',
     category: 'Lipstick',
-    color: 'Mauves',
+    colors: ['Mauves', 'Plums', 'Maroon', 'Tangerines'],
     inStock: true,
     image: 'https://via.placeholder.com/150/BA55D3/FFFFFF?text=Matte+Lipstick',
     deliveryInfo: {
@@ -81,7 +88,7 @@ const cosmeticsProducts = [
     isBestSeller: true,
     brand: 'Lakmé',
     category: 'Lipstick',
-    color: 'Wines',
+    colors: ['Wines', 'Nudes', 'Pinks', 'Bronzes'],
     inStock: true,
     image: 'https://via.placeholder.com/150/8B0000/FFFFFF?text=Velvet+Lipstick',
     deliveryInfo: {
@@ -101,7 +108,7 @@ const cosmeticsProducts = [
     isBestSeller: false,
     brand: 'Maybelline',
     category: 'Liquid Lipstick',
-    color: 'Pinks',
+    colors: ['Pinks', 'Fuchsias', 'Corals', 'Blushes'],
     inStock: true,
     image: 'https://via.placeholder.com/150/FF1493/FFFFFF?text=Liquid+Lipstick',
     deliveryInfo: {
@@ -121,7 +128,7 @@ const cosmeticsProducts = [
     isBestSeller: true,
     brand: "L'Oréal",
     category: 'Liquid Lipstick',
-    color: 'Fuchsias',
+    colors: ['Fuchsias', 'Reds', 'Peaches', 'Violets'],
     inStock: true,
     image: 'https://via.placeholder.com/150/FF00FF/FFFFFF?text=Velvet+Liquid+Lipstick',
     deliveryInfo: {
@@ -141,7 +148,7 @@ const cosmeticsProducts = [
     isBestSeller: true,
     brand: "L'Oréal",
     category: 'Lip Tints',
-    color: 'Corals',
+    colors: ['Corals', 'Pinks', 'Peaches', 'Tangerines'],
     inStock: true,
     image: 'https://via.placeholder.com/150/FF7F50/FFFFFF?text=Lip+Tint',
     deliveryInfo: {
@@ -161,7 +168,7 @@ const cosmeticsProducts = [
     isBestSeller: false,
     brand: 'Lakmé',
     category: 'Lip Tints',
-    color: 'Peaches',
+    colors: ['Peaches', 'Rose', 'Nudes', 'Blushes'],
     inStock: true,
     image: 'https://via.placeholder.com/150/FFDAB9/FFFFFF?text=Hydrating+Lip+Tint',
     deliveryInfo: {
@@ -181,7 +188,7 @@ const cosmeticsProducts = [
     isBestSeller: false,
     brand: 'Lakmé',
     category: 'Lip Gloss/Oil',
-    color: 'Nudes',
+    colors: ['Nudes', 'Pinks', 'Oranges', 'Cherry'],
     inStock: true,
     image: 'https://via.placeholder.com/150/F5F5DC/FFFFFF?text=Lip+Gloss',
     deliveryInfo: {
@@ -201,7 +208,7 @@ const cosmeticsProducts = [
     isBestSeller: true,
     brand: 'Maybelline',
     category: 'Lip Gloss/Oil',
-    color: 'Rose',
+    colors: ['Rose', 'Fuchsias', 'Reds', 'Bronzes'],
     inStock: true,
     image: 'https://via.placeholder.com/150/FFC1CC/FFFFFF?text=Plumping+Lip+Gloss',
     deliveryInfo: {
@@ -221,7 +228,7 @@ const cosmeticsProducts = [
     isBestSeller: false,
     brand: "L'Oréal",
     category: 'Lip Gloss/Oil',
-    color: 'Cherry',
+    colors: ['Cherry', 'Peaches', 'Pinks', 'Tangerines'],
     inStock: true,
     image: 'https://via.placeholder.com/150/DC143C/FFFFFF?text=Lip+Oil',
     deliveryInfo: {
@@ -241,7 +248,7 @@ const cosmeticsProducts = [
     isBestSeller: true,
     brand: 'Lakmé',
     category: 'Lip Gloss/Oil',
-    color: 'Oranges',
+    colors: ['Oranges', 'Nudes', 'Rose', 'Violets'],
     inStock: true,
     image: 'https://via.placeholder.com/150/FFA500/FFFFFF?text=Sparkle+Lip+Gloss',
     deliveryInfo: {
@@ -261,7 +268,7 @@ const cosmeticsProducts = [
     isBestSeller: true,
     brand: 'Maybelline',
     category: 'Lip Crayons',
-    color: 'Maroon',
+    colors: ['Maroon', 'Pinks', 'Plums', 'Rubies'],
     inStock: true,
     image: 'https://via.placeholder.com/150/800000/FFFFFF?text=Lip+Crayon',
     deliveryInfo: {
@@ -281,7 +288,7 @@ const cosmeticsProducts = [
     isBestSeller: false,
     brand: "L'Oréal",
     category: 'Lip Crayons',
-    color: 'Plums',
+    colors: ['Plums', 'Browns', 'Berries', 'Blushes'],
     inStock: true,
     image: 'https://via.placeholder.com/150/800080/FFFFFF?text=Matte+Lip+Crayon',
     deliveryInfo: {
@@ -301,7 +308,7 @@ const cosmeticsProducts = [
     isBestSeller: false,
     brand: "L'Oréal",
     category: 'Lip Liners',
-    color: 'Plums',
+    colors: ['Plums', 'Reds', 'Nudes', 'Bronzes'],
     inStock: true,
     image: 'https://via.placeholder.com/150/800080/FFFFFF?text=Lip+Liner',
     deliveryInfo: {
@@ -321,8 +328,8 @@ const cosmeticsProducts = [
     isBestSeller: true,
     brand: 'Lakmé',
     category: 'Lip Liners',
-    color: 'Browns',
-    inStock: false, // Set to out-of-stock for testing
+    colors: ['Browns', 'Plums', 'Reds', 'Pinks'],
+    inStock: false,
     image: 'https://via.placeholder.com/150/8B4513/FFFFFF?text=Creamy+Lip+Liner',
     deliveryInfo: {
       returns: '30-day Returns',
@@ -333,6 +340,7 @@ const cosmeticsProducts = [
   },
 ];
 
+// LipstickHeader Component
 const LipstickHeader = ({ setSelectedCategory, selectedCategory }) => {
   const [isLipstickSubmenuOpen, setIsLipstickSubmenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -345,11 +353,6 @@ const LipstickHeader = ({ setSelectedCategory, selectedCategory }) => {
     { name: 'Lip Gloss/Oil', value: 'Lip Gloss/Oil' },
     { name: 'Lip Crayons', value: 'Lip Crayons' },
     { name: 'Lip Liners', value: 'Lip Liners' },
-  ];
-
-  const lipstickColors = [
-    'Pinks', 'Nudes', 'Reds', 'Browns', 'Corals', 'Maroon', 'Plums',
-    'Berries', 'Mauves', 'Peaches', 'Oranges', 'Wines', 'Fuchsias', 'Rose', 'Cherry',
   ];
 
   const toggleLipstickSubmenu = () => {
@@ -371,15 +374,6 @@ const LipstickHeader = ({ setSelectedCategory, selectedCategory }) => {
       <div className="container mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
         <div className="flex items-center justify-between w-full sm:w-auto">
           <h1 className="text-xl font-bold">Lipstick Collection</h1>
-          {/* <button
-            className="sm:hidden p-2"
-            onClick={toggleMobileMenu}
-            aria-label="Toggle mobile menu"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7" />
-            </svg>
-          </button> */}
         </div>
         <nav className={`flex flex-col sm:flex-row items-center gap-2 sm:gap-4 ${isMobileMenuOpen ? 'block' : 'hidden sm:flex'}`}>
           <ul className="flex flex-col sm:flex-row flex-wrap justify-center gap-2 sm:gap-4 w-full">
@@ -447,11 +441,11 @@ const LipstickHeader = ({ setSelectedCategory, selectedCategory }) => {
   );
 };
 
-// Product Card Component (unchanged)
+// CosmeticCard Component
 const CosmeticCard = ({ item, onQuickView, addToCart, addToWishlist, cartItems, wishlistItems }) => {
-  const { name, originalPrice, discountedPrice, image, brand, color, inStock, isBestSeller } = item;
+  const { name, originalPrice, discountedPrice, image, brand, colors, inStock, isBestSeller } = item;
   const navigate = useNavigate();
-  const [selectedColor, setSelectedColor] = useState(color);
+  const [selectedColor, setSelectedColor] = useState(colors[0] || '');
 
   const discountPercentage = Math.round(((originalPrice - discountedPrice) / originalPrice) * 100);
   const isInCart = cartItems.some((cartItem) => cartItem.id === item.id && cartItem.color === selectedColor);
@@ -465,9 +459,8 @@ const CosmeticCard = ({ item, onQuickView, addToCart, addToWishlist, cartItems, 
           alt={`Image of ${name}`}
           className="w-full h-[200px] object-contain cursor-pointer"
           loading="lazy"
-          onClick={() => navigate(`/lipsticks/product/${item.id}`)}
         />
-        <div className="absolute top-4 right-4 flex space-x-2 group-hover:opacity-100 opacity-0 transition-opacity duration-300">
+        <div className="absolute top-2 right-2 flex space-x-2 sm:opacity-100">
           <button
             className={`p-2 rounded-full text-white transition-colors duration-200 ${isInWishlist ? 'bg-red-500' : 'bg-gray-700 hover:bg-red-500'}`}
             onClick={() => addToWishlist(item, 1, selectedColor)}
@@ -493,12 +486,12 @@ const CosmeticCard = ({ item, onQuickView, addToCart, addToWishlist, cartItems, 
       <div className="p-4 flex flex-col flex-grow">
         <h3
           className="text-lg font-bold text-gray-800 mb-1 line-clamp-2 cursor-pointer hover:text-gray-600"
-          onClick={() => navigate(`/lipsticks/product/${item.id}`)}
+          // onClick={() => navigate(`/lipsticks/product/${item.id}`)}
         >
           {name}
         </h3>
         <p className="text-sm text-gray-600 mb-1">Brand: {brand}</p>
-        <p className="text-sm text-gray-600 mb-2">Color: {color}</p>
+        <p className="text-sm text-gray-600 mb-2">Color: {selectedColor}</p>
 
         <div className="flex items-baseline space-x-2 mb-3 mt-auto">
           <p className="text-xl font-bold text-envy-900">₹{discountedPrice.toFixed(2)}</p>
@@ -514,7 +507,11 @@ const CosmeticCard = ({ item, onQuickView, addToCart, addToWishlist, cartItems, 
             onChange={(e) => setSelectedColor(e.target.value)}
             aria-label={`Select color for ${name}`}
           >
-            <option value={color}>{color}</option>
+            {colors.map((color) => (
+              <option key={color} value={color}>
+                {color}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -533,12 +530,12 @@ const CosmeticCard = ({ item, onQuickView, addToCart, addToWishlist, cartItems, 
   );
 };
 
-// Product Detail Component (unchanged)
+// ProductDetail Component
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const product = cosmeticsProducts.find((p) => p.id === parseInt(id));
-  const [selectedColor, setSelectedColor] = useState(product ? product.color : '');
+  const [selectedColor, setSelectedColor] = useState(product ? product.colors[0] : '');
   const [quantity, setQuantity] = useState(1);
 
   const addToCart = (product, quantity, color) => {
@@ -591,7 +588,6 @@ const ProductDetail = () => {
           <div className="flex-1">
             <h1 className="text-2xl font-bold text-black">{product.name}</h1>
             <p className="text-sm text-gray-500 mt-1">Brand: {product.brand}</p>
-            <p className="text-sm text-gray-500 mt-1">Color: {product.color}</p>
             <div className="flex items-center mt-2">
               <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24 .588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3 .921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784 .57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81 .588-1.81h3.461a1 1 0 00 .951-.69l1.07-3.292z"></path>
@@ -617,7 +613,11 @@ const ProductDetail = () => {
                 onChange={(e) => setSelectedColor(e.target.value)}
                 aria-label={`Select color for ${product.name}`}
               >
-                <option value={product.color}>{product.color}</option>
+                {product.colors.map((color) => (
+                  <option key={color} value={color}>
+                    {color}
+                  </option>
+                ))}
               </select>
             </div>
             <div className="mt-4">
@@ -714,10 +714,6 @@ function Lipsticks() {
     'Lip Crayons',
     'Lip Liners',
   ];
-  const lipstickColors = [
-    'Pinks', 'Nudes', 'Reds', 'Browns', 'Corals', 'Maroon', 'Plums',
-    'Berries', 'Mauves', 'Peaches', 'Oranges', 'Wines', 'Fuchsias', 'Rose', 'Cherry',
-  ];
   const sortOptions = [
     { label: 'Sort By', value: 'default' },
     { label: 'Price: Low to High', value: 'priceLow' },
@@ -802,7 +798,7 @@ function Lipsticks() {
   const handleQuickView = (product) => {
     setQuickView(product);
     setQuickViewQuantity(1);
-    setQuickViewColor(product.color);
+    setQuickViewColor(product.colors[0] || '');
   };
 
   const handleFilterChange = (key, value) => {
@@ -866,7 +862,7 @@ function Lipsticks() {
         const matchesOffers = filterState.offers ? product.isBestSeller : true;
         const matchesAvailability = filterState.inStock ? product.inStock : true;
         const matchesColor = filterState.colors.length
-          ? filterState.colors.includes(product.color)
+          ? product.colors.some((color) => filterState.colors.includes(color))
           : true;
         const matchesCategoryFilter = filterState.categories.length
           ? filterState.categories.includes(product.category)
@@ -877,7 +873,7 @@ function Lipsticks() {
             : lipstickSubcategories.includes(selectedCategory)
             ? product.category === selectedCategory
             : lipstickColors.includes(selectedCategory)
-            ? product.color === selectedCategory
+            ? product.colors.includes(selectedCategory)
             : false;
         return matchesDiscount && matchesBrands && matchesPrice && matchesOffers && matchesAvailability && matchesColor && matchesCategoryFilter && matchesCategory;
       })
@@ -1055,7 +1051,6 @@ function Lipsticks() {
           element={
             <div className="flex-grow pt-20">
               <div className="max-w-screen-xl mx-auto px-4 py-4 pb-16 relative">
-                {/* Breadcrumbs and Item Count */}
                 <div className="text-sm text-gray-600 mb-4">
                   <Link to="/" className="hover:underline">Home</Link> /{' '}
                   <Link to="/categories" className="hover:underline">Categories</Link> /{' '}
@@ -1063,7 +1058,6 @@ function Lipsticks() {
                   <span className="font-semibold">Lipsticks</span> - {filteredAndSortedItems.length} Items
                 </div>
 
-                {/* Filter and Sort Controls */}
                 <div className="flex flex-col sm:flex-row sm:flex-nowrap sm:justify-between sm:items-center gap-2 mb-4">
                   <h2 className="text-xl font-bold text-gray-800 sm:text-sm">Lipsticks ({filteredAndSortedItems.length} Items)</h2>
                   <div className="flex items-center gap-2">
@@ -1093,7 +1087,6 @@ function Lipsticks() {
                   </div>
                 </div>
 
-                {/* Filter Panel */}
                 <AnimatePresence>
                   {showFilterPanel && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-end z-50">
@@ -1104,7 +1097,6 @@ function Lipsticks() {
                         exit={{ x: '100%' }}
                         transition={{ type: 'tween', duration: 0.3 }}
                       >
-                        {/* Header */}
                         <div className="flex justify-between items-center p-6 border-b border-gray-200">
                           <h2 className="text-lg font-bold text-gray-800">Filters</h2>
                           <div className="flex items-center gap-2">
@@ -1136,9 +1128,7 @@ function Lipsticks() {
                           </div>
                         </div>
 
-                        {/* Filter Content */}
                         <div className="flex flex-1 overflow-hidden">
-                          {/* Left Sidebar: Filter Categories */}
                           <div className="w-[200px] bg-gray-50 border-r border-gray-200 overflow-y-auto">
                             {filterCategories.map((category) => (
                               <button
@@ -1156,7 +1146,6 @@ function Lipsticks() {
                             ))}
                           </div>
 
-                          {/* Right Content: Filter Details */}
                           <div className="flex-1 p-6 overflow-y-auto">
                             <h3 className="text-sm font-semibold text-gray-700 mb-4">
                               {filterCategories.find((cat) => cat.id === selectedFilterCategory)?.label}
@@ -1172,32 +1161,11 @@ function Lipsticks() {
                             </motion.div>
                           </div>
                         </div>
-
-                        {/* Footer: Filter Actions */}
-                        <div className="p-6 border-t border-gray-200 flex items-center gap-2">
-                          {/* <button
-                            type="button"
-                            className="w-full px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-semibold hover:bg-blue-700 transition-colors"
-                            onClick={applyFilters}
-                            aria-label="Apply filters"
-                          >
-                            Apply Filters
-                          </button>
-                          <button
-                            type="button"
-                            className="w-full px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-md text-sm font-semibold hover:bg-gray-100 transition-colors"
-                            onClick={clearFilters}
-                            aria-label="Clear all filters"
-                          >
-                            Clear All
-                          </button> */}
-                        </div>
                       </motion.aside>
                     </div>
                   )}
                 </AnimatePresence>
 
-                {/* Product Grid */}
                 <main className="flex-grow">
                   <div className="grid grid-cols-2 gap-2 md:gap-4 sm:grid-cols-3 md:grid-cols-4">
                     {filteredAndSortedItems.map((item) => (
@@ -1224,7 +1192,6 @@ function Lipsticks() {
         <Route path="/product/:id" element={<ProductDetail />} />
       </Routes>
 
-      {/* Quick View Modal */}
       {quickView && (
         <motion.div
           className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto"
@@ -1256,7 +1223,7 @@ function Lipsticks() {
             />
             <p className="text-xs text-gray-700 mb-1">{quickView.description}</p>
             <p className="text-xs text-gray-500 mb-1">Brand: {quickView.brand}</p>
-            <p className="text-xs text-gray-500 mb-2">Color: {quickView.color}</p>
+            <p className="text-xs text-gray-500 mb-2">Color: {quickViewColor}</p>
 
             <div className="flex items-center space-x-2 mb-2">
               <p className="text-sm font-semibold text-gray-800">₹{quickView.discountedPrice.toFixed(2)}</p>
@@ -1274,7 +1241,11 @@ function Lipsticks() {
                 onChange={(e) => setQuickViewColor(e.target.value)}
                 aria-label={`Select color for ${quickView.name || 'product'}`}
               >
-                <option value={quickView.color}>{quickView.color}</option>
+                {quickView.colors.map((color) => (
+                  <option key={color} value={color}>
+                    {color}
+                  </option>
+                ))}
               </select>
             </div>
             <div className="flex items-center mb-3">

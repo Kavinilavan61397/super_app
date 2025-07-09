@@ -291,9 +291,9 @@ const MascaraCard = ({ item, onQuickView, addToCart, addToWishlist, cartItems, w
           alt={`Image of ${name}`}
           className="w-full h-[200px] object-contain cursor-pointer"
           loading="lazy"
-          onClick={() => navigate(`/mascaras/product/${item.id}`)}
+          // onClick={() => navigate(`/mascaras/product/${item.id}`)}
         />
-        <div className="absolute top-4 right-4 flex space-x-2 group-hover:opacity-100 opacity-0 transition-opacity duration-300">
+<div className="absolute top-2 right-2 flex space-x-2 sm:opacity-100">
           <button
             className={`p-2 rounded-full text-white transition-colors duration-200 ${isInWishlist ? 'bg-red-500' : 'bg-gray-700 hover:bg-red-500'}`}
             onClick={() => addToWishlist(item, 1, selectedFeature)}
@@ -319,7 +319,7 @@ const MascaraCard = ({ item, onQuickView, addToCart, addToWishlist, cartItems, w
       <div className="p-4 flex flex-col flex-grow">
         <h3
           className="text-lg font-bold text-gray-800 mb-1 line-clamp-2 cursor-pointer hover:text-gray-600"
-          onClick={() => navigate(`/mascaras/product/${item.id}`)}
+          // onClick={() => navigate(`/mascaras/product/${item.id}`)}
         >
           {name}
         </h3>

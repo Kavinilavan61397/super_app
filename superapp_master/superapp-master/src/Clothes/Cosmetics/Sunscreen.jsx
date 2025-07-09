@@ -1,25 +1,24 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate, Routes, Route, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaFilter, FaHeart, FaEye, FaChevronDown } from 'react-icons/fa';
 import Footer from '../../Utility/Footer';
 
-// Product Data
+
 const sunscreenProducts = [
   {
     id: 1,
-    name: 'Safe Sun UV Screen SPF 50',
+    name: 'Safe Sun UV Screen',
     originalPrice: 750,
     discountedPrice: 600,
-    description: 'High-protection sunscreen with SPF 50 for all skin types.',
+    description: 'High-protection sunscreen for all skin types.',
     rating: 4.5,
     isBestSeller: true,
     brand: 'Lotus Herbals',
     category: 'Cream Sunscreen',
-    variant: 'SPF 50',
+    variants: ['SPF 15', 'SPF 30', 'SPF 50', 'SPF 60'],
     inStock: true,
-    image: 'https://via.placeholder.com/150/FFDAB9/FFFFFF?text=Safe+Sun+SPF+50',
+    image: 'https://via.placeholder.com/150/FFDAB9/FFFFFF?text=Safe+Sun+UV+Screen',
     deliveryInfo: {
       returns: '7-day Returns',
       paymentOptions: 'Cash on Delivery, UPI, Credit/Debit Card',
@@ -33,17 +32,17 @@ const sunscreenProducts = [
   },
   {
     id: 2,
-    name: 'Herbals Sunscreen SPF 30',
+    name: 'Herbals Sunscreen',
     originalPrice: 650,
     discountedPrice: 520,
-    description: 'Lightweight lotion sunscreen with SPF 30 for daily use.',
+    description: 'Lightweight lotion sunscreen for daily use.',
     rating: 4.6,
     isBestSeller: true,
     brand: 'Himalaya',
     category: 'Lotion Sunscreen',
-    variant: 'SPF 30',
+    variants: ['SPF 15', 'SPF 25', 'SPF 30', 'SPF 50'],
     inStock: true,
-    image: 'https://via.placeholder.com/150/98FB98/FFFFFF?text=Herbals+SPF+30',
+    image: 'https://via.placeholder.com/150/98FB98/FFFFFF?text=Herbals+Sunscreen',
     deliveryInfo: {
       returns: '7-day Returns',
       paymentOptions: 'Cash on Delivery, UPI, Credit/Debit Card',
@@ -53,17 +52,17 @@ const sunscreenProducts = [
   },
   {
     id: 3,
-    name: 'Bio Sunblock SPF 40',
+    name: 'Bio Sunblock',
     originalPrice: 900,
     discountedPrice: 720,
-    description: 'Matte-finish sunscreen with SPF 40 for oily skin.',
+    description: 'Matte-finish sunscreen for oily skin.',
     rating: 4.4,
     isBestSeller: false,
     brand: 'Biotique',
     category: 'Cream Sunscreen',
-    variant: 'SPF 40',
+    variants: ['SPF 25', 'SPF 40', 'SPF 50', 'SPF 60'],
     inStock: true,
-    image: 'https://via.placeholder.com/150/ADFF2F/FFFFFF?text=Bio+Sunblock+SPF+40',
+    image: 'https://via.placeholder.com/150/ADFF2F/FFFFFF?text=Bio+Sunblock',
     deliveryInfo: {
       returns: '7-day Returns',
       paymentOptions: 'Cash on Delivery, UPI, Credit/Debit Card',
@@ -73,17 +72,17 @@ const sunscreenProducts = [
   },
   {
     id: 4,
-    name: 'Sun Defence SPF 50',
+    name: 'Sun Defence',
     originalPrice: 800,
     discountedPrice: 640,
-    description: 'Broad-spectrum sunscreen with SPF 50 for sensitive skin.',
+    description: 'Broad-spectrum sunscreen for sensitive skin.',
     rating: 4.7,
     isBestSeller: true,
     brand: 'Lotus Herbals',
     category: 'Cream Sunscreen',
-    variant: 'SPF 50',
+    variants: ['SPF 15', 'SPF 30', 'SPF 50', 'SPF 60'],
     inStock: true,
-    image: 'https://via.placeholder.com/150/ADD8E6/FFFFFF?text=Sun+Defence+SPF+50',
+    image: 'https://via.placeholder.com/150/ADD8E6/FFFFFF?text=Sun+Defence',
     deliveryInfo: {
       returns: '7-day Returns',
       paymentOptions: 'Cash on Delivery, UPI, Credit/Debit Card',
@@ -93,17 +92,17 @@ const sunscreenProducts = [
   },
   {
     id: 5,
-    name: 'Protective Sunscreen SPF 30',
+    name: 'Protective Sunscreen',
     originalPrice: 600,
     discountedPrice: 480,
-    description: 'Hydrating sunscreen with SPF 30 for dry skin.',
+    description: 'Hydrating sunscreen for dry skin.',
     rating: 4.3,
     isBestSeller: false,
     brand: 'Himalaya',
     category: 'Lotion Sunscreen',
-    variant: 'SPF 30',
+    variants: ['SPF 15', 'SPF 25', 'SPF 30', 'SPF 50'],
     inStock: true,
-    image: 'https://via.placeholder.com/150/90EE90/FFFFFF?text=Protective+SPF+30',
+    image: 'https://via.placeholder.com/150/90EE90/FFFFFF?text=Protective+Sunscreen',
     deliveryInfo: {
       returns: '7-day Returns',
       paymentOptions: 'Cash on Delivery, UPI, Credit/Debit Card',
@@ -113,17 +112,17 @@ const sunscreenProducts = [
   },
   {
     id: 6,
-    name: 'Fruit Sunblock SPF 50',
+    name: 'Fruit Sunblock',
     originalPrice: 950,
     discountedPrice: 760,
-    description: 'Fruit-infused sunscreen with SPF 50 for radiant skin.',
+    description: 'Fruit-infused sunscreen for radiant skin.',
     rating: 4.5,
     isBestSeller: true,
     brand: 'Biotique',
     category: 'Cream Sunscreen',
-    variant: 'SPF 50',
+    variants: ['SPF 25', 'SPF 40', 'SPF 50', 'SPF 60'],
     inStock: true,
-    image: 'https://via.placeholder.com/150/87CEEB/FFFFFF?text=Fruit+Sunblock+SPF+50',
+    image: 'https://via.placeholder.com/150/87CEEB/FFFFFF?text=Fruit+Sunblock',
     deliveryInfo: {
       returns: '7-day Returns',
       paymentOptions: 'Cash on Delivery, UPI, Credit/Debit Card',
@@ -133,17 +132,17 @@ const sunscreenProducts = [
   },
   {
     id: 7,
-    name: 'Matte Sun Gel SPF 40',
+    name: 'Matte Sun Gel',
     originalPrice: 850,
     discountedPrice: 680,
-    description: 'Non-greasy gel sunscreen with SPF 40 for oily skin.',
+    description: 'Non-greasy gel sunscreen for oily skin.',
     rating: 4.6,
     isBestSeller: false,
     brand: 'Lotus Herbals',
     category: 'Gel Sunscreen',
-    variant: 'SPF 40',
+    variants: ['SPF 25', 'SPF 40', 'SPF 50'],
     inStock: true,
-    image: 'https://via.placeholder.com/150/E6E6FA/FFFFFF?text=Matte+Sun+Gel+SPF+40',
+    image: 'https://via.placeholder.com/150/E6E6FA/FFFFFF?text=Matte+Sun+Gel',
     deliveryInfo: {
       returns: '7-day Returns',
       paymentOptions: 'Cash on Delivery, UPI, Credit/Debit Card',
@@ -153,17 +152,17 @@ const sunscreenProducts = [
   },
   {
     id: 8,
-    name: 'Aloe Vera Sunscreen SPF 30',
+    name: 'Aloe Vera Sunscreen',
     originalPrice: 700,
     discountedPrice: 560,
-    description: 'Soothing sunscreen with SPF 30 and aloe vera for hydration.',
+    description: 'Soothing sunscreen with aloe vera for hydration.',
     rating: 4.4,
     isBestSeller: false,
     brand: 'Himalaya',
     category: 'Lotion Sunscreen',
-    variant: 'SPF 30',
+    variants: ['SPF 15', 'SPF 30', 'SPF 50'],
     inStock: true,
-    image: 'https://via.placeholder.com/150/20B2AA/FFFFFF?text=Aloe+Vera+SPF+30',
+    image: 'https://via.placeholder.com/150/20B2AA/FFFFFF?text=Aloe+Vera+Sunscreen',
     deliveryInfo: {
       returns: '7-day Returns',
       paymentOptions: 'Cash on Delivery, UPI, Credit/Debit Card',
@@ -173,17 +172,17 @@ const sunscreenProducts = [
   },
   {
     id: 9,
-    name: 'Derma Sunblock SPF 50',
+    name: 'Derma Sunblock',
     originalPrice: 880,
     discountedPrice: 704,
-    description: 'Dermatologist-recommended sunscreen with SPF 50.',
+    description: 'Dermatologist-recommended sunscreen.',
     rating: 4.5,
     isBestSeller: true,
     brand: 'Biotique',
     category: 'Cream Sunscreen',
-    variant: 'SPF 50',
+    variants: ['SPF 25', 'SPF 40', 'SPF 50', 'SPF 60'],
     inStock: true,
-    image: 'https://via.placeholder.com/150/F4A460/FFFFFF?text=Derma+Sunblock+SPF+50',
+    image: 'https://via.placeholder.com/150/F4A460/FFFFFF?text=Derma+Sunblock',
     deliveryInfo: {
       returns: '7-day Returns',
       paymentOptions: 'Cash on Delivery, UPI, Credit/Debit Card',
@@ -193,17 +192,17 @@ const sunscreenProducts = [
   },
   {
     id: 10,
-    name: '3D Sun Protection SPF 40',
+    name: '3D Sun Protection',
     originalPrice: 820,
     discountedPrice: 656,
-    description: 'Advanced sunscreen with SPF 40 for broad-spectrum protection.',
+    description: 'Advanced sunscreen for broad-spectrum protection.',
     rating: 4.7,
     isBestSeller: true,
     brand: 'Lotus Herbals',
     category: 'Cream Sunscreen',
-    variant: 'SPF 40',
+    variants: ['SPF 15', 'SPF 30', 'SPF 40', 'SPF 50'],
     inStock: false,
-    image: 'https://via.placeholder.com/150/FFDEAD/FFFFFF?text=3D+Sun+Protection+SPF+40',
+    image: 'https://via.placeholder.com/150/FFDEAD/FFFFFF?text=3D+Sun+Protection',
     deliveryInfo: {
       returns: '7-day Returns',
       paymentOptions: 'Cash on Delivery, UPI, Credit/Debit Card',
@@ -225,7 +224,7 @@ const SunscreenHeader = ({ setSelectedCategory, selectedCategory }) => {
   ];
 
   const sunscreenVariants = [
-    'SPF 30', 'SPF 40', 'SPF 50',
+    'SPF 15', 'SPF 25', 'SPF 30', 'SPF 40', 'SPF 50', 'SPF 60',
   ];
 
   const toggleSunscreenSubmenu = () => {
@@ -247,15 +246,6 @@ const SunscreenHeader = ({ setSelectedCategory, selectedCategory }) => {
       <div className="container mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
         <div className="flex items-center justify-between w-full sm:w-auto">
           <h1 className="text-xl font-bold">Women's Sunscreen Collection</h1>
-          {/* <button
-            className="sm:hidden p-2"
-            onClick={toggleMobileMenu}
-            aria-label="Toggle mobile menu"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7" />
-            </svg>
-          </button> */}
         </div>
         <nav className={`flex flex-col sm:flex-row items-center gap-2 sm:gap-4 ${isMobileMenuOpen ? 'block' : 'hidden sm:flex'}`}>
           <ul className="flex flex-col sm:flex-row flex-wrap justify-center gap-2 sm:gap-4 w-full">
@@ -324,9 +314,9 @@ const SunscreenHeader = ({ setSelectedCategory, selectedCategory }) => {
 };
 
 const SunscreenCard = ({ item, onQuickView, addToCart, addToWishlist, cartItems, wishlistItems }) => {
-  const { name, originalPrice, discountedPrice, image, brand, variant, inStock, isBestSeller } = item;
+  const { name, originalPrice, discountedPrice, image, brand, variants, inStock, isBestSeller } = item;
   const navigate = useNavigate();
-  const [selectedVariant, setSelectedVariant] = useState(variant);
+  const [selectedVariant, setSelectedVariant] = useState(variants[0]);
 
   const discountPercentage = Math.round(((originalPrice - discountedPrice) / originalPrice) * 100);
   const isInCart = cartItems.some((cartItem) => cartItem.id === item.id && cartItem.variant === selectedVariant);
@@ -340,9 +330,8 @@ const SunscreenCard = ({ item, onQuickView, addToCart, addToWishlist, cartItems,
           alt={`Image of ${name}`}
           className="w-full h-[200px] object-contain cursor-pointer"
           loading="lazy"
-          onClick={() => navigate(`/sunscreens/product/${item.id}`)}
         />
-        <div className="absolute top-4 right-4 flex space-x-2 group-hover:opacity-100 opacity-0 transition-opacity duration-300">
+        <div className="absolute top-2 right-2 flex space-x-2 sm:opacity-100">
           <button
             className={`p-2 rounded-full text-white transition-colors duration-200 ${isInWishlist ? 'bg-red-500' : 'bg-gray-700 hover:bg-red-500'}`}
             onClick={() => addToWishlist(item, 1, selectedVariant)}
@@ -368,12 +357,12 @@ const SunscreenCard = ({ item, onQuickView, addToCart, addToWishlist, cartItems,
       <div className="p-4 flex flex-col flex-grow">
         <h3
           className="text-lg font-bold text-gray-800 mb-1 line-clamp-2 cursor-pointer hover:text-gray-600"
-          onClick={() => navigate(`/sunscreens/product/${item.id}`)}
+          // onClick={() => navigate(`/sunscreens/product/${item.id}`)}
         >
           {name}
         </h3>
         <p className="text-sm text-gray-600 mb-1">Brand: {brand}</p>
-        <p className="text-sm text-gray-600 mb-2">SPF: {variant}</p>
+        <p className="text-sm text-gray-600 mb-2">SPF: {selectedVariant}</p>
 
         <div className="flex items-baseline space-x-2 mb-3 mt-auto">
           <p className="text-xl font-bold text-envy-900">₹{discountedPrice.toFixed(2)}</p>
@@ -389,7 +378,9 @@ const SunscreenCard = ({ item, onQuickView, addToCart, addToWishlist, cartItems,
             onChange={(e) => setSelectedVariant(e.target.value)}
             aria-label={`Select SPF for ${name}`}
           >
-            <option value={variant}>{variant}</option>
+            {variants.map((variant) => (
+              <option key={variant} value={variant}>{variant}</option>
+            ))}
           </select>
         </div>
 
@@ -412,7 +403,7 @@ const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const product = sunscreenProducts.find((p) => p.id === parseInt(id));
-  const [selectedVariant, setSelectedVariant] = useState(product ? product.variant : '');
+  const [selectedVariant, setSelectedVariant] = useState(product ? product.variants[0] : '');
   const [quantity, setQuantity] = useState(1);
 
   const addToCart = (product, quantity, variant) => {
@@ -465,7 +456,7 @@ const ProductDetail = () => {
           <div className="flex-1">
             <h1 className="text-2xl font-bold text-black">{product.name}</h1>
             <p className="text-sm text-gray-500 mt-1">Brand: {product.brand}</p>
-            <p className="text-sm text-gray-500 mt-1">SPF: {product.variant}</p>
+            <p className="text-sm text-gray-500 mt-1">SPF: {selectedVariant}</p>
             <div className="flex items-center mt-2">
               <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24 .588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3 .921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784 .57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81 .588-1.81h3.461a1 1 0 00 .951-.69l1.07-3.292z"></path>
@@ -491,7 +482,9 @@ const ProductDetail = () => {
                 onChange={(e) => setSelectedVariant(e.target.value)}
                 aria-label={`Select SPF for ${product.name}`}
               >
-                <option value={product.variant}>{product.variant}</option>
+                {product.variants.map((variant) => (
+                  <option key={variant} value={variant}>{variant}</option>
+                ))}
               </select>
             </div>
             <div className="mt-4">
@@ -585,7 +578,7 @@ function Sunscreens() {
     'Gel Sunscreen',
   ];
   const sunscreenVariants = [
-    'SPF 30', 'SPF 40', 'SPF 50',
+    'SPF 15', 'SPF 25', 'SPF 30', 'SPF 40', 'SPF 50', 'SPF 60',
   ];
   const sortOptions = [
     { label: 'Sort By', value: 'default' },
@@ -671,7 +664,7 @@ function Sunscreens() {
   const handleQuickView = (product) => {
     setQuickView(product);
     setQuickViewQuantity(1);
-    setQuickViewVariant(product.variant);
+    setQuickViewVariant(product.variants[0]);
   };
 
   const handleFilterChange = (key, value) => {
@@ -735,7 +728,7 @@ function Sunscreens() {
         const matchesOffers = filterState.offers ? product.isBestSeller : true;
         const matchesAvailability = filterState.inStock ? product.inStock : true;
         const matchesVariant = filterState.variants.length
-          ? filterState.variants.includes(product.variant)
+          ? filterState.variants.some((variant) => product.variants.includes(variant))
           : true;
         const matchesCategoryFilter = filterState.categories.length
           ? filterState.categories.includes(product.category)
@@ -746,7 +739,7 @@ function Sunscreens() {
             : sunscreenCategories.includes(selectedCategory)
             ? product.category === selectedCategory
             : sunscreenVariants.includes(selectedCategory)
-            ? product.variant === selectedCategory
+            ? product.variants.includes(selectedCategory)
             : false;
         return matchesDiscount && matchesBrands && matchesPrice && matchesOffers && matchesAvailability && matchesVariant && matchesCategoryFilter && matchesCategory;
       })
@@ -1036,22 +1029,6 @@ function Sunscreens() {
                         </div>
 
                         <div className="p-6 border-t border-gray-200 flex items-center gap-2">
-                          {/* <button
-                            type="button"
-                            className="w-full px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-semibold hover:bg-blue-700 transition-colors"
-                            onClick={applyFilters}
-                            aria-label="Apply filters"
-                          >
-                            Apply Filters
-                          </button>
-                          <button
-                            type="button"
-                            className="w-full px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-md text-sm font-semibold hover:bg-gray-100 transition-colors"
-                            onClick={clearFilters}
-                            aria-label="Clear all filters"
-                          >
-                            Clear All
-                          </button> */}
                         </div>
                       </motion.aside>
                     </div>
@@ -1115,7 +1092,7 @@ function Sunscreens() {
             />
             <p className="text-xs text-gray-700 mb-1">{quickView.description}</p>
             <p className="text-xs text-gray-500 mb-1">Brand: {quickView.brand}</p>
-            <p className="text-xs text-gray-500 mb-2">SPF: {quickView.variant}</p>
+            <p className="text-xs text-gray-500 mb-2">SPF: {quickViewVariant}</p>
 
             <div className="flex items-center space-x-2 mb-2">
               <p className="text-sm font-semibold text-gray-800">₹{quickView.discountedPrice.toFixed(2)}</p>
@@ -1133,7 +1110,9 @@ function Sunscreens() {
                 onChange={(e) => setQuickViewVariant(e.target.value)}
                 aria-label={`Select SPF for ${quickView?.name || 'product'}`}
               >
-                <option value={quickView.variant}>{quickView.variant}</option>
+                {quickView.variants.map((variant) => (
+                  <option key={variant} value={variant}>{variant}</option>
+                ))}
               </select>
             </div>
             <div className="flex items-center mb-3">

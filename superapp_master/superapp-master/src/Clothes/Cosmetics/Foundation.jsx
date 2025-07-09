@@ -1,11 +1,10 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate, Routes, Route, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaFilter, FaHeart, FaEye, FaChevronDown } from 'react-icons/fa';
 import Footer from '../../Utility/Footer';
 
-// Product Data
+
 const foundationProducts = [
   {
     id: 1,
@@ -18,6 +17,7 @@ const foundationProducts = [
     brand: 'Lakmé',
     category: 'Liquid Foundation',
     shade: 'Ivory',
+    shades: ['Ivory', 'Porcelain', 'Fair', 'Light Beige', 'Natural Ivory'],
     inStock: true,
     image: 'https://via.placeholder.com/150/FFE4C4/FFFFFF?text=Absolute+Foundation',
     deliveryInfo: {
@@ -42,6 +42,7 @@ const foundationProducts = [
     brand: 'Lotus Herbals',
     category: 'Liquid Foundation',
     shade: 'Beige',
+    shades: ['Beige', 'Soft Beige', 'Medium Beige', 'Warm Beige', 'Sandy Beige'],
     inStock: true,
     image: 'https://via.placeholder.com/150/F5F5DC/FFFFFF?text=Matte+Foundation',
     deliveryInfo: {
@@ -62,6 +63,7 @@ const foundationProducts = [
     brand: 'Himalaya',
     category: 'Cream Foundation',
     shade: 'Honey',
+    shades: ['Honey', 'Light Honey', 'Golden Honey', 'Warm Honey', 'Deep Honey'],
     inStock: true,
     image: 'https://via.placeholder.com/150/DEB887/FFFFFF?text=Natural+Foundation',
     deliveryInfo: {
@@ -82,6 +84,7 @@ const foundationProducts = [
     brand: 'Lakmé',
     category: 'Liquid Foundation',
     shade: 'Golden',
+    shades: ['Golden', 'Light Golden', 'Medium Golden', 'Deep Golden', 'Warm Golden'],
     inStock: true,
     image: 'https://via.placeholder.com/150/DAA520/FFFFFF?text=9+to+5+Foundation',
     deliveryInfo: {
@@ -102,6 +105,7 @@ const foundationProducts = [
     brand: 'Lotus Herbals',
     category: 'Liquid Foundation',
     shade: 'Wheat',
+    shades: ['Wheat', 'Light Wheat', 'Golden Wheat', 'Warm Wheat', 'Natural Wheat'],
     inStock: true,
     image: 'https://via.placeholder.com/150/F5DEB3/FFFFFF?text=Eco+Stay+Foundation',
     deliveryInfo: {
@@ -122,6 +126,7 @@ const foundationProducts = [
     brand: 'Himalaya',
     category: 'Cream Foundation',
     shade: 'Almond',
+    shades: ['Almond', 'Light Almond', 'Medium Almond', 'Warm Almond', 'Deep Almond'],
     inStock: true,
     image: 'https://via.placeholder.com/150/F4A460/FFFFFF?text=Glow+Cream+Foundation',
     deliveryInfo: {
@@ -142,6 +147,7 @@ const foundationProducts = [
     brand: 'Lakmé',
     category: 'Fluid Foundation',
     shade: 'Sand',
+    shades: ['Sand', 'Light Sand', 'Medium Sand', 'Golden Sand', 'Warm Sand'],
     inStock: true,
     image: 'https://via.placeholder.com/150/F4C2C2/FFFFFF?text=Invisible+Foundation',
     deliveryInfo: {
@@ -162,6 +168,7 @@ const foundationProducts = [
     brand: 'Himalaya',
     category: 'Matte Foundation',
     shade: 'Caramel',
+    shades: ['Caramel', 'Light Caramel', 'Medium Caramel', 'Warm Caramel', 'Deep Caramel'],
     inStock: true,
     image: 'https://via.placeholder.com/150/D2691E/FFFFFF?text=Herbal+Foundation',
     deliveryInfo: {
@@ -182,6 +189,7 @@ const foundationProducts = [
     brand: 'Lotus Herbals',
     category: 'Matte Foundation',
     shade: 'Toffee',
+    shades: ['Toffee', 'Light Toffee', 'Medium Toffee', 'Warm Toffee', 'Deep Toffee'],
     inStock: true,
     image: 'https://via.placeholder.com/150/CD853F/FFFFFF?text=Weightless+Foundation',
     deliveryInfo: {
@@ -202,6 +210,7 @@ const foundationProducts = [
     brand: 'Lakmé',
     category: 'Cream Foundation',
     shade: 'Bronze',
+    shades: ['Bronze', 'Light Bronze', 'Medium Bronze', 'Warm Bronze', 'Deep Bronze'],
     inStock: false,
     image: 'https://via.placeholder.com/150/A0522D/FFFFFF?text=Radiance+Foundation',
     deliveryInfo: {
@@ -226,7 +235,16 @@ const FoundationHeader = ({ setSelectedCategory, selectedCategory }) => {
   ];
 
   const foundationShades = [
-    'Ivory', 'Beige', 'Honey', 'Golden', 'Wheat', 'Almond', 'Sand', 'Caramel', 'Toffee', 'Bronze',
+    'Ivory', 'Porcelain', 'Fair', 'Light Beige', 'Natural Ivory',
+    'Beige', 'Soft Beige', 'Medium Beige', 'Warm Beige', 'Sandy Beige',
+    'Honey', 'Light Honey', 'Golden Honey', 'Warm Honey', 'Deep Honey',
+    'Golden', 'Light Golden', 'Medium Golden', 'Deep Golden', 'Warm Golden',
+    'Wheat', 'Light Wheat', 'Golden Wheat', 'Warm Wheat', 'Natural Wheat',
+    'Almond', 'Light Almond', 'Medium Almond', 'Warm Almond', 'Deep Almond',
+    'Sand', 'Light Sand', 'Medium Sand', 'Golden Sand', 'Warm Sand',
+    'Caramel', 'Light Caramel', 'Medium Caramel', 'Warm Caramel', 'Deep Caramel',
+    'Toffee', 'Light Toffee', 'Medium Toffee', 'Warm Toffee', 'Deep Toffee',
+    'Bronze', 'Light Bronze', 'Medium Bronze', 'Warm Bronze', 'Deep Bronze',
   ];
 
   const toggleFoundationSubmenu = () => {
@@ -248,15 +266,6 @@ const FoundationHeader = ({ setSelectedCategory, selectedCategory }) => {
       <div className="container mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
         <div className="flex items-center justify-between w-full sm:w-auto">
           <h1 className="text-xl font-bold">Foundation Collection</h1>
-          {/* <button
-            className="sm:hidden p-2"
-            onClick={toggleMobileMenu}
-            aria-label="Toggle mobile menu"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7" />
-            </svg>
-          </button> */}
         </div>
         <nav className={`flex flex-col sm:flex-row items-center gap-2 sm:gap-4 ${isMobileMenuOpen ? 'block' : 'hidden sm:flex'}`}>
           <ul className="flex flex-col sm:flex-row flex-wrap justify-center gap-2 sm:gap-4 w-full">
@@ -325,7 +334,7 @@ const FoundationHeader = ({ setSelectedCategory, selectedCategory }) => {
 };
 
 const FoundationCard = ({ item, onQuickView, addToCart, addToWishlist, cartItems, wishlistItems }) => {
-  const { name, originalPrice, discountedPrice, image, brand, shade, inStock, isBestSeller } = item;
+  const { name, originalPrice, discountedPrice, image, brand, shade, shades, inStock, isBestSeller } = item;
   const navigate = useNavigate();
   const [selectedShade, setSelectedShade] = useState(shade);
 
@@ -341,24 +350,23 @@ const FoundationCard = ({ item, onQuickView, addToCart, addToWishlist, cartItems
           alt={`Image of ${name}`}
           className="w-full h-[200px] object-contain cursor-pointer"
           loading="lazy"
-          onClick={() => navigate(`/foundations/product/${item.id}`)}
         />
-        <div className="absolute top-4 right-4 flex space-x-2 group-hover:opacity-100 opacity-0 transition-opacity duration-300">
+        <div className="absolute top-2 right-2 flex space-x-2 sm:opacity-100">
           <button
-            className={`p-2 rounded-full text-white transition-colors duration-200 ${isInWishlist ? 'bg-red-500' : 'bg-gray-700 hover:bg-red-500'}`}
+            className={`p-2 rounded-full text-white ${isInWishlist ? 'bg-red-500' : 'bg-gray-600 hover:bg-red-400'}`}
             onClick={() => addToWishlist(item, 1, selectedShade)}
             title={isInWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'}
-            aria-label={isInWishlist ? `Remove ${name} from wishlist` : `Add ${name} to wishlist`}
+            aria-label={isInWishlist ? `Remove ${name} from cosmetics wishlist` : `Add ${name} to cosmetics wishlist`}
           >
-            <FaHeart className="w-5 h-5" />
+            <FaHeart className="w-4 h-4" />
           </button>
           <button
             onClick={() => onQuickView(item)}
-            className="p-2 rounded-full bg-gray-700 text-white hover:bg-blue-500 transition-colors duration-200"
+            className="p-2 rounded-full bg-gray-600 text-white hover:bg-yellow-500 transition-colors duration-200"
             title="Quick View"
-            aria-label={`Quick view for ${name}`}
+            aria-label={`Quick view for ${name} cosmetic`}
           >
-            <FaEye className="w-5 h-5" />
+            <FaEye className="w-4 h-4" />
           </button>
         </div>
         {isBestSeller && (
@@ -369,12 +377,12 @@ const FoundationCard = ({ item, onQuickView, addToCart, addToWishlist, cartItems
       <div className="p-4 flex flex-col flex-grow">
         <h3
           className="text-lg font-bold text-gray-800 mb-1 line-clamp-2 cursor-pointer hover:text-gray-600"
-          onClick={() => navigate(`/foundations/product/${item.id}`)}
+          // onClick={() => navigate(`/foundations/product/${item.id}`)}
         >
           {name}
         </h3>
         <p className="text-sm text-gray-600 mb-1">Brand: {brand}</p>
-        <p className="text-sm text-gray-600 mb-2">Shade: {shade}</p>
+        <p className="text-sm text-gray-600 mb-2">Shade: {selectedShade}</p>
 
         <div className="flex items-baseline space-x-2 mb-3 mt-auto">
           <p className="text-xl font-bold text-envy-900">₹{discountedPrice.toFixed(2)}</p>
@@ -390,7 +398,9 @@ const FoundationCard = ({ item, onQuickView, addToCart, addToWishlist, cartItems
             onChange={(e) => setSelectedShade(e.target.value)}
             aria-label={`Select shade for ${name}`}
           >
-            <option value={shade}>{shade}</option>
+            {shades.map((shadeOption) => (
+              <option key={shadeOption} value={shadeOption}>{shadeOption}</option>
+            ))}
           </select>
         </div>
 
@@ -466,7 +476,7 @@ const ProductDetail = () => {
           <div className="flex-1">
             <h1 className="text-2xl font-bold text-black">{product.name}</h1>
             <p className="text-sm text-gray-500 mt-1">Brand: {product.brand}</p>
-            <p className="text-sm text-gray-500 mt-1">Shade: {product.shade}</p>
+            <p className="text-sm text-gray-500 mt-1">Shade: {selectedShade}</p>
             <div className="flex items-center mt-2">
               <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24 .588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3 .921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784 .57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81 .588-1.81h3.461a1 1 0 00 .951-.69l1.07-3.292z"></path>
@@ -492,7 +502,9 @@ const ProductDetail = () => {
                 onChange={(e) => setSelectedShade(e.target.value)}
                 aria-label={`Select shade for ${product.name}`}
               >
-                <option value={product.shade}>{product.shade}</option>
+                {product.shades.map((shadeOption) => (
+                  <option key={shadeOption} value={shadeOption}>{shadeOption}</option>
+                ))}
               </select>
             </div>
             <div className="mt-4">
@@ -587,7 +599,16 @@ function Foundations() {
     'Matte Foundation',
   ];
   const foundationShades = [
-    'Ivory', 'Beige', 'Honey', 'Golden', 'Wheat', 'Almond', 'Sand', 'Caramel', 'Toffee', 'Bronze',
+    'Ivory', 'Porcelain', 'Fair', 'Light Beige', 'Natural Ivory',
+    'Beige', 'Soft Beige', 'Medium Beige', 'Warm Beige', 'Sandy Beige',
+    'Honey', 'Light Honey', 'Golden Honey', 'Warm Honey', 'Deep Honey',
+    'Golden', 'Light Golden', 'Medium Golden', 'Deep Golden', 'Warm Golden',
+    'Wheat', 'Light Wheat', 'Golden Wheat', 'Warm Wheat', 'Natural Wheat',
+    'Almond', 'Light Almond', 'Medium Almond', 'Warm Almond', 'Deep Almond',
+    'Sand', 'Light Sand', 'Medium Sand', 'Golden Sand', 'Warm Sand',
+    'Caramel', 'Light Caramel', 'Medium Caramel', 'Warm Caramel', 'Deep Caramel',
+    'Toffee', 'Light Toffee', 'Medium Toffee', 'Warm Toffee', 'Deep Toffee',
+    'Bronze', 'Light Bronze', 'Medium Bronze', 'Warm Bronze', 'Deep Bronze',
   ];
   const sortOptions = [
     { label: 'Sort By', value: 'default' },
@@ -737,7 +758,7 @@ function Foundations() {
         const matchesOffers = filterState.offers ? product.isBestSeller : true;
         const matchesAvailability = filterState.inStock ? product.inStock : true;
         const matchesShade = filterState.shades.length
-          ? filterState.shades.includes(product.shade)
+          ? filterState.shades.some((shade) => product.shades.includes(shade))
           : true;
         const matchesCategoryFilter = filterState.categories.length
           ? filterState.categories.includes(product.category)
@@ -748,7 +769,7 @@ function Foundations() {
             : foundationCategories.includes(selectedCategory)
             ? product.category === selectedCategory
             : foundationShades.includes(selectedCategory)
-            ? product.shade === selectedCategory
+            ? product.shades.includes(selectedCategory)
             : false;
         return matchesDiscount && matchesBrands && matchesPrice && matchesOffers && matchesAvailability && matchesShade && matchesCategoryFilter && matchesCategory;
       })
@@ -1117,7 +1138,7 @@ function Foundations() {
             />
             <p className="text-xs text-gray-700 mb-1">{quickView.description}</p>
             <p className="text-xs text-gray-500 mb-1">Brand: {quickView.brand}</p>
-            <p className="text-xs text-gray-500 mb-2">Shade: {quickView.shade}</p>
+            <p className="text-xs text-gray-500 mb-2">Shade: {quickViewShade}</p>
 
             <div className="flex items-center space-x-2 mb-2">
               <p className="text-sm font-semibold text-gray-800">₹{quickView.discountedPrice.toFixed(2)}</p>
@@ -1135,7 +1156,9 @@ function Foundations() {
                 onChange={(e) => setQuickViewShade(e.target.value)}
                 aria-label={`Select shade for ${quickView.name || 'product'}`}
               >
-                <option value={quickView.shade}>{quickView.shade}</option>
+                {quickView.shades.map((shadeOption) => (
+                  <option key={shadeOption} value={shadeOption}>{shadeOption}</option>
+                ))}
               </select>
             </div>
             <div className="flex items-center mb-3">

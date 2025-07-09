@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate, Routes, Route, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -17,7 +16,7 @@ const shampooProducts = [
     isBestSeller: true,
     brand: 'Himalaya',
     category: 'Hair Fall Control Shampoo',
-    variant: 'Hair Fall Control',
+    variants: ['Hair Fall Control', 'Color Protection', 'Scalp Care'],
     inStock: true,
     image: 'https://via.placeholder.com/150/FFDAB9/FFFFFF?text=Anti-Hair+Fall+Shampoo',
     deliveryInfo: {
@@ -41,7 +40,7 @@ const shampooProducts = [
     isBestSeller: true,
     brand: 'Patanjali',
     category: 'Herbal Shampoo',
-    variant: 'Normal Hair',
+    variants: ['Normal Hair', 'Volumizing', 'Color Protection'],
     inStock: true,
     image: 'https://via.placeholder.com/150/98FB98/FFFFFF?text=Kesh+Raksha+Shampoo',
     deliveryInfo: {
@@ -61,7 +60,7 @@ const shampooProducts = [
     isBestSeller: false,
     brand: 'Biotique',
     category: 'Anti-Dandruff Shampoo',
-    variant: 'Dandruff Control',
+    variants: ['Dandruff Control', 'Scalp Care', 'Oily Hair'],
     inStock: true,
     image: 'https://via.placeholder.com/150/ADFF2F/FFFFFF?text=Bio+Neem+Shampoo',
     deliveryInfo: {
@@ -81,7 +80,7 @@ const shampooProducts = [
     isBestSeller: true,
     brand: 'Himalaya',
     category: 'Nourishing Shampoo',
-    variant: 'Dry Hair',
+    variants: ['Dry Hair', 'Damaged Hair', 'Volumizing'],
     inStock: true,
     image: 'https://via.placeholder.com/150/ADD8E6/FFFFFF?text=Protein+Shampoo',
     deliveryInfo: {
@@ -101,7 +100,7 @@ const shampooProducts = [
     isBestSeller: false,
     brand: 'Patanjali',
     category: 'Herbal Shampoo',
-    variant: 'Oily Hair',
+    variants: ['Oily Hair', 'Normal Hair', 'Scalp Care'],
     inStock: true,
     image: 'https://via.placeholder.com/150/90EE90/FFFFFF?text=Shikakai+Shampoo',
     deliveryInfo: {
@@ -121,7 +120,7 @@ const shampooProducts = [
     isBestSeller: true,
     brand: 'Biotique',
     category: 'Nourishing Shampoo',
-    variant: 'Damaged Hair',
+    variants: ['Damaged Hair', 'Color Protection', 'Volumizing'],
     inStock: true,
     image: 'https://via.placeholder.com/150/87CEEB/FFFFFF?text=Bio+Kelp+Shampoo',
     deliveryInfo: {
@@ -141,7 +140,7 @@ const shampooProducts = [
     isBestSeller: false,
     brand: 'Himalaya',
     category: 'Nourishing Shampoo',
-    variant: 'Normal Hair',
+    variants: ['Normal Hair', 'Dry Hair', 'Scalp Care'],
     inStock: true,
     image: 'https://via.placeholder.com/150/E6E6FA/FFFFFF?text=Gentle+Care+Shampoo',
     deliveryInfo: {
@@ -161,9 +160,9 @@ const shampooProducts = [
     isBestSeller: false,
     brand: 'Patanjali',
     category: 'Herbal Shampoo',
-    variant: 'Dry Hair',
+    variants: ['Dry Hair', 'Oily Hair', 'Color Protection'],
     inStock: true,
-    image: 'https://via.placeholder.com/150/20B2AA/FFFFFF?text=Aloe+Vera+Shampoo',
+    image: 'https://via.placeholder Gaul/FFFFFF?text=Aloe+Vera+Shampoo',
     deliveryInfo: {
       returns: '30-day Returns',
       paymentOptions: 'Cash on Delivery, UPI, Credit/Debit Card',
@@ -181,7 +180,7 @@ const shampooProducts = [
     isBestSeller: true,
     brand: 'Biotique',
     category: 'Anti-Dandruff Shampoo',
-    variant: 'Dandruff Control',
+    variants: ['Dandruff Control', 'Scalp Care', 'Normal Hair'],
     inStock: true,
     image: 'https://via.placeholder.com/150/F4A460/FFFFFF?text=Bio+Margosa+Shampoo',
     deliveryInfo: {
@@ -201,7 +200,7 @@ const shampooProducts = [
     isBestSeller: true,
     brand: 'Himalaya',
     category: 'Nourishing Shampoo',
-    variant: 'Damaged Hair',
+    variants: ['Damaged Hair', 'Volumizing', 'Color Protection'],
     inStock: false,
     image: 'https://via.placeholder.com/150/FFDEAD/FFFFFF?text=Damage+Repair+Shampoo',
     deliveryInfo: {
@@ -226,7 +225,7 @@ const ShampooHeader = ({ setSelectedCategory, selectedCategory }) => {
   ];
 
   const shampooVariants = [
-    'Dry Hair', 'Dandruff Control', 'Normal Hair', 'Hair Fall Control', 'Oily Hair', 'Damaged Hair',
+    'Dry Hair', 'Dandruff Control', 'Normal Hair', 'Hair Fall Control', 'Oily Hair', 'Damaged Hair', 'Color Protection', 'Volumizing', 'Scalp Care'
   ];
 
   const toggleShampooSubmenu = () => {
@@ -248,15 +247,6 @@ const ShampooHeader = ({ setSelectedCategory, selectedCategory }) => {
       <div className="container mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
         <div className="flex items-center justify-between w-full sm:w-auto">
           <h1 className="text-xl font-bold">Shampoo Collection</h1>
-          {/* <button
-            className="sm:hidden p-2"
-            onClick={toggleMobileMenu}
-            aria-label="Toggle mobile menu"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7" />
-            </svg>
-          </button> */}
         </div>
         <nav className={`flex flex-col sm:flex-row items-center gap-2 sm:gap-4 ${isMobileMenuOpen ? 'block' : 'hidden sm:flex'}`}>
           <ul className="flex flex-col sm:flex-row flex-wrap justify-center gap-2 sm:gap-4 w-full">
@@ -325,9 +315,9 @@ const ShampooHeader = ({ setSelectedCategory, selectedCategory }) => {
 };
 
 const ShampooCard = ({ item, onQuickView, addToCart, addToWishlist, cartItems, wishlistItems }) => {
-  const { name, originalPrice, discountedPrice, image, brand, variant, inStock, isBestSeller } = item;
+  const { name, originalPrice, discountedPrice, image, brand, variants, inStock, isBestSeller } = item;
   const navigate = useNavigate();
-  const [selectedVariant, setSelectedVariant] = useState(variant);
+  const [selectedVariant, setSelectedVariant] = useState(variants[0]);
 
   const discountPercentage = Math.round(((originalPrice - discountedPrice) / originalPrice) * 100);
   const isInCart = cartItems.some((cartItem) => cartItem.id === item.id && cartItem.variant === selectedVariant);
@@ -341,9 +331,8 @@ const ShampooCard = ({ item, onQuickView, addToCart, addToWishlist, cartItems, w
           alt={`Image of ${name}`}
           className="w-full h-[200px] object-contain cursor-pointer"
           loading="lazy"
-          onClick={() => navigate(`/shampoos/product/${item.id}`)}
         />
-        <div className="absolute top-4 right-4 flex space-x-2 group-hover:opacity-100 opacity-0 transition-opacity duration-300">
+        <div className="absolute top-2 right-2 flex space-x-2 sm:opacity-100">
           <button
             className={`p-2 rounded-full text-white transition-colors duration-200 ${isInWishlist ? 'bg-red-500' : 'bg-gray-700 hover:bg-red-500'}`}
             onClick={() => addToWishlist(item, 1, selectedVariant)}
@@ -369,12 +358,12 @@ const ShampooCard = ({ item, onQuickView, addToCart, addToWishlist, cartItems, w
       <div className="p-4 flex flex-col flex-grow">
         <h3
           className="text-lg font-bold text-gray-800 mb-1 line-clamp-2 cursor-pointer hover:text-gray-600"
-          onClick={() => navigate(`/shampoos/product/${item.id}`)}
+          // onClick={() => navigate(`/shampoos/product/${item.id}`)}
         >
           {name}
         </h3>
         <p className="text-sm text-gray-600 mb-1">Brand: {brand}</p>
-        <p className="text-sm text-gray-600 mb-2">Variant: {variant}</p>
+        <p className="text-sm text-gray-600 mb-2">Variant: {selectedVariant}</p>
 
         <div className="flex items-baseline space-x-2 mb-3 mt-auto">
           <p className="text-xl font-bold text-envy-900">₹{discountedPrice.toFixed(2)}</p>
@@ -390,7 +379,9 @@ const ShampooCard = ({ item, onQuickView, addToCart, addToWishlist, cartItems, w
             onChange={(e) => setSelectedVariant(e.target.value)}
             aria-label={`Select variant for ${name}`}
           >
-            <option value={variant}>{variant}</option>
+            {variants.map((variant) => (
+              <option key={variant} value={variant}>{variant}</option>
+            ))}
           </select>
         </div>
 
@@ -413,7 +404,7 @@ const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const product = shampooProducts.find((p) => p.id === parseInt(id));
-  const [selectedVariant, setSelectedVariant] = useState(product ? product.variant : '');
+  const [selectedVariant, setSelectedVariant] = useState(product ? product.variants[0] : '');
   const [quantity, setQuantity] = useState(1);
 
   const addToCart = (product, quantity, variant) => {
@@ -466,7 +457,7 @@ const ProductDetail = () => {
           <div className="flex-1">
             <h1 className="text-2xl font-bold text-black">{product.name}</h1>
             <p className="text-sm text-gray-500 mt-1">Brand: {product.brand}</p>
-            <p className="text-sm text-gray-500 mt-1">Variant: {product.variant}</p>
+            <p className="text-sm text-gray-500 mt-1">Variant: {selectedVariant}</p>
             <div className="flex items-center mt-2">
               <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24 .588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3 .921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784 .57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81 .588-1.81h3.461a1 1 0 00 .951-.69l1.07-3.292z"></path>
@@ -492,7 +483,9 @@ const ProductDetail = () => {
                 onChange={(e) => setSelectedVariant(e.target.value)}
                 aria-label={`Select variant for ${product.name}`}
               >
-                <option value={product.variant}>{product.variant}</option>
+                {product.variants.map((variant) => (
+                  <option key={variant} value={variant}>{variant}</option>
+                ))}
               </select>
             </div>
             <div className="mt-4">
@@ -587,7 +580,7 @@ function Shampoos() {
     'Hair Fall Control Shampoo',
   ];
   const shampooVariants = [
-    'Dry Hair', 'Dandruff Control', 'Normal Hair', 'Hair Fall Control', 'Oily Hair', 'Damaged Hair',
+    'Dry Hair', 'Dandruff Control', 'Normal Hair', 'Hair Fall Control', 'Oily Hair', 'Damaged Hair', 'Color Protection', 'Volumizing', 'Scalp Care'
   ];
   const sortOptions = [
     { label: 'Sort By', value: 'default' },
@@ -673,7 +666,7 @@ function Shampoos() {
   const handleQuickView = (product) => {
     setQuickView(product);
     setQuickViewQuantity(1);
-    setQuickViewVariant(product.variant);
+    setQuickViewVariant(product.variants[0]);
   };
 
   const handleFilterChange = (key, value) => {
@@ -737,7 +730,7 @@ function Shampoos() {
         const matchesOffers = filterState.offers ? product.isBestSeller : true;
         const matchesAvailability = filterState.inStock ? product.inStock : true;
         const matchesVariant = filterState.variants.length
-          ? filterState.variants.includes(product.variant)
+          ? filterState.variants.some((variant) => product.variants.includes(variant))
           : true;
         const matchesCategoryFilter = filterState.categories.length
           ? filterState.categories.includes(product.category)
@@ -748,7 +741,7 @@ function Shampoos() {
             : shampooCategories.includes(selectedCategory)
             ? product.category === selectedCategory
             : shampooVariants.includes(selectedCategory)
-            ? product.variant === selectedCategory
+            ? product.variants.includes(selectedCategory)
             : false;
         return matchesDiscount && matchesBrands && matchesPrice && matchesOffers && matchesAvailability && matchesVariant && matchesCategoryFilter && matchesCategory;
       })
@@ -1038,22 +1031,6 @@ function Shampoos() {
                         </div>
 
                         <div className="p-6 border-t border-gray-200 flex items-center gap-2">
-                          {/* <button
-                            type="button"
-                            className="w-full px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-semibold hover:bg-blue-700 transition-colors"
-                            onClick={applyFilters}
-                            aria-label="Apply filters"
-                          >
-                            Apply Filters
-                          </button>
-                          <button
-                            type="button"
-                            className="w-full px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-md text-sm font-semibold hover:bg-gray-100 transition-colors"
-                            onClick={clearFilters}
-                            aria-label="Clear all filters"
-                          >
-                            Clear All
-                          </button> */}
                         </div>
                       </motion.aside>
                     </div>
@@ -1117,7 +1094,7 @@ function Shampoos() {
             />
             <p className="text-xs text-gray-700 mb-1">{quickView.description}</p>
             <p className="text-xs text-gray-500 mb-1">Brand: {quickView.brand}</p>
-            <p className="text-xs text-gray-500 mb-2">Variant: {quickView.variant}</p>
+            <p className="text-xs text-gray-500 mb-2">Variant: {quickViewVariant}</p>
 
             <div className="flex items-center space-x-2 mb-2">
               <p className="text-sm font-semibold text-gray-800">₹{quickView.discountedPrice.toFixed(2)}</p>
@@ -1135,7 +1112,9 @@ function Shampoos() {
                 onChange={(e) => setQuickViewVariant(e.target.value)}
                 aria-label={`Select variant for ${quickView?.name || 'product'}`}
               >
-                <option value={quickView.variant}>{quickView.variant}</option>
+                {quickView.variants.map((variant) => (
+                  <option key={variant} value={variant}>{variant}</option>
+                ))}
               </select>
             </div>
             <div className="flex items-center mb-3">

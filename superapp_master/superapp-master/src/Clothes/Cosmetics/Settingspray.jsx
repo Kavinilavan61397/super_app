@@ -243,8 +243,8 @@ const SettingSprayHeader = ({ setSelectedCategory, selectedCategory }) => {
     <header className="bg-black text-white p-4 fixed top-0 left-0 w-full z-10 min-h-[60px]">
       <div className="container mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
         <div className="flex items-center justify-between w-full sm:w-auto">
-          <h1 className="text-xl font-bold">Women's Setting Spray Collection</h1>
-          <button
+          <h1 className="text-xl font-bold"> Setting Spray Collection</h1>
+          {/* <button
             className="sm:hidden text-white"
             onClick={toggleMobileMenu}
             aria-label="Toggle mobile menu"
@@ -252,7 +252,7 @@ const SettingSprayHeader = ({ setSelectedCategory, selectedCategory }) => {
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7" />
             </svg>
-          </button>
+          </button> */}
         </div>
         <nav className={`flex flex-col sm:flex-row items-center gap-2 sm:gap-4 ${isMobileMenuOpen ? "block" : "hidden sm:flex"}`}>
           <ul className="flex flex-col sm:flex-row flex-wrap justify-center gap-2 sm:gap-4 w-full">
@@ -330,9 +330,9 @@ const SettingSprayCard = ({ item, onQuickView, addToCart, addToWishlist, cartIte
           alt={`Image of ${name}`}
           className="w-full h-[200px] object-contain cursor-pointer"
           loading="lazy"
-          onClick={() => navigate(`/setting-sprays/product/${item.id}`)}
+          // onClick={() => navigate(`/setting-sprays/product/${item.id}`)}
         />
-        <div className="absolute top-4 right-4 flex space-x-2 group-hover:opacity-100 opacity-0 transition-opacity duration-300">
+<div className="absolute top-2 right-2 flex space-x-2 sm:opacity-100">
           <button
             className={`p-2 rounded-full text-white transition-colors duration-200 ${isInWishlist ? "bg-red-500" : "bg-gray-700 hover:bg-red-500"}`}
             onClick={() => addToWishlist(item, 1, selectedFinish)}
@@ -906,7 +906,7 @@ function SettingSprays() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row sm:flex-nowrap sm:justify-between sm:items-center gap-2 mb-4">
-                  <h2 className="text-xl font-bold text-gray-800 sm:text-sm">Women's Setting Sprays ({filteredAndSortedItems.length} Items)</h2>
+                  <h2 className="text-xl font-bold text-gray-800 sm:text-sm">Setting hair Sprays ({filteredAndSortedItems.length} Items)</h2>
                   <div className="flex items-center gap-2">
                     <button
                       className="flex items-center space-x-2 px-4 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium w-full sm:w-auto hover:bg-gray-50"

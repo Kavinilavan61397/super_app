@@ -11,21 +11,31 @@ import shampooImage from '../Images/shampoo.png';
 import cosbanner1 from '../Images/cosbanner1.jpg';
 import cosbanner2 from '../Images/cosbanner2.jpg';
 import simmatteImage from '../Images/simmatte.jpg';
+import eyeshadowimage from '../Images/eyeshadow.jpg';
+import mascaraimage from '../Images/mascara.jpg';
+import compactpowderimage from '../Images/compactpowder.jpg';
+import kajalimage from '../Images/kajal.webp';
+import perfumeimage from '../Images/perfume.webp';
+import primerimage from '../Images/primer.png';
+import sunscreenimage from '../Images/sunscreen.jpg';
+import highlighterimage from '../Images/highlighter.jpg';
+import settingsprayimage from '../Images/settingspray.jpg';
+
 
 const cosmeticsSubCategories = [
   { id: 1, name: 'LIPSTICK', image: matteImage, route: '/cosmetics/lipstick' },
   { id: 2, name: 'FOUNDATION', image: FoundationImage, route: '/cosmetics/foundation' },
-  { id: 3, name: 'PRIMER', image: '', route: '/cosmetics/primer' },
+  { id: 3, name: 'PRIMER', image: primerimage, route: '/cosmetics/primer' },
   { id: 4, name: 'CONDITIONER', image: ConditionerImage, route: '/cosmetics/conditioner' },
   { id: 5, name: 'SHAMPOO', image: shampooImage, route: '/cosmetics/shampoo' },
-  { id: 6, name: 'SUNSCREEN', image: '', route: '/cosmetics/sunscreen' },
-  { id: 7, name: 'PERFUME', image: '', route: '/cosmetics/luxury' },
-    { id: 8, name: 'EYESHADOW', image: '', route: '/cosmetics/eyeshadow' },
-    { id: 9, name: 'MASCARA', image: '', route: '/cosmetics/mascara' },
- { id: 10, name: 'COMPACTPOWDER', image: '', route: '/cosmetics/compactpowder' },
-   { id: 11, name: 'KAJAL', image: '', route: '/cosmetics/kajal' },
-    { id: 12, name: 'SETTINGSPRAY', image: '', route: '/cosmetics/settingspray' },
- { id: 13, name: 'HIGHLIGHTER', image: '', route: '/cosmetics/highlighter' },
+  { id: 6, name: 'SUNSCREEN', image:sunscreenimage, route: '/cosmetics/sunscreen' },
+  { id: 7, name: 'PERFUME', image: perfumeimage, route: '/cosmetics/luxury' },
+    { id: 8, name: 'EYESHADOW', image: eyeshadowimage, route: '/cosmetics/eyeshadow' },
+    { id: 9, name: 'MASCARA', image: mascaraimage, route: '/cosmetics/mascara' },
+ { id: 10, name: 'COMPACTPOWDER', image: compactpowderimage, route: '/cosmetics/compactpowder' },
+   { id: 11, name: 'KAJAL', image: kajalimage, route: '/cosmetics/kajal' },
+    { id: 12, name: 'SETTINGSPRAY', image: settingsprayimage, route: '/cosmetics/settingspray' },
+ { id: 13, name: 'HIGHLIGHTER', image: highlighterimage, route: '/cosmetics/highlighter' },
 ];
 
 

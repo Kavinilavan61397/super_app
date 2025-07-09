@@ -19,8 +19,8 @@ import WomensClothing from '../Clothes/Categories/WomensWear/womensclothing';
 import Kurti from '../Clothes/Categories/WomensWear/Kurti';
 import Maxidress from '../Clothes/Categories/WomensWear/Maxidress';
 import Tops from '../Clothes/Categories/WomensWear/Tops';
-import Leggin from '../Clothes/Categories/WomensWear/Leggin';  
-import Jean from '../Clothes/Categories/WomensWear/Jean'; 
+import Leggin from '../Clothes/Categories/WomensWear/Leggin';
+import Jean from '../Clothes/Categories/WomensWear/Jean';
 import Saree from '../Clothes/Categories/WomensWear/Saree';
 import Tshirt from '../Clothes/Categories/WomensWear/Tshirt';
 import Trackpantwomen from '../Clothes/Categories/WomensWear/Trackpantwomen';
@@ -140,6 +140,13 @@ import AboutG from '../Grocery/Pages/About';
 import EditAllAddressG from '../Grocery/Pages/EditAllAddress';
 import EditAddressValuesG from '../Grocery/Pages/EditAddressValues';
 import LocationPrompt from './LocationPrompt';
+//Porter
+import PHome from '../Porter/PHome'; // Adjust the path if needed
+import Tracking from '../Porter/Tracking';
+import Booking from '../Porter/Booking';
+import PorterProfile from '../Porter/PorterProfile';
+import LiveTracking from '../Porter/LiveTracking';
+
 
 function Navbar() {
     const [locationError, setLocationError] = useState('');
@@ -324,9 +331,23 @@ function Navbar() {
                     <Route path='/home-hotel/review-summary' element={<ReviewSummary />} />
                     <Route path='/home-hotel/total-rooms' element={<Rooms />} />
                     <Route path='/home-hotel/favourite' element={<Favourites />} />
+                    {/* Porter */}
+                    <Route path='/porter' element={<PHome />} />
+                    <Route path='/porter/tracking' element={<Tracking />} />
+                    <Route path="/porter/history" element={<Booking />} />
+                     <Route path="/porter/profile" element={<PorterProfile />} />
+                    <Route path='/porter/live-tracking/:bookingId' element={<LiveTrackingWrapper />} />
+
                 </Routes>
             </BrowserRouter>
         </>
     )
 }
+
+// Add a wrapper to extract bookingId from params and pass as prop
+function LiveTrackingWrapper() {
+  const { bookingId } = require('react-router-dom').useParams();
+  return <LiveTracking bookingId={bookingId} />;
+}
+
 export default Navbar;

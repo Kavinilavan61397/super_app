@@ -19,6 +19,7 @@ const HomeScreen = () => {
                 <img src={banner3} alt="Banner 3" className="w-full rounded-lg" onClick={() => navigate('/home-food')} />
                 <img src={banner2} alt="Banner 2" className="w-full rounded-lg" onClick={() => navigate('/home-hotel')} />
                 <img src={banner4} alt="Banner 4" className="w-full rounded-lg" onClick={() => navigate('/home-taxi')} />
+                <img src="https://dom-website-prod-cdn-cms.porter.in/Desktop_2_5fd0d00dd3.webp" alt="Porter Banner" className="w-full rounded-lg" onClick={() => navigate('/porter')} />
                 {/* <img src={banner2} alt="Banner 2" className="w-full rounded-lg" /> */}
             </div>
             <HomeFooter />

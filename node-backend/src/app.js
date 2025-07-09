@@ -34,6 +34,12 @@ const cartRoutes = require('./routes/cart.routes')
 const orderRoutes = require('./routes/order.routes')
 const adminOrderRoutes = require('./routes/adminOrder.routes')
 
+const porterRoutes = require('./routes/porter.routes');
+const porterOrderRoutes = require('./routes/porterOrder.routes');
+const orderTrackingRoutes = require('./routes/orderTracking.routes');
+const ratingRoutes = require('./routes/rating.routes');
+const porterAdminRoutes = require('./routes/porterAdmin.routes');
+
 const app = express();
 
 // ✅ CORS configuration
@@ -85,7 +91,11 @@ app.use('/api/amenities', amenityRoutes);
 app.use('/api/policies', policyRoutes);
 app.use('/api/locations', locationRoutes);
 app.use('/api/faqs', faqRoutes);
-
+app.use('/api/porters', porterRoutes);
+app.use('/api/porter-orders', porterOrderRoutes);
+app.use('/api/order-tracking', orderTrackingRoutes);
+app.use('/api/ratings', ratingRoutes);
+app.use('/api/admin/porter', porterAdminRoutes);
 // ✅ Default API welcome route
 app.get('/', (req, res) => {
   res.json({
@@ -118,7 +128,11 @@ app.get('/', (req, res) => {
       amenities: '/api/amenities',
       policies: '/api/policies',
       locations: '/api/locations',
-      faqs: '/api/faqs'
+      faqs: '/api/faqs',
+      porters: '/api/porters',
+      porterorders: '/api/porter-orders',
+      ordertracking: '/api/order-tracking',
+      ratings: '/api/ratings'
     }
   });
 });

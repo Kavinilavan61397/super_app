@@ -21,7 +21,7 @@ api.interceptors.request.use((config) => {
 const AmenityService = {
   getAllAmenities: async () => {
     const response = await api.get('/api/amenities');
-    return response.data;
+    return response;
   },
   
   getActiveAmenities: async () => {

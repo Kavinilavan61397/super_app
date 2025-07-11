@@ -29,6 +29,8 @@ const storage = multer.diskStorage({
       uploadPath = createUploadsDir('hotel_attributes');
     } else if (file.fieldname === 'icon') {
       uploadPath = createUploadsDir('hotel_attributes');
+    } else if (file.fieldname === 'images') { // <-- add this for room images
+      uploadPath = createUploadsDir('rooms');
     } else {
       uploadPath = createUploadsDir('others');
     }

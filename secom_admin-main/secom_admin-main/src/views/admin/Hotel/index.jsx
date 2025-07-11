@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import HotelTable from './HotelTable';
 import HotelForm from './HotelForm';
 import HotelService from './HotelService';
 
@@ -69,12 +68,6 @@ function Hotel() {
 
   return (
     <div className="p-4">
-      <HotelTable
-        key={refreshKey}
-        onAdd={handleAdd}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-      />
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
           <div className="bg-white rounded shadow-lg w-full max-w-2xl p-4 relative">

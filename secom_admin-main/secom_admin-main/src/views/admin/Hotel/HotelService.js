@@ -47,6 +47,14 @@ const HotelService = {
   getPolicies: () => api.get('/api/policies'),
   getFAQs: () => api.get('/api/faqs'),
   getLocations: () => api.get('/api/locations'),
+  getRoomsWithBookingStatus: async (hotelId) => {
+    const response = await api.get(`/api/hotels/${hotelId}/rooms-with-booking-status`);
+    return response.data.data || response.data;
+  },
+  getRoomsForHotel: async (hotelId) => {
+    const response = await api.get(`/api/hotels/${hotelId}/rooms-with-booking-status`);
+    return response.data.data || response.data || [];
+  },
 };
 
 export default HotelService; 

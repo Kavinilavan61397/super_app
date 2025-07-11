@@ -45,7 +45,6 @@ import HotelAttributes from "views/admin/Sidenav_pages/HotelAttributes";
 import HotelPolicy from "views/admin/Sidenav_pages/HotelPolicy";
 import Hotel from "views/admin/Hotel";
 import HotelFaqs from "views/admin/Sidenav_pages/HotelFaqs";
-import ManageRooms from "views/admin/Sidenav_pages/ManageRooms";
 import AvailableRooms from "views/admin/Sidenav_pages/AvailableRooms";
 import GroceryTable from "views/admin/Sidenav_pages/GroceryTable";
 import GroceryForm from "views/admin/Sidenav_pages/GroceryForm";
@@ -61,6 +60,8 @@ import RestaurantTable from "views/admin/Sidenav_pages/RestaurantTable";
 import DishTable from "views/admin/Sidenav_pages/DishTable";
 import adminRoutes from './routes/admin.routes.js';
 import ProductTable from 'views/admin/Sidenav_pages/ProductTable';
+import HotelRoomStatusDashboard from 'views/admin/Hotel/HotelRoomStatusDashboard';
+import HotelList from "views/admin/Hotel/HotelList";
 
 const routes = [
   ...authRoutes,
@@ -227,8 +228,8 @@ const routes = [
         name: "All Hotels",
         layout: "/admin",
         icon: <MdLocationCity className="h-6 w-6" />,
-        path: "allhotel",
-        component: <Hotel />,
+        path: "hotels",
+        component: <HotelList />,
       },
       {
         name: "Hotel Attributes",
@@ -244,6 +245,20 @@ const routes = [
         path: "hotelpolicy",
         component: <HotelPolicy />,
       },
+      {
+        name: "Room Status",
+        layout: "/admin",
+        icon: <MdViewQuilt className="h-6 w-6" />,
+        path: "hotel/room-status",
+        component: <HotelRoomStatusDashboard />,
+      },
+      // {
+      //   name: "Manage Rooms",
+      //   layout: "/admin",
+      //   icon: <MdViewQuilt className="h-6 w-6" />,
+      //   path: "manage-rooms",
+      //   component: <ManageRooms />,
+      // },
       // {
       //   name: "Hotel FAQs",
       //   layout: "/admin",
@@ -440,12 +455,6 @@ const routes = [
     layout: "/admin",
     path: "stocks",
     component: <Stocks />,
-  },
-  {
-    name: "",
-    layout: "/admin",
-    path: "manage-rooms",
-    component: <ManageRooms />,
   },
   {
     name: "",

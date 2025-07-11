@@ -2,6 +2,7 @@ const Hotel = require('../models/hotel');
 const Room = require('../models/room');
 const Policy = require('../models/policy');
 const Location = require('../models/location');
+const Booking = require('../models/booking');
 const { processImage } = require('../utils/imageProcessor');
 const path = require('path');
 const fs = require('fs');
@@ -262,5 +263,74 @@ exports.deleteHotel = async (req, res) => {
     res.json({ success: true, message: 'Hotel deleted successfully' });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Error deleting hotel', error: error.message });
+  }
+};
+
+// Get all rooms for a hotel with their latest booking (if any)
+exports.getRoomsWithBookingStatus = async (req, res) => {
+  try {
+    const hotelId = req.params.hotelId;
+    // Find all rooms for this hotel
+    const rooms = await Room.find({ hotel_id: hotelId }).lean();
+    // For each room, find the latest booking (by check_in_date, not cancelled)
+    const roomIds = rooms.map(r => r._id);
+    const bookings = await Booking.aggregate([
+      { $match: { room_id: { $in: roomIds } } },
+      { $sort: { check_in_date: -1 } },
+      { $group: {
+        _id: '$room_id',
+        booking: { $first: '$$ROOT' }
+      }}
+    ]);
+    // Map roomId to booking
+    const bookingMap = {};
+    bookings.forEach(b => {
+      bookingMap[b._id.toString()] = b.booking;
+    });
+    // Attach booking to each room
+    const result = rooms.map(room => ({
+      ...room,
+      current_booking: bookingMap[room._id.toString()] || null
+    }));
+    res.json({ success: true, data: result });
+  } catch (error) {
+    console.error('Error in getRoomsWithBookingStatus:', error);
+    res.status(500).json({ success: false, message: 'Error fetching rooms with booking status', error: error.message });
+  }
+};
+
+exports.createRoomForHotel = async (req, res) => {
+  try {
+    const { hotelId } = req.params;
+    const {
+      name,
+      type,
+      price_per_night,
+      status,
+      description,
+      capacity,
+      // add more fields as needed
+    } = req.body;
+
+    // Handle multiple images
+    let images = [];
+    if (req.files && req.files.length > 0) {
+      images = req.files.map(file => `/uploads/rooms/${file.filename}`);
+    }
+
+    const room = new Room({
+      hotel_id: hotelId,
+      name,
+      type,
+      price_per_night,
+      status,
+      description,
+      capacity: capacity ? Number(capacity) : undefined,
+      images,
+    });
+    await room.save();
+    res.status(201).json({ success: true, data: room, message: 'Room created successfully' });
+  } catch (error) {
+    res.status(400).json({ success: false, message: 'Error creating room', error: error.message });
   }
 };

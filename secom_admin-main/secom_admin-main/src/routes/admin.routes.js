@@ -17,8 +17,10 @@ import RestaurantForm from '../views/admin/Sidenav_pages/RestaurantForm';
 import DishTable from '../views/admin/Sidenav_pages/DishTable';
 import DishForm from '../views/admin/Sidenav_pages/DishForm';
 import Staff from '../views/admin/Sidenav_pages/Staff';
-import HotelTable from '../views/admin/Hotel/HotelTable';
+import HotelList from '../views/admin/Hotel/HotelList';
 import HotelForm from '../views/admin/Hotel/HotelForm';
+import RoomList from '../views/admin/Hotel/RoomList';
+import RoomForm from '../views/admin/Hotel/RoomForm';
 import ProductTable from '../views/admin/Sidenav_pages/ProductTable';
 import ProductForm from '../views/admin/Sidenav_pages/ProductForm';
 import ProductView from '../views/admin/Sidenav_pages/ProductView';
@@ -137,16 +139,28 @@ const adminRoutes = [
     element: <Staff />,
   },
   {
-    path: 'hotel',
-    element: <HotelTable />,
+    path: 'hotels',
+    element: <HotelList />,
   },
   {
-    path: 'hotel/new',
+    path: 'hotels/new',
     element: <HotelForm />,
   },
   {
-    path: 'hotel/edit/:id',
+    path: 'hotels/edit/:id',
     element: <HotelForm />,
+  },
+  {
+    path: 'hotels/:hotelId/rooms',
+    element: <RoomList />,
+  },
+  {
+    path: 'hotels/:hotelId/rooms/new',
+    element: <RoomForm />,
+  },
+  {
+    path: 'hotels/:hotelId/rooms/edit/:roomId',
+    element: <RoomForm />,
   },
   {
     path: 'products',

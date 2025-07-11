@@ -9,6 +9,8 @@ const initialState = {
   phone: '',
   email: '',
   status: 'active',
+  amenities: [],
+  policies: [],
 };
 
 function HotelForm() {
@@ -17,9 +19,29 @@ function HotelForm() {
   const [imagePreview, setImagePreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [amenities, setAmenities] = useState([]);
+  const [policies, setPolicies] = useState([]);
   const navigate = useNavigate();
   const { id } = useParams();
   const isEdit = Boolean(id);
+
+  useEffect(() => {
+    // Fetch amenities and policies for dropdowns
+    const fetchDropdownData = async () => {
+      try {
+        const [amenitiesData, policiesData] = await Promise.all([
+          HotelService.getAllAmenities(),
+          HotelService.getAllPolicies()
+        ]);
+        setAmenities(amenitiesData);
+        setPolicies(policiesData);
+      } catch (error) {
+        console.error('Error fetching dropdown data:', error);
+      }
+    };
+
+    fetchDropdownData();
+  }, []);
 
   useEffect(() => {
     if (isEdit) {
@@ -33,6 +55,8 @@ function HotelForm() {
               state: data.address?.state || '',
               country: data.address?.country || '',
             },
+            amenities: data.amenities || [],
+            policies: data.policies || [],
           });
           setImagePreview(data.main_image ? `${process.env.REACT_APP_API_URL || ''}${data.main_image}` : null);
         })
@@ -48,6 +72,11 @@ function HotelForm() {
     } else {
       setHotel((prev) => ({ ...prev, [name]: value }));
     }
+  };
+
+  const handleMultiSelectChange = (e, field) => {
+    const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
+    setHotel((prev) => ({ ...prev, [field]: selectedOptions }));
   };
 
   const handleImageChange = (e) => {
@@ -70,6 +99,15 @@ function HotelForm() {
       formData.append('address[city]', hotel.address.city);
       formData.append('address[state]', hotel.address.state);
       formData.append('address[country]', hotel.address.country);
+      
+      // Append amenities and policies arrays
+      hotel.amenities.forEach(amenityId => {
+        formData.append('amenities[]', amenityId);
+      });
+      hotel.policies.forEach(policyId => {
+        formData.append('policies[]', policyId);
+      });
+      
       if (image) {
         formData.append('main_image', image);
       }
@@ -166,6 +204,40 @@ function HotelForm() {
             onChange={handleChange}
             className="w-full border px-3 py-2 rounded"
           />
+        </div>
+        <div>
+          <label className="block font-medium mb-1">Amenities</label>
+          <select
+            multiple
+            name="amenities"
+            value={hotel.amenities}
+            onChange={(e) => handleMultiSelectChange(e, 'amenities')}
+            className="w-full border px-3 py-2 rounded min-h-[100px]"
+          >
+            {amenities.map((amenity) => (
+              <option key={amenity._id} value={amenity._id}>
+                {amenity.name}
+              </option>
+            ))}
+          </select>
+          <p className="text-sm text-gray-500 mt-1">Hold Ctrl (or Cmd on Mac) to select multiple amenities</p>
+        </div>
+        <div>
+          <label className="block font-medium mb-1">Policies</label>
+          <select
+            multiple
+            name="policies"
+            value={hotel.policies}
+            onChange={(e) => handleMultiSelectChange(e, 'policies')}
+            className="w-full border px-3 py-2 rounded min-h-[100px]"
+          >
+            {policies.map((policy) => (
+              <option key={policy._id} value={policy._id}>
+                {policy.title}
+              </option>
+            ))}
+          </select>
+          <p className="text-sm text-gray-500 mt-1">Hold Ctrl (or Cmd on Mac) to select multiple policies</p>
         </div>
         <div>
           <label className="block font-medium mb-1">Status</label>

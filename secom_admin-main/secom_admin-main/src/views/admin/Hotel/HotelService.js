@@ -42,7 +42,7 @@ const HotelService = {
   },
   deleteHotel: async (id) => {
     const response = await api.delete(`/api/hotels/${id}`);
-    return response.data.data || response.data;
+    return response.data;
   },
   getPolicies: () => api.get('/api/policies'),
   getFAQs: () => api.get('/api/faqs'),
@@ -53,6 +53,15 @@ const HotelService = {
   },
   getRoomsForHotel: async (hotelId) => {
     const response = await api.get(`/api/hotels/${hotelId}/rooms-with-booking-status`);
+    return response.data.data || response.data || [];
+  },
+  // New methods for amenities and policies
+  getAllAmenities: async () => {
+    const response = await api.get('/api/amenities');
+    return response.data.data || response.data || [];
+  },
+  getAllPolicies: async () => {
+    const response = await api.get('/api/policies');
     return response.data.data || response.data || [];
   },
 };

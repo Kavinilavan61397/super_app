@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { FaEdit, FaTrashAlt } from 'react-icons/fa';
+import { Tooltip, IconButton } from '@material-tailwind/react';
 import RoomService from './RoomService';
 import API_CONFIG from '../../../config/api.config';
 
@@ -18,6 +20,20 @@ function RoomList() {
       .catch(() => setError('Failed to fetch rooms'))
       .finally(() => setLoading(false));
   }, [hotelId]);
+
+  const handleDelete = async (roomId) => {
+    if (window.confirm('Are you sure you want to delete this room?')) {
+      try {
+        await RoomService.deleteRoom(roomId);
+        // Refresh the room list
+        const updatedRooms = await RoomService.getRoomsForHotel(hotelId);
+        setRooms(updatedRooms);
+      } catch (error) {
+        console.error('Error deleting room:', error);
+        setError('Failed to delete room');
+      }
+    }
+  };
 
   const renderImageGallery = (images) => {
     if (!images || images.length === 0) {
@@ -97,12 +113,26 @@ function RoomList() {
                     </span>
                   </td>
                   <td className="py-2 px-4">
-                    <button
-                      className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 text-sm"
-                      onClick={() => navigate(`/admin/hotels/${hotelId}/rooms/edit/${room._id || room.id}`)}
-                    >
-                      Edit
-                    </button>
+                    <div className="flex space-x-2">
+                      <Tooltip content="Edit Room">
+                        <IconButton
+                          variant="text"
+                          color="blue-gray"
+                          onClick={() => navigate(`/admin/hotels/${hotelId}/rooms/edit/${room._id}`)}
+                        >
+                          <FaEdit className="text-lg" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip content="Delete Room">
+                        <IconButton
+                          variant="text"
+                          color="red"
+                          onClick={() => handleDelete(room._id)}
+                        >
+                          <FaTrashAlt className="text-lg" />
+                        </IconButton>
+                      </Tooltip>
+                    </div>
                   </td>
                 </tr>
               ))}

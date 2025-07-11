@@ -245,13 +245,6 @@ const routes = [
         path: "hotelpolicy",
         component: <HotelPolicy />,
       },
-      {
-        name: "Room Status",
-        layout: "/admin",
-        icon: <MdViewQuilt className="h-6 w-6" />,
-        path: "hotel/room-status",
-        component: <HotelRoomStatusDashboard />,
-      },
       // {
       //   name: "Manage Rooms",
       //   layout: "/admin",

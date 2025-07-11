@@ -34,6 +34,10 @@ const RoomService = {
     const response = await api.put(`/api/rooms/${roomId}`, data, { headers: { 'Content-Type': 'multipart/form-data' } });
     return response.data.data || response.data;
   },
+  deleteRoom: async (roomId) => {
+    const response = await api.delete(`/api/rooms/${roomId}`);
+    return response.data;
+  },
 };
 
 export default RoomService; 

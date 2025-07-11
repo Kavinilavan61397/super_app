@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FaEdit, FaCog } from 'react-icons/fa';
+import { Tooltip, IconButton } from '@material-tailwind/react';
 import HotelService from './HotelService';
 import API_CONFIG from '../../../config/api.config';
 
@@ -73,6 +75,8 @@ function HotelList() {
               <th className="py-2 px-4 border-b">Image</th>
               <th className="py-2 px-4 border-b">Name</th>
               <th className="py-2 px-4 border-b">Address</th>
+              <th className="py-2 px-4 border-b">Amenities</th>
+              <th className="py-2 px-4 border-b">Policies</th>
               <th className="py-2 px-4 border-b">Price</th>
               <th className="py-2 px-4 border-b">Actions</th>
             </tr>
@@ -96,6 +100,48 @@ function HotelList() {
                   </td>
                   <td className="py-2 px-4">{hotel.name}</td>
                   <td className="py-2 px-4">{hotel.address?.city || hotel.address || '-'}</td>
+                  <td className="py-2 px-4">
+                    {hotel.amenities && hotel.amenities.length > 0 ? (
+                      <div className="flex flex-wrap gap-1">
+                        {hotel.amenities.slice(0, 3).map((amenity, index) => (
+                          <span
+                            key={amenity._id || index}
+                            className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                          >
+                            {amenity.name}
+                          </span>
+                        ))}
+                        {hotel.amenities.length > 3 && (
+                          <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                            +{hotel.amenities.length - 3} more
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-gray-400 text-sm">No amenities</span>
+                    )}
+                  </td>
+                  <td className="py-2 px-4">
+                    {hotel.policies && hotel.policies.length > 0 ? (
+                      <div className="flex flex-wrap gap-1">
+                        {hotel.policies.slice(0, 3).map((policy, index) => (
+                          <span
+                            key={policy._id || index}
+                            className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full"
+                          >
+                            {policy.title}
+                          </span>
+                        ))}
+                        {hotel.policies.length > 3 && (
+                          <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                            +{hotel.policies.length - 3} more
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-gray-400 text-sm">No policies</span>
+                    )}
+                  </td>
                   <td className="py-2 px-4 font-semibold">
                     {price === undefined ? (
                       <span className="text-gray-400">Loading...</span>
@@ -106,18 +152,24 @@ function HotelList() {
                     )}
                   </td>
                   <td className="py-2 px-4 flex gap-2">
-                    <button
-                      className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
-                      onClick={() => navigate(`/admin/hotels/edit/${hotelId}`)}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className="bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700"
-                      onClick={() => navigate(`/admin/hotels/${hotelId}/rooms`)}
-                    >
-                      Manage Rooms
-                    </button>
+                    <Tooltip content="Edit Hotel">
+                      <IconButton
+                        variant="text"
+                        color="blue-gray"
+                        onClick={() => navigate(`/admin/hotels/edit/${hotelId}`)}
+                      >
+                        <FaEdit className="text-lg" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip content="Manage Rooms">
+                      <IconButton
+                        variant="text"
+                        color="indigo"
+                        onClick={() => navigate(`/admin/hotels/${hotelId}/rooms`)}
+                      >
+                        <FaCog className="text-lg" />
+                      </IconButton>
+                    </Tooltip>
                   </td>
                 </tr>
               );

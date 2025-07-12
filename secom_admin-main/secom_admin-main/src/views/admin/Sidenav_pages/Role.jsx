@@ -5,11 +5,11 @@ import * as Yup from 'yup';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { FaSpinner } from 'react-icons/fa';
-import { FiSearch } from 'react-icons/fi';
 import { TokenExpiration } from 'views/auth/TokenExpiration ';
 import 'react-toastify/dist/ReactToastify.css';
 import { toast, ToastContainer } from 'react-toastify';
 import Navbar from 'components/navbar';
+import UserModuleHeader from 'components/common/UserModuleHeader';
 function Role() {
     const [tableData, setTableData] = useState([]);
     const [openAddModal, setOpenAddModal] = useState(false);
@@ -27,6 +27,7 @@ function Role() {
     const [isDeleting, setIsDeleting] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [filteredData, setFilteredData] = useState([]);  // For storing the filtered data
+    const [statusFilter, setStatusFilter] = useState('all');
 
 
 
@@ -338,32 +339,16 @@ function Role() {
             <Navbar brandText={"Roles"} />
             <TokenExpiration />
             <ToastContainer />
-            <div className="w-full mx-auto">
-                <span className="flex mt-4 items-center w-full gap-6">
-                    {/* Search bar */}
-                    <div className="relative flex flex-grow items-center justify-around gap-2 rounded-full bg-white px-2 py-3 shadow-xl shadow-shadow-500 dark:!bg-navy-800 dark:shadow-none">
-                        <div className="flex h-full w-full items-center rounded-full text-navy-700 dark:bg-navy-900 dark:text-white">
-                            <p className="pl-3 pr-2 text-xl">
-                                <FiSearch className="h-4 w-4 text-gray-400 dark:text-white" />
-                            </p>
-                            <input
-                                type="text"
-                                placeholder="Search by Role Name..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)} // Update searchQuery state on change
-                                className="block w-full rounded-full text-base font-medium text-navy-700 outline-none placeholder:!text-gray-400 dark:bg-navy-900 dark:text-white dark:placeholder:!text-white"
-                            />
-                        </div>
-                    </div>
-
-
-                    <button
-                        onClick={handleAddBrand}
-                        className="bg-[#4318ff] text-white px-6 py-2 rounded-full text-lg font-medium flex items-center ml-auto"
-                    >
-                        <FaPlus className="mr-2" /> Add Role
-                    </button>
-                </span>
+            <UserModuleHeader
+                title="Role Management"
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                searchPlaceholder="Search by Role Name..."
+                showStatusFilter={false}
+                onAddClick={handleAddBrand}
+                addButtonText="Add Role"
+                loading={loading}
+            />
 
 
                 {openAddModal && !openEditModal && (
@@ -621,9 +606,6 @@ function Role() {
                         </tbody>
                     </table>
                 </div>
-
-
-            </div>
 
             {/* Pagination */}
             <div className="flex justify-between items-center mt-4">

@@ -265,6 +265,7 @@ const routes = [
     name: "User Management",
     layout: "/admin",
     icon: <MdPeople className="h-6 w-6" />,
+    description: "Manage users, roles, and organizational assignments",
     subNav: [
       {
         name: "Users",
@@ -281,7 +282,7 @@ const routes = [
         component: <Role />,
       },
       {
-        name: "Staff",
+        name: "User Assignments",
         layout: "/admin",
         icon: <MdPerson className="h-6 w-6" />,
         path: "staff",

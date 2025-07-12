@@ -1,15 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaEdit, FaTrashAlt, FaPlus, FaEllipsisV } from 'react-icons/fa';
+import { FaEdit, FaTrashAlt, FaPlus, FaEllipsisV, FaEye } from 'react-icons/fa';
 import * as Yup from 'yup';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { FaSpinner } from 'react-icons/fa';
-import { FiSearch } from 'react-icons/fi';
 import { TokenExpiration } from 'views/auth/TokenExpiration ';
 import 'react-toastify/dist/ReactToastify.css';
 import { toast, ToastContainer } from 'react-toastify';
 import Navbar from 'components/navbar';
 import { userService } from 'services/userService';
+import { roleService } from 'services/roleService';
+import UserModuleHeader from 'components/common/UserModuleHeader';
+import UserProfileModal from 'components/common/UserProfileModal';
+import UserManagementInfo from 'components/common/UserManagementInfo';
 
 function Users() {
     const [tableData, setTableData] = useState([]);
@@ -26,6 +29,11 @@ function Users() {
     const [isDeleting, setIsDeleting] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [filteredData, setFilteredData] = useState([]);
+    const [statusFilter, setStatusFilter] = useState('all');
+    const [roles, setRoles] = useState([]);
+    const [profileModalOpen, setProfileModalOpen] = useState(false);
+    const [profileEditMode, setProfileEditMode] = useState(false);
+    const [selectedUserForProfile, setSelectedUserForProfile] = useState(null);
 
     // Yup validation schema
     const validationSchema = Yup.object({
@@ -54,7 +62,7 @@ function Users() {
         }
     });
 
-    // Fetch data function
+    // Fetch data functions
     const fetchUserData = async () => {
         try {
             setLoading(true);
@@ -76,6 +84,18 @@ function Users() {
         }
     };
 
+    const fetchRoles = async () => {
+        try {
+            const response = await roleService.getAllRoles();
+            if (response.success) {
+                setRoles(response.data || []);
+            }
+        } catch (error) {
+            console.error('Error fetching roles:', error);
+            // Don't show error toast for roles as it's not critical
+        }
+    };
+
     // Handle page change
     const handlePageChange = (page) => {
         if (page < 1 || page > totalPages) return;
@@ -84,11 +104,14 @@ function Users() {
 
     const totalPages = Math.ceil(totalItems / itemsPerPage);
 
-    // Handle search input change
+    // Handle search and status filtering
     useEffect(() => {
+        let filtered = tableData;
+
+        // Apply search filter
         if (searchQuery) {
-            const filtered = tableData.filter((user) => {
-                const lowercasedSearchQuery = searchQuery.toLowerCase();
+            const lowercasedSearchQuery = searchQuery.toLowerCase();
+            filtered = filtered.filter((user) => {
                 return (
                     user.name?.toLowerCase().includes(lowercasedSearchQuery) ||
                     user.email?.toLowerCase().includes(lowercasedSearchQuery) ||
@@ -96,17 +119,22 @@ function Users() {
                     user.role?.toLowerCase().includes(lowercasedSearchQuery)
                 );
             });
-            setFilteredData(filtered);
-            setTotalItems(filtered.length);
-            setCurrentPage(1);
-        } else {
-            setFilteredData(tableData);
-            setTotalItems(tableData.length);
         }
-    }, [searchQuery, tableData]);
+
+        // Apply status filter
+        if (statusFilter !== 'all') {
+            const isActive = statusFilter === 'active';
+            filtered = filtered.filter(user => user.status === isActive);
+        }
+
+        setFilteredData(filtered);
+        setTotalItems(filtered.length);
+        setCurrentPage(1);
+    }, [searchQuery, statusFilter, tableData]);
 
     useEffect(() => {
         fetchUserData();
+        fetchRoles();
     }, [currentPage, itemsPerPage]);
 
     // Handle row selection
@@ -159,6 +187,11 @@ function Users() {
     
         return `${day}${ordinal(day)} ${month} ${year}`;
     }
+
+    const getInitials = (name) => {
+        if (!name) return 'U';
+        return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    };
 
     // Handle form submission
     const handleFormSubmit = async (data) => {
@@ -229,6 +262,35 @@ function Users() {
         }
     };
 
+    // Handle profile view/edit
+    const handleProfileView = (user) => {
+        setSelectedUserForProfile(user);
+        setProfileEditMode(false);
+        setProfileModalOpen(true);
+    };
+
+    const handleProfileEdit = (user) => {
+        setSelectedUserForProfile(user);
+        setProfileEditMode(true);
+        setProfileModalOpen(true);
+    };
+
+    const handleProfileSave = async (formData) => {
+        try {
+            setLoading(true);
+            await userService.updateUserProfile(selectedUserForProfile.id, formData);
+            toast.success('User profile updated successfully!');
+            setProfileModalOpen(false);
+            setSelectedUserForProfile(null);
+            fetchUserData();
+        } catch (error) {
+            console.error('Error updating user profile:', error);
+            toast.error(error.message || 'Failed to update user profile');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     // Handle bulk delete
     const handleBulkDelete = async () => {
         if (selectedRows.length === 0) {
@@ -260,31 +322,23 @@ function Users() {
             <TokenExpiration />
             <ToastContainer />
             
-            {/* Search bar */}
-            <div className="relative mt-4 flex flex-grow items-center justify-around gap-2 rounded-full bg-white px-2 py-3 shadow-xl shadow-shadow-500 dark:!bg-navy-800 dark:shadow-none">
-                <div className="flex h-full w-full items-center rounded-full text-navy-700 dark:bg-navy-900 dark:text-white">
-                    <p className="pl-3 pr-2 text-xl">
-                        <FiSearch className="h-4 w-4 text-gray-400 dark:text-white" />
-                    </p>
-                    <input
-                        type="text"
-                        placeholder="Search by Name, Email, Phone, Role..."
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        value={searchQuery}
-                        className="block w-full rounded-full text-base font-medium text-navy-700 outline-none placeholder:!text-gray-400 dark:bg-navy-900 dark:text-white dark:placeholder:!text-white"
-                    />
-                </div>
-                
-                <button
-                    onClick={() => {
-                        reset();
-                        setOpenAddModal(true);
-                    }}
-                    className="bg-[#4318ff] text-white px-6 py-2 rounded-full text-lg font-medium flex items-center ml-auto"
-                >
-                    <FaPlus className="mr-2" /> Add User
-                </button>
-            </div>
+            <UserManagementInfo currentModule="users" />
+            
+            {/* Standardized Header */}
+            <UserModuleHeader
+                title="User Management"
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                searchPlaceholder="Search by Name, Email, Phone, Role..."
+                statusFilter={statusFilter}
+                onStatusFilterChange={setStatusFilter}
+                onAddClick={() => {
+                    reset();
+                    setOpenAddModal(true);
+                }}
+                addButtonText="Add User"
+                loading={loading}
+            />
 
             {/* Add/Edit Modal */}
             {(openAddModal || openEditModal) && (
@@ -387,13 +441,25 @@ function Users() {
                                                 className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-800 focus:outline-none"
                                                 {...field}
                                             >
-                                                <option value="user">User</option>
-                                                <option value="admin">Admin</option>
-                                                <option value="ecommerce_admin">Ecommerce Admin</option>
-                                                <option value="grocery_admin">Grocery Admin</option>
-                                                <option value="taxi_admin">Taxi Admin</option>
-                                                <option value="hotel_admin">Hotel Admin</option>
-                                                <option value="restaurant_admin">Restaurant Admin</option>
+                                                <option value="">Select Role</option>
+                                                {roles.length > 0 ? (
+                                                    roles.map((role) => (
+                                                        <option key={role._id || role.id} value={role.name}>
+                                                            {role.name}
+                                                        </option>
+                                                    ))
+                                                ) : (
+                                                    // Fallback to hardcoded roles if API fails
+                                                    <>
+                                                        <option value="user">User</option>
+                                                        <option value="admin">Admin</option>
+                                                        <option value="ecommerce_admin">Ecommerce Admin</option>
+                                                        <option value="grocery_admin">Grocery Admin</option>
+                                                        <option value="taxi_admin">Taxi Admin</option>
+                                                        <option value="hotel_admin">Hotel Admin</option>
+                                                        <option value="restaurant_admin">Restaurant Admin</option>
+                                                    </>
+                                                )}
                                             </select>
                                         )}
                                     />
@@ -485,7 +551,7 @@ function Users() {
                             </th>
                             <th className="px-6 py-4 text-left">Date</th>
                             <th className="px-6 py-4 text-left">Last Login</th>
-                            <th className="px-6 py-4 text-left">Name</th>
+                            <th className="px-6 py-4 text-left">User</th>
                             <th className="px-6 py-4 text-left">Email</th>
                             <th className="px-6 py-4 text-left">Phone</th>
                             <th className="px-6 py-4 text-left">Role</th>
@@ -516,7 +582,24 @@ function Users() {
                                     <td className="px-6 py-4">
                                         {user.last_login ? new Date(user.last_login).toLocaleString() : '-'}
                                     </td>
-                                    <td className="px-6 py-4">{user.name}</td>
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center space-x-3">
+                                            {user.profile_picture ? (
+                                                <img
+                                                    src={user.profile_picture}
+                                                    alt={user.name}
+                                                    className="w-10 h-10 rounded-full object-cover"
+                                                />
+                                            ) : (
+                                                <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm font-medium">
+                                                    {getInitials(user.name)}
+                                                </div>
+                                            )}
+                                            <div>
+                                                <div className="font-medium text-gray-900">{user.name}</div>
+                                            </div>
+                                        </div>
+                                    </td>
                                     <td className="px-6 py-4">{user.email}</td>
                                     <td className="px-6 py-4">{user.phone || user.mobile_number || '-'}</td>
                                     <td className="px-6 py-4">
@@ -540,39 +623,55 @@ function Users() {
                                         </span>
                                     </td>
                                     <td className="text-right">
-                                        <div className="relative inline-block group">
+                                        <div className="flex items-center space-x-2">
                                             <button
-                                                onClick={() => setOpenDropdown(openDropdown === user.id ? null : user.id)}
-                                                className="text-gray-600 hover:text-gray-900"
+                                                onClick={() => handleProfileView(user)}
+                                                className="text-blue-600 hover:text-blue-900 p-1"
+                                                title="View Profile"
                                             >
-                                                <FaEllipsisV />
+                                                <FaEye className="text-lg" />
                                             </button>
-                                            {openDropdown === user.id && (
-                                                <div
-                                                    className="absolute right-10 flex space-x-2 bg-white border border-gray-200 rounded shadow-lg z-10"
-                                                    style={{ marginTop: "-30px" }}
-                                                    ref={dropdownRef}
+                                            <button
+                                                onClick={() => handleProfileEdit(user)}
+                                                className="text-green-600 hover:text-green-900 p-1"
+                                                title="Edit Profile"
+                                            >
+                                                <FaEdit className="text-lg" />
+                                            </button>
+                                            <div className="relative inline-block group">
+                                                <button
+                                                    onClick={() => setOpenDropdown(openDropdown === user.id ? null : user.id)}
+                                                    className="text-gray-600 hover:text-gray-900 p-1"
                                                 >
-                                                    <button
-                                                        onClick={() => {
-                                                            handleEditUser(user);
-                                                            setOpenDropdown(null);
-                                                        }}
-                                                        className="flex items-center px-4 py-2 text-navy-700 hover:bg-gray-200 cursor-pointer"
+                                                    <FaEllipsisV />
+                                                </button>
+                                                {openDropdown === user.id && (
+                                                    <div
+                                                        className="absolute right-10 flex space-x-2 bg-white border border-gray-200 rounded shadow-lg z-10"
+                                                        style={{ marginTop: "-30px" }}
+                                                        ref={dropdownRef}
                                                     >
-                                                        <FaEdit className="mr-2 text-black" /> Edit
-                                                    </button>
-                                                    <button
-                                                        onClick={() => {
-                                                            handleDeleteUser(user);
-                                                            setOpenDropdown(null);
-                                                        }}
-                                                        className="flex items-center px-4 py-2 text-red-600 hover:bg-gray-200 cursor-pointer"
-                                                    >
-                                                        <FaTrashAlt className="mr-2" /> Delete
-                                                    </button>
-                                                </div>
-                                            )}
+                                                        <button
+                                                            onClick={() => {
+                                                                handleEditUser(user);
+                                                                setOpenDropdown(null);
+                                                            }}
+                                                            className="flex items-center px-4 py-2 text-navy-700 hover:bg-gray-200 cursor-pointer"
+                                                        >
+                                                            <FaEdit className="mr-2 text-black" /> Edit User
+                                                        </button>
+                                                        <button
+                                                            onClick={() => {
+                                                                handleDeleteUser(user);
+                                                                setOpenDropdown(null);
+                                                            }}
+                                                            className="flex items-center px-4 py-2 text-red-600 hover:bg-gray-200 cursor-pointer"
+                                                        >
+                                                            <FaTrashAlt className="mr-2" /> Delete
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </td>
                                 </tr>
@@ -648,6 +747,19 @@ function Users() {
                     </div>
                 </div>
             )}
+
+            {/* User Profile Modal */}
+            <UserProfileModal
+                user={selectedUserForProfile}
+                isOpen={profileModalOpen}
+                onClose={() => {
+                    setProfileModalOpen(false);
+                    setSelectedUserForProfile(null);
+                }}
+                onSave={handleProfileSave}
+                isEditMode={profileEditMode}
+                loading={loading}
+            />
         </div>
     );
 }

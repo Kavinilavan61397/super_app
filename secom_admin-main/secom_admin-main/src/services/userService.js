@@ -140,5 +140,23 @@ export const userService = {
         error: error.message
       };
     }
+  },
+
+  // Update user profile
+  updateUserProfile: async (id, profileData) => {
+    try {
+      const response = await api.put(`/api/users/${id}/profile`, profileData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || {
+        success: false,
+        message: 'Failed to update user profile',
+        error: error.message
+      };
+    }
   }
 }; 

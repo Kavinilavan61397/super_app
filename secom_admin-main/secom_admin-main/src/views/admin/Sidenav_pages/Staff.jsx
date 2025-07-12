@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaEdit, FaTrashAlt, FaPlus, FaEllipsisV, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import { FaEdit, FaTrashAlt, FaPlus, FaEllipsisV, FaCheckCircle, FaTimesCircle, FaUser, FaBuilding, FaBriefcase } from 'react-icons/fa';
 import * as Yup from 'yup';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -11,6 +11,8 @@ import { toast, ToastContainer } from 'react-toastify';
 import Navbar from 'components/navbar';
 import { staffService } from 'services/staffService';
 import { userService } from 'services/userService';
+import UserModuleHeader from 'components/common/UserModuleHeader';
+import UserManagementInfo from 'components/common/UserManagementInfo';
 
 function Staff() {
     const [tableData, setTableData] = useState([]);
@@ -29,6 +31,7 @@ function Staff() {
     const [searchQuery, setSearchQuery] = useState('');
     const [filteredData, setFilteredData] = useState([]);
     const [statusFilter, setStatusFilter] = useState('active');
+    const [departmentFilter, setDepartmentFilter] = useState('all');
 
     // Yup validation schema
     const validationSchema = Yup.object({
@@ -85,7 +88,11 @@ function Staff() {
         fetchUsers();
     }, []);
 
-
+    // Get unique departments for filter
+    const getUniqueDepartments = () => {
+        const departments = tableData.map(staff => staff.department).filter(Boolean);
+        return [...new Set(departments)];
+    };
 
     // Search and status filter
     useEffect(() => {
@@ -111,6 +118,11 @@ function Staff() {
         } else if (statusFilter === 'inactive') {
             filtered = filtered.filter(staff => staff.status === false);
         }
+
+        // Apply department filter
+        if (departmentFilter !== 'all') {
+            filtered = filtered.filter(staff => staff.department === departmentFilter);
+        }
         
         // Sort by creation date (newest first)
         filtered = filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -118,7 +130,7 @@ function Staff() {
         setFilteredData(filtered);
         setTotalItems(filtered.length);
         setCurrentPage(1);
-    }, [searchQuery, statusFilter, tableData]);
+    }, [searchQuery, statusFilter, departmentFilter, tableData]);
 
     // Pagination
     const totalPages = Math.ceil(totalItems / itemsPerPage);
@@ -147,10 +159,10 @@ function Staff() {
             setLoading(true);
             if (openEditModal && selectedStaff) {
                 await staffService.updateStaff(selectedStaff.id, data);
-                toast.success('Staff updated successfully!');
+                toast.success('User assignment updated successfully!');
             } else {
                 await staffService.createStaff(data);
-                toast.success('Staff created successfully!');
+                toast.success('User assigned to role successfully!');
             }
             setOpenAddModal(false);
             setOpenEditModal(false);
@@ -158,7 +170,7 @@ function Staff() {
             reset();
             fetchStaffData();
         } catch (error) {
-            toast.error(error.message || 'Failed to save staff');
+            toast.error(error.message || 'Failed to save user assignment');
         } finally {
             setLoading(false);
         }
@@ -186,12 +198,12 @@ function Staff() {
         try {
             setIsDeleting(true);
             await staffService.deleteStaff(selectedStaff.id);
-            toast.success('Staff deleted successfully!');
+            toast.success('User assignment removed successfully!');
             setOpenDeleteDialog(false);
             setSelectedStaff(null);
             fetchStaffData();
         } catch (error) {
-            toast.error(error.message || 'Failed to delete staff');
+            toast.error(error.message || 'Failed to remove user assignment');
         } finally {
             setIsDeleting(false);
         }
@@ -211,44 +223,74 @@ function Staff() {
         };
     }, []);
 
+    const getInitials = (name) => {
+        if (!name) return 'U';
+        return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    };
+
     return (
         <div className="p-6">
-            <Navbar brandText={"Staff"} />
+            <Navbar brandText={"User Assignments"} />
             <TokenExpiration />
             <ToastContainer />
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-gray-800">Staff Management</h1>
-                <div className="flex gap-2 items-center">
-                    <div className="relative">
-                        <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                        <input
-                            type="text"
-                            placeholder="Search staff..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[250px]"
-                        />
+            
+            {/* <UserManagementInfo currentModule="staff" /> */}
+            
+            {/* Enhanced Header with Department Filter */}
+            <div className="mb-6">
+                <div className="flex justify-between items-center mb-4">
+                    <div>
+                        <h1 className="text-2xl font-bold text-gray-800">User Assignments</h1>
+                        <p className="text-gray-600 mt-1">Manage organizational roles and department assignments for users</p>
                     </div>
-                    <select
-                        value={statusFilter}
-                        onChange={e => setStatusFilter(e.target.value)}
-                        className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[120px]"
-                    >
-                        <option value="all">All</option>
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                    </select>
                     <button
                         onClick={() => {
                             reset();
                             setOpenAddModal(true);
                         }}
-                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center"
                     >
-                        <FaPlus className="mr-2" /> Add Staff
+                        <FaPlus className="mr-2" />
+                        Assign User to Role
                     </button>
                 </div>
+                
+                {/* Search and Filters */}
+                <div className="flex gap-4 items-center">
+                    <div className="relative flex-1">
+                        <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                        <input
+                            type="text"
+                            placeholder="Search by name, email, department, or position..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+                        />
+                    </div>
+                    
+                    <select
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                        className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                        <option value="all">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                    
+                    <select
+                        value={departmentFilter}
+                        onChange={(e) => setDepartmentFilter(e.target.value)}
+                        className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                        <option value="all">All Departments</option>
+                        {getUniqueDepartments().map(dept => (
+                            <option key={dept} value={dept}>{dept}</option>
+                        ))}
+                    </select>
+                </div>
             </div>
+
             <div className="bg-white shadow-md rounded-lg overflow-x-auto">
                 {loading ? (
                     <div className="flex justify-center items-center p-8">
@@ -270,36 +312,80 @@ function Staff() {
                         <tbody className="bg-white divide-y divide-gray-200">
                             {getPaginatedData().length === 0 ? (
                                 <tr>
-                                    <td colSpan="7" className="px-6 py-4 text-center text-gray-500">No staff found.</td>
+                                    <td colSpan="7" className="px-6 py-4 text-center text-gray-500">
+                                        {loading ? 'Loading...' : 'No user assignments found'}
+                                    </td>
                                 </tr>
                             ) : (
                                 getPaginatedData().map((staff) => (
                                     <tr key={staff.id} className="hover:bg-gray-50">
-                                        <td className="px-6 py-4 font-medium text-gray-900">
-                                            {staff.user ? `${staff.user.name} (${staff.user.email})` : '-'}
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center space-x-3">
+                                                {staff.user?.profile_picture ? (
+                                                    <img
+                                                        src={staff.user.profile_picture}
+                                                        alt={staff.user.name}
+                                                        className="w-10 h-10 rounded-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm font-medium">
+                                                        {getInitials(staff.user?.name)}
+                                                    </div>
+                                                )}
+                                                <div>
+                                                    <div className="font-medium text-gray-900">{staff.user?.name || 'Unknown User'}</div>
+                                                    <div className="text-sm text-gray-500">{staff.user?.email || 'No email'}</div>
+                                                    <div className="text-xs text-gray-400">
+                                                        <FaUser className="inline mr-1" />
+                                                        {staff.user?.role?.replace('_', ' ').toUpperCase() || 'No role'}
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </td>
-                                        <td className="px-6 py-4 text-gray-700">{staff.department || '-'}</td>
-                                        <td className="px-6 py-4 text-gray-700">{staff.position || '-'}</td>
-                                        <td className="px-6 py-4 text-gray-700">{staff.hire_date ? new Date(staff.hire_date).toLocaleDateString() : '-'}</td>
-                                        <td className="px-6 py-4 text-gray-700">{staff.salary !== null && staff.salary !== undefined ? staff.salary : '-'}</td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center">
+                                                <FaBuilding className="text-gray-400 mr-2" />
+                                                <span className="text-gray-700">{staff.department || '-'}</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center">
+                                                <FaBriefcase className="text-gray-400 mr-2" />
+                                                <span className="text-gray-700">{staff.position || '-'}</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 text-gray-700">
+                                            {staff.hire_date ? new Date(staff.hire_date).toLocaleDateString() : '-'}
+                                        </td>
+                                        <td className="px-6 py-4 text-gray-700">
+                                            {staff.salary !== null && staff.salary !== undefined ? `$${staff.salary.toLocaleString()}` : '-'}
+                                        </td>
                                         <td className="px-6 py-4">
                                             {staff.status ? (
-                                                <FaCheckCircle className="text-green-500 text-xl" />
+                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                    <FaCheckCircle className="mr-1" />
+                                                    Active
+                                                </span>
                                             ) : (
-                                                <FaTimesCircle className="text-red-500 text-xl" />
+                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                    <FaTimesCircle className="mr-1" />
+                                                    Inactive
+                                                </span>
                                             )}
                                         </td>
                                         <td className="px-6 py-4 text-sm font-medium">
-                                            <div className="flex items-center space-x-4">
+                                            <div className="flex items-center space-x-2">
                                                 <button
                                                     onClick={() => handleEditStaff(staff)}
-                                                    className="text-blue-600 hover:text-blue-900"
+                                                    className="text-blue-600 hover:text-blue-900 p-1"
+                                                    title="Edit Assignment"
                                                 >
                                                     <FaEdit className="text-lg" />
                                                 </button>
                                                 <button
                                                     onClick={() => handleDeleteStaff(staff)}
-                                                    className="text-red-600 hover:text-red-900"
+                                                    className="text-red-600 hover:text-red-900 p-1"
+                                                    title="Remove Assignment"
                                                 >
                                                     <FaTrashAlt className="text-lg" />
                                                 </button>
@@ -312,6 +398,44 @@ function Staff() {
                     </table>
                 )}
             </div>
+
+            {/* Pagination */}
+            <div className="flex justify-between items-center mt-4">
+                <div className="flex items-center">
+                    <span className="mr-2">Show</span>
+                    <select
+                        value={itemsPerPage}
+                        onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                        className="border border-gray-300 px-4 py-2 rounded-md"
+                    >
+                        <option value={5}>5</option>
+                        <option value={10}>10</option>
+                        <option value={25}>25</option>
+                        <option value={50}>50</option>
+                    </select>
+                    <span className="ml-2">entries</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                    <button
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className="px-3 py-1 border border-gray-300 rounded-md disabled:opacity-50"
+                    >
+                        Previous
+                    </button>
+                    <span className="px-3 py-1">
+                        Page {currentPage} of {totalPages}
+                    </span>
+                    <button
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className="px-3 py-1 border border-gray-300 rounded-md disabled:opacity-50"
+                    >
+                        Next
+                    </button>
+                </div>
+            </div>
+
             {/* Add/Edit Modal */}
             {(openAddModal || openEditModal) && (
                 <div className="fixed inset-0 flex items-center justify-center z-50 bg-gray-900 bg-opacity-50" onClick={() => {
@@ -322,7 +446,7 @@ function Staff() {
                 }}>
                     <div className="bg-white rounded-lg shadow-2xl p-12 w-[50%] max-h-[85%] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
                         <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-                            {openEditModal ? 'Edit Staff' : 'Add New Staff'}
+                            {openEditModal ? 'Edit User Assignment' : 'Assign User to Role'}
                         </h2>
                         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -339,7 +463,7 @@ function Staff() {
                                                 <option value="">Select User</option>
                                                 {users.map((user) => (
                                                     <option key={user.id} value={user.id}>
-                                                        {user.name} ({user.email})
+                                                        {user.name} ({user.email}) - {user.role?.replace('_', ' ').toUpperCase()}
                                                     </option>
                                                 ))}
                                             </select>
@@ -426,7 +550,7 @@ function Staff() {
                                     {errors.status && <p className="text-red-500 text-sm mt-1">{errors.status.message}</p>}
                                 </div>
                             </div>
-                            <div className="flex justify-end space-x-4 mt-6">
+                            <div className="flex justify-end space-x-4 pt-6 border-t">
                                 <button
                                     type="button"
                                     onClick={() => {
@@ -441,13 +565,15 @@ function Staff() {
                                 </button>
                                 <button
                                     type="submit"
-                                    className="px-6 py-2 text-white bg-[#4318ff] rounded-md hover:bg-[#3311db] flex items-center"
                                     disabled={loading}
+                                    className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center"
                                 >
                                     {loading ? (
                                         <FaSpinner className="animate-spin mr-2" />
-                                    ) : null}
-                                    {openEditModal ? 'Update Staff' : 'Create Staff'}
+                                    ) : (
+                                        <FaPlus className="mr-2" />
+                                    )}
+                                    {openEditModal ? 'Update Assignment' : 'Assign User'}
                                 </button>
                             </div>
                         </form>
@@ -455,49 +581,15 @@ function Staff() {
                 </div>
             )}
 
-            {/* Pagination */}
-            <div className="flex justify-between items-center mt-4">
-                <div className="flex items-center">
-                    <span className="mr-2">Show</span>
-                    <select
-                        value={itemsPerPage}
-                        onChange={(e) => setItemsPerPage(Number(e.target.value))}
-                        className="border border-gray-300 px-4 py-2 rounded-md"
-                    >
-                        <option value={5}>5</option>
-                        <option value={10}>10</option>
-                        <option value={25}>25</option>
-                        <option value={50}>50</option>
-                    </select>
-                    <span className="ml-2">entries</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                    <button
-                        onClick={() => handlePageChange(currentPage - 1)}
-                        disabled={currentPage === 1}
-                        className="px-3 py-1 border border-gray-300 rounded-md disabled:opacity-50"
-                    >
-                        Previous
-                    </button>
-                    <span className="px-3 py-1">
-                        Page {currentPage} of {totalPages}
-                    </span>
-                    <button
-                        onClick={() => handlePageChange(currentPage + 1)}
-                        disabled={currentPage === totalPages}
-                        className="px-3 py-1 border border-gray-300 rounded-md disabled:opacity-50"
-                    >
-                        Next
-                    </button>
-                </div>
-            </div>
-
             {/* Delete Confirmation Dialog */}
             {openDeleteDialog && (
                 <div className="fixed inset-0 flex items-center justify-center z-50 bg-gray-900 bg-opacity-50">
                     <div className="bg-white p-6 rounded-md shadow-lg w-1/3">
-                        <h2 className="text-xl font-semibold mb-4">Are you sure you want to delete this staff member?</h2>
-                        <p className="text-gray-600 mb-4">This action cannot be undone.</p>
+                        <h2 className="text-xl font-semibold mb-4">Remove User Assignment?</h2>
+                        <p className="text-gray-600 mb-4">
+                            Are you sure you want to remove {selectedStaff?.user?.name} from their role as {selectedStaff?.position} in {selectedStaff?.department}?
+                        </p>
+                        <p className="text-sm text-gray-500 mb-4">This will not delete the user account, only their organizational assignment.</p>
                         <div className="flex justify-end">
                             <button
                                 onClick={() => setOpenDeleteDialog(false)}
@@ -513,9 +605,8 @@ function Staff() {
                                 {isDeleting ? (
                                     <FaSpinner className="animate-spin mr-2" />
                                 ) : (
-                                    'Delete'
+                                    'Remove Assignment'
                                 )}
-                                {isDeleting ? 'Deleting...' : ''}
                             </button>
                         </div>
                     </div>
